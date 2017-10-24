@@ -35,31 +35,34 @@ import glob
 
 inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Oct17/histograms/1l_2tau/forBDTtraining_OS/'
 
-# run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "allVar"
+# run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "noHadTopTaggerVar" --bdtType "evtLevelTTV_TTH"  >/dev/null 2>&1
+# we have many trees 
+# https://stackoverflow.com/questions/38238139/python-prevent-ioerror-errno-5-input-output-error-when-running-without-stdo
+
 #"""
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default='T')
-parser.add_option("--variables", type="string", dest="variables", help="  Set of variables to use -- it shall be put by hand in the code, in the fuction trainVars(all)\n                              all==True -- all variables that should be loaded (training + weights) -- it is used only once\n                               all==False -- only variables of training (not including weights) \n  For the channels implemented I defined 3 sets of variables/each to confront at limit level\n  trainvar=allVar -- all variables that are avaible to training (including lepton IDs, this is here just out of curiosity) \n  trainvar=oldVar -- a minimal set of variables (excluding lepton IDs and lep pt's)\n  trainvar=notForbidenVar -- a maximal set of variables (excluding lepton IDs and lep pt's) \n  trainvar=notForbidenVarNoMEM -- the same as above, but excluding as well MeM variables", default=1000)
-parser.add_option("--bdtType ", type="string", dest="bdtType", help="The ", default='T')
+parser.add_option("--variables", type="string", dest="variables", help="  Set of variables to use -- it shall be put by hand in the code, in the fuction trainVars(all)\n Example to 2ssl_2tau   \n                              all==True -- all variables that should be loaded (training + weights) -- it is used only once\n                               all==False -- only variables of training (not including weights) \n  For the channels implemented I defined 3 sets of variables/each to confront at limit level\n  trainvar=allVar -- all variables that are avaible to training (including lepton IDs, this is here just out of curiosity) \n  trainvar=oldVar -- a minimal set of variables (excluding lepton IDs and lep pt's)\n  trainvar=notForbidenVar -- a maximal set of variables (excluding lepton IDs and lep pt's) \n  trainvar=notForbidenVarNoMEM -- the same as above, but excluding as well MeM variables", default=1000)
+parser.add_option("--bdtType", type="string", dest="bdtType", help=" evtLevelTT_TTH or evtLevelTTV_TTH", default='T')
 parser.add_option("--hypOpt", action="store_true", dest="hypOpt", help="Runs hyp. optimiyation with GridSearchCV in XGBoost (of course you need to tune which ones to run on in the code, look for GridSearchCV) \n  It does not output any report than print the result of the ROC AUC in the screen.", default=False)
-parser.add_option("--doXML", action="store_true", dest="optimization", help="Do save not write the xml file", default=False)
+parser.add_option("--doXML", action="store_true", dest="doXML", help="Do save not write the xml file", default=False)
 (options, args) = parser.parse_args()
-#"""
+#""" bdtType=="evtLevelTTV_TTH"
 
 #channel="2lss_1tau"
 channel=options.channel #"1l_2tau"
 if channel=='1l_2tau':channelInTree='1l_2tau_OS_Tight'
 
 
-bdtType="evtLevelTT_TTH"
+bdtType=options.bdtType #"evtLevelTT_TTH"
 trainvar=options.variables #"allVar" # 
 #trainvar="oldVar" 
 #trainvar="notForbidenVar"
 #trainvar="notForbidenVarNoMEM"
 
 import shutil,subprocess
-proc=subprocess.Popen(['mkdir 'options.channel],shell=True,stdout=subprocess.PIPE)
+proc=subprocess.Popen(['mkdir '+options.channel],shell=True,stdout=subprocess.PIPE)
 out = proc.stdout.read()
 
 
@@ -160,7 +163,7 @@ def trainVars(all):
 		'tau_pt' 
 		]
 
-	if trainvar=="allVar" and channel=="1l_2tau" and all==True :return [
+	if channel=="1l_2tau" and all==True :return [
 		'avg_dr_jet',
 		'dr_lep_fittedHadTop',
 		'dr_lep_tau_os',
@@ -249,11 +252,11 @@ def trainVars(all):
 		'mvaOutput_hadTopTagger',
 		'ptmiss',
 		'tau1_eta',
-		'tau1_mva',
-		'tau1_pt',
+		#'tau1_mva',
+		#'tau1_pt',
 		'tau2_eta',
-		'tau2_mva',
-		'tau2_pt',
+		#'tau2_mva',
+		#'tau2_pt',
 		'nBJetLoose',
 		'nBJetMedium',
 		'nJet'
@@ -280,11 +283,11 @@ def trainVars(all):
 		#'mvaOutput_hadTopTagger',
 		'ptmiss',
 		'tau1_eta',
-		'tau1_mva',
-		'tau1_pt',
-		'tau2_eta',
-		'tau2_mva',
-		'tau2_pt',
+		#'tau1_mva',
+		#'tau1_pt',
+		#'tau2_eta',
+		#'tau2_mva',
+		#'tau2_pt',
 		'nBJetLoose',
 		'nBJetMedium',
 		'nJet'
@@ -312,37 +315,80 @@ def trainVars(all):
 		'mvaOutput_hadTopTagger',
 		'ptmiss',
 		'tau1_eta',
-		'tau1_mva',
-		'tau1_pt',
-		'tau2_eta',
-		'tau2_mva',
-		'tau2_pt',
+		#'tau1_mva',
+		#'tau1_pt',
+		#'tau2_eta',
+		#'tau2_mva',
+		#'tau2_pt',
+		'nBJetLoose',
+		'nBJetMedium',
+		'nJet'
+		]
+
+	if trainvar=="HadTopTaggerNoVarMVA" and channel=="1l_2tau" :return [
+		'avg_dr_jet',
+		'dr_lep_fittedHadTop',
+		'dr_lep_tau_os',
+		'dr_lep_tau_ss',
+		'dr_taus',
+		'fittedHadTop_eta',
+		'fittedHadTop_pt',
+		'htmiss',
+		'lep_conePt',
+		'lep_eta',
+		#'lep_pt',
+		#'lep_tth_mva',
+		'mT_lep',
+		'mTauTauVis',
+		'mindr_lep_jet',
+		'mindr_tau1_jet',
+		'mindr_tau2_jet',
+		#'mvaOutput_hadTopTagger',
+		'ptmiss',
+		'tau1_eta',
+		#'tau1_mva',
+		#'tau1_pt',
+		#'tau2_eta',
+		#'tau2_mva',
+		#'tau2_pt',
 		'nBJetLoose',
 		'nBJetMedium',
 		'nJet'
 		]
 ####################################################################################################
 ## Load data 
+# TTWJetsToLNu_fastsim  TTZToLLNuNu_fastsim 
 my_cols_list=trainVars(True)+['key','target','file'] #,'tau_frWeight','lep1_frWeight','lep1_frWeight'
 # those last are only for channels where selection is relaxed (2lss_1tau) === solve later
 data = pandas.DataFrame(columns=my_cols_list)
-keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
+if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
+if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu']
 for folderName in keys :
 	print (folderName) 
-	if 'TT' in folderName : 
+	if 'TTT' in folderName : 
 		sampleName='TT'
 		target=0
 	if folderName=='ttHToNonbb' : 
 		sampleName='signal'
 		target=1
-	inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'	
-	outfile = inputPath+channel+'_'+folderName+'_21Oct2017.csv' #%sampleName
-	procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining_OS_central_*.root")
-	procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining_OS_central_*.root")
-	procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3_forBDTtraining_OS_central_*.root")
-	list=procP1+procP2+procP3
+	if 'TTW' in folderName : 
+		sampleName='TTW'
+		target=0  
+	if 'TTZ' in folderName : 
+		sampleName='TTZ'
+		target=0  
+	inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
+	if ('TTT' in folderName) or folderName=='ttHToNonbb' : 
+		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining_OS_central_*.root")
+		procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining_OS_central_*.root")
+		procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3_forBDTtraining_OS_central_*.root")
+		list=procP1+procP2+procP3
+	else : 
+		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim_forBDTtraining_OS_central_*.root")
+		list=procP1
 	print ("Date: ", time.asctime( time.localtime(time.time()) ))
-	for ii in trange(0, len(list)) : #
+	for ii in range(0, len(list)) : #
+		#print (list[ii],inputTree)
 		tfile = ROOT.TFile(list[ii])
 		tree = tfile.Get(inputTree)
 		if tree is not None :
@@ -354,6 +400,7 @@ for folderName in keys :
 			if channel=="2lss_1tau" : data["totalWeight"] = data.evtWeight * data.tau_frWeight * data.lep1_frWeight * data.lep2_frWeight 
 			if channel=="1l_2tau" : data["totalWeight"] = data.evtWeight 
 			data=data.append(chunk_df, ignore_index=True)
+		else : print ("file "+list[ii]+"was empty")
 		tfile.Close()
 print (data.columns.values.tolist())
 n = len(data)
@@ -390,7 +437,7 @@ for n, feature in enumerate(trainVars(False)):
 	plt.subplot(6, 6, n+1)
     # define range for histograms by cutting 1% of data from both ends
 	min_value, max_value = np.percentile(data[feature], [1, 99]) 
-	print (min_value, max_value,feature) 
+	#print (min_value, max_value,feature) 
 	values, bins, _ = plt.hist(data.ix[data.target.values == 0, feature].values , weights= data.ix[data.target.values == 0, weights].values ,  
                                range=(min_value, max_value), 
 							   label="TT", **hist_params )
@@ -429,22 +476,25 @@ if options.hypOpt==True :
 	print(gs.best_score_)
 	gs = dm.grid_search_cv(clf, param_grid = param_grid,early_stopping_rounds = None)
 
+"""
 if trainvar=="oldVar" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 1, learning_rate = 0.01) #,max_depth=20,n_estimators=50,learning_rate=0.5)
 if trainvar=="notForbidenVar" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01) #,max_depth=20,n_estimators=50,learning_rate=0.5)
 if trainvar=="notForbidenVarNoMEM" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
-if trainvar=="allVar" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
+if trainvar=="allVar" : 
+"""
+cls = xgb.XGBClassifier(n_estimators = 1000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
 
 cls.fit(
 	traindataset[trainVars(False)].values,  
 	traindataset.target.astype(np.bool),  
-	sample_weight= (traindataset[weights].astype(np.float64)),
-	eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
-	(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] ,  
-	verbose=True,eval_metric="auc"
+	sample_weight= (traindataset[weights].astype(np.float64))
+	#eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
+	#(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] ,  
+	#verbose=True,eval_metric="auc"
 	)
-if options.hypOpt==True :
+if options.doXML==True :
 	model = cls.booster().get_dump(fmap='', with_stats=False) #.get_dump() #pickle.dumps(cls)
-	xgboost2tmva.convert_model(model, trainVars(False), channel+"/"+channel+"_XGB_"+trainvar+".xml")
+	xgboost2tmva.convert_model(model, trainVars(False), inputPath+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+".xml")
 	#parse in command line: xmllint --format TMVABDT_2lss_1tau_XGB_wMEMallVars.xml
 print ("XGBoost trained") 
 proba = cls.predict_proba(traindataset[trainVars(False)].values  )
@@ -456,10 +506,13 @@ fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1] )
 test_auct = auc(fprt, tprt, reorder = True)
 print("XGBoost test set auc - {}".format(test_auct))
 ##################################################
+"""
 if trainvar=="oldVar" :  clc = catboost.CatBoostClassifier(iterations=1800, depth=4, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=True)
 if trainvar=="notForbidenVar" : clc = catboost.CatBoostClassifier(iterations=2000, depth=2, learning_rate=0.01, loss_function='Logloss',od_pval=0.01, verbose=False)
 if trainvar=="notForbidenVarNoMEM" : clc = catboost.CatBoostClassifier(iterations=1000, depth=3, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=False)
-if trainvar=="allVar" : clc = catboost.CatBoostClassifier(iterations=1500, depth=2, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=False)
+if trainvar=="allVar" : 
+"""
+clc = catboost.CatBoostClassifier(iterations=1500, depth=2, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=False)
 
 clc.fit(
 	traindataset[trainVars(False)].values,  
@@ -486,7 +539,8 @@ clf.fit(traindataset[trainVars(False)].values,
 	traindataset.target.astype(np.bool),  
 	sample_weight= (traindataset[weights].astype(np.float64))
 	)
-sklearn_to_tmva.gbr_to_tmva(clf,data[trainVars(False)],trainVars(False),channel+"_GB_wMEMallVars.xml",coef=2)
+# this works, we just do not need
+#sklearn_to_tmva.gbr_to_tmva(clf,data[trainVars(False)],trainVars(False),channel+"_GB_wMEMallVars.xml",coef=2)
 print ("GradientBoosting trained")
 proba = clf.predict_proba(traindataset[trainVars(False)].values  )
 fprf, tprf, thresholdsf = roc_curve(traindataset["target"], proba[:,1] )
@@ -559,6 +613,7 @@ plt.legend(loc='best')
 plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_GBclassifier.pdf')  
 ########################################################################
 # plot correlation matrix
+"""
 print (len(trainVars(False)))
 for ii in [1,2] :
 	if ii == 1 :
@@ -584,6 +639,7 @@ for ii in [1,2] :
 	plt.savefig("{}/{}_{}_corr_{}.png".format(channel,bdtType,trainvar,label))
 	plt.savefig("{}/{}_{}_corr_{}.pdf".format(channel,bdtType,trainvar,label))
 	ax.clear()
+"""
 ###################################################################
 
 #save the training to file for later use
