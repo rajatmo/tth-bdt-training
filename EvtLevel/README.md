@@ -60,6 +60,7 @@ this training fraction is also point of optimization at some point
   trainvar="notForbidenVarNoMEM" -- the same as above, but excluding as well MeM variables
 
 ====================================================================================
+
 Disclaimer: this code require are the ntuples created with the option "forBDTtraining" of
  	tthAnalyzeRun_CHANNEL.py
 
@@ -85,6 +86,7 @@ xmllint --format FILE.xml
 At some point I will incorporate that to the sklearn_Xgboost_csv_evtLevel_ttH.py
 
 =====================================================================================
+
 * in the report three algorithms are confronted/set of variables
 
 Gradient Boost = GB
