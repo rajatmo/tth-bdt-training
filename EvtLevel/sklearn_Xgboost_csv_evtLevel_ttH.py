@@ -33,7 +33,10 @@ import ROOT
 from tqdm import trange
 import glob
 
-inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Oct17/histograms/1l_2tau/forBDTtraining_OS/'
+from keras.models import Sequential, model_from_json
+import json
+
+inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Oct24/histograms/1l_2tau/forBDTtraining_OS/'
 
 # run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "noHadTopTaggerVar" --bdtType "evtLevelTTV_TTH"  >/dev/null 2>&1
 # we have many trees 
@@ -65,6 +68,13 @@ import shutil,subprocess
 proc=subprocess.Popen(['mkdir '+options.channel],shell=True,stdout=subprocess.PIPE)
 out = proc.stdout.read()
 
+def save_model(model):
+    # saving model
+    json_model = model.to_json()
+    open('model_architecture.json', 'w').write(json_model)
+    # saving weights
+    model.save_weights('model_weights.h5', overwrite=True)
+	# https://stackoverflow.com/questions/40396042/how-to-save-scikit-learn-keras-model-into-a-persistence-file-pickle-hd5-json-ya
 
 def trainVars(all):
 
@@ -482,20 +492,17 @@ if trainvar=="notForbidenVar" : cls = xgb.XGBClassifier(n_estimators = 2000, max
 if trainvar=="notForbidenVarNoMEM" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
 if trainvar=="allVar" : 
 """
-cls = xgb.XGBClassifier(n_estimators = 1000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
+cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
 
 cls.fit(
 	traindataset[trainVars(False)].values,  
 	traindataset.target.astype(np.bool),  
-	sample_weight= (traindataset[weights].astype(np.float64))
-	#eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
-	#(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] ,  
-	#verbose=True,eval_metric="auc"
+	sample_weight= (traindataset[weights].astype(np.float64)),
+	eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
+	(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] ,  
+	verbose=True,eval_metric="auc"
 	)
-if options.doXML==True :
-	model = cls.booster().get_dump(fmap='', with_stats=False) #.get_dump() #pickle.dumps(cls)
-	xgboost2tmva.convert_model(model, trainVars(False), inputPath+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+".xml")
-	#parse in command line: xmllint --format TMVABDT_2lss_1tau_XGB_wMEMallVars.xml
+
 print ("XGBoost trained") 
 proba = cls.predict_proba(traindataset[trainVars(False)].values  )
 fpr, tpr, thresholds = roc_curve(traindataset["target"], proba[:,1] )
@@ -505,6 +512,27 @@ proba = cls.predict_proba(valdataset[trainVars(False)].values)
 fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1] )
 test_auct = auc(fprt, tprt, reorder = True)
 print("XGBoost test set auc - {}".format(test_auct))
+if options.doXML==True :
+	print ("Date: ", time.asctime( time.localtime(time.time()) ))
+	pklpath=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+".pkl"
+	pickle.dump(cls, open(pklpath, 'wb'))
+	# save the model in file 'xgb.model.dump'
+	model = cls.booster().get_dump(fmap='', with_stats=False) #.get_dump() #pickle.dumps(cls)
+	xmlfile=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+".xml"
+	xgboost2tmva.convert_model(model, trainVars(False), xmlfile)
+	print xmlfile+" written"
+	print ("Date: ", time.asctime( time.localtime(time.time()) ))
+	"""
+	model2 = cls.booster().get_score(fmap='', importance_type='weight')
+	#print json.dump(model2, ensure_ascii=False, sort_keys=True, indent=4, default=lambda x: None)
+	with open(pklpath, 'rb') as fpkl, open('%s.json' % pklpath, 'w') as fjson:
+		pkldata = pickle.load(fpkl)
+		#model.save_model('0001.model')
+		json.dump(pkldata, fjson, ensure_ascii=False, sort_keys=True, indent=4, default=lambda x: None)
+	"""
+	#print json.dumps(model, sort_keys=True)
+	#parse in command line: xmllint --format TMVABDT_2lss_1tau_XGB_wMEMallVars.xml
+	
 ##################################################
 """
 if trainvar=="oldVar" :  clc = catboost.CatBoostClassifier(iterations=1800, depth=4, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=True)

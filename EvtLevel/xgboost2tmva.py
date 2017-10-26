@@ -1,9 +1,22 @@
 import re
-import xml.etree.cElementTree as ET
+import xml.etree.ElementTree as ET
 
 #from xml.etree.ElementTree import Element, SubElement
 #from xml.etree import ElementTree 
 from xml.dom import minidom
+
+import os
+
+
+def read_file_chunked(output_xml,tree):
+    with open(output_xml, "a") as myfile: 
+		#file_size = os.path.getsize(tree)
+		#print('File size: {}'.format(file_size))
+		for event, elem in tree: 
+			elem.write(output_xml, xml_declaration=True)
+		#myfile.write("appended text")
+		
+
 
 regex_float_pattern = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
  
@@ -88,7 +101,28 @@ def convert_model(model, input_variables, output_xml):
         BinaryTree = ET.SubElement(Weights, "BinaryTree", type="DecisionTree", boostWeight="1.0e+00")
         build_tree(model[itree], BinaryTree, var_indices)
 	tree = ET.ElementTree(MethodSetup)
-	tree.write(output_xml, xml_declaration=True)
+	#tree = iter(tree)
+	root = tree.getroot()
+	#event, root = tree.next()
+	#open(output_xml, "w").write(tree)
+	with open(output_xml, "w") as f: 
+		f.write("<?xml version=\"1.0\"?><MethodSetup Method=\"BDT::BDT\">") 
+		for child in root: f.write(ET.tostring(child)) # child.write(f)
+		f.write("</MethodSetup>")
+	#	for event, elem in tree: elem.write(f)
+	#read_file_chunked(output_xml,tree)
+	#print (output_xml)
+	#tree.write(output_xml, xml_declaration=True)
+	
+	
+
+
+
+
+
+
+	#for event, elem in tree: 
+	
 	#tree.write(prettify(output_xml)) 
 	#print (len(model))
 	#print (len(model))
