@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm as cm
 import numpy as np
 
+from rep.estimators import TMVAClassifier
+
 import pickle
 
 from sklearn.externals import joblib
@@ -24,7 +26,7 @@ import root_numpy
 from root_numpy import root2array, rec2array, array2root, tree2array
 
 import xgboost as xgb
-import catboost as catboost #import CatBoostRegressor
+#import catboost as catboost #import CatBoostRegressor
 
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
@@ -36,10 +38,9 @@ import glob
 from keras.models import Sequential, model_from_json
 import json
 
-inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Oct24/histograms/1l_2tau/forBDTtraining_OS/'
 
-# run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "noHadTopTaggerVar" --bdtType "evtLevelTTV_TTH"  >/dev/null 2>&1
-# we have many trees 
+# run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "noHadTopTaggerVar" --bdtType "evtLevelTT_TTH"  >/dev/null 2>&1
+# we have many trees
 # https://stackoverflow.com/questions/38238139/python-prevent-ioerror-errno-5-input-output-error-when-running-without-stdo
 
 #"""
@@ -55,12 +56,17 @@ parser.add_option("--doXML", action="store_true", dest="doXML", help="Do save no
 
 #channel="2lss_1tau"
 channel=options.channel #"1l_2tau"
-if channel=='1l_2tau':channelInTree='1l_2tau_OS_Tight'
-
+if channel=='1l_2tau':
+	channelInTree='1l_2tau_OS_Tight'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Nov15/histograms/1l_2tau/forBDTtraining_OS/'
+	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Oct24/histograms/1l_2tau/forBDTtraining_OS/'
+if channel=='2lss_1tau':
+	channelInTree='2lss_1tau_lepSS_sumOS_Loose'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Oct24/histograms/2lss_1tau/forBDTtraining_SS_OS/'
 
 bdtType=options.bdtType #"evtLevelTT_TTH"
-trainvar=options.variables #"allVar" # 
-#trainvar="oldVar" 
+trainvar=options.variables #"allVar" #
+#trainvar="oldVar"
 #trainvar="notForbidenVar"
 #trainvar="notForbidenVarNoMEM"
 
@@ -79,98 +85,98 @@ def save_model(model):
 def trainVars(all):
 
         if trainvar=="allVar" and channel=="2lss_1tau" :return [
-		'avg_dr_jet', 
-		'dr_lep1_tau', 
-		'dr_lep2_tau', 
-		'dr_leps', 
-		'htmiss', 
-		'ptmiss',  
+		'avg_dr_jet',
+		'dr_lep1_tau',
+		'dr_lep2_tau',
+		'dr_leps',
+		'htmiss',
+		'ptmiss',
 		'lep1_pt',
-		'lep2_pt', 
+		'lep2_pt',
 		'lep1_abs_eta',
 		'lep2_abs_eta',
-		'lep1_conePt',		
-		'lep2_conePt',   
-		'lep1_tth_mva', 
-		'lep2_tth_mva', 
-		'mT_lep1', 
-		'mT_lep2', 
-		'mTauTauVis1', 
-		'mTauTauVis2', 
-		'max_lep_eta', 
-		'memOutput_LR', 
-		'memOutput_tt_LR', 
-		'mindr_lep2_jet', 
-		'mindr_tau_jet', 
-		'nBJetLoose', 
-		'nBJetMedium', 
-		'nJet', 
-		'tau_abs_eta',  
-		'tau_mva', 
-		'tau_pt' 
+		'lep1_conePt',
+		'lep2_conePt',
+		'lep1_tth_mva',
+		'lep2_tth_mva',
+		'mT_lep1',
+		'mT_lep2',
+		'mTauTauVis1',
+		'mTauTauVis2',
+		'max_lep_eta',
+		'memOutput_LR',
+		'memOutput_tt_LR',
+		'mindr_lep2_jet',
+		'mindr_tau_jet',
+		'nBJetLoose',
+		'nBJetMedium',
+		'nJet',
+		'tau_abs_eta',
+		'tau_mva',
+		'tau_pt'
 		]
 
         if trainvar=="notForbidenVar" and channel=="2lss_1tau" :return [
-		'avg_dr_jet', 
-		'dr_lep1_tau', 
-		'dr_lep2_tau', 
-		'dr_leps', 
-		'htmiss', 
-		'ptmiss',  
+		'avg_dr_jet',
+		'dr_lep1_tau',
+		'dr_lep2_tau',
+		'dr_leps',
+		'htmiss',
+		'ptmiss',
 		#'lep1_abs_eta',
 		#'lep2_abs_eta',
-		'lep1_conePt',		
-		'lep2_conePt', 
-		#'mT_lep1', 
-		'mT_lep2', 
-		'mTauTauVis1', 
-		'mTauTauVis2', 
-		'max_lep_eta', 
-		'memOutput_LR', 
-		'memOutput_tt_LR', 
-		#'mindr_lep1_jet', 
-		'mindr_lep2_jet', 
-		'mindr_tau_jet', 
-		#'nBJetLoose', 
-		'nBJetMedium', 
-		'nJet', 
-		'tau_abs_eta'
-		#'tau_pt' 
+		'lep1_conePt',
+		'lep2_conePt',
+		#'mT_lep1',
+		'mT_lep2',
+		'mTauTauVis1',
+		'mTauTauVis2',
+		#'max_lep_eta',
+		#'memOutput_LR',
+		#'memOutput_tt_LR',
+		#'mindr_lep1_jet',
+		'mindr_lep2_jet',
+		'mindr_tau_jet',
+		#'nBJetLoose',
+		'nBJetMedium',
+		'nJet'#,
+		#'tau_abs_eta'
+		#'tau_pt'
 		]
 
 	if trainvar=="notForbidenVarNoMEM" and channel=="2lss_1tau" :return [
-		'avg_dr_jet', 
-		'dr_lep1_tau', 
-		'dr_lep2_tau', 
-		'dr_leps', 
-		'htmiss', 
-		'ptmiss',  
-		'lep1_conePt',		
-		'lep2_conePt', 
-		'mT_lep2', 
-		'mTauTauVis1', 
-		'mTauTauVis2', 
-		'max_lep_eta', 
-		'memOutput_LR', 
-		'memOutput_tt_LR', 
-		'mindr_lep2_jet', 
-		'mindr_tau_jet', 
-		#'nBJetLoose', 
-		'nBJetMedium', 
-		'nJet', 
+		'avg_dr_jet',
+		'dr_lep1_tau',
+		'dr_lep2_tau',
+		'dr_leps',
+		'htmiss',
+		'ptmiss',
+		'lep1_conePt',
+		'lep2_conePt',
+		'mT_lep2',
+		'mTauTauVis1',
+		'mTauTauVis2',
+		'max_lep_eta',
+		'memOutput_LR',
+		'memOutput_tt_LR',
+		'mindr_lep2_jet',
+		'mindr_tau_jet',
+		#'nBJetLoose',
+		'nBJetMedium',
+		'nJet',
 		'tau_abs_eta'
-		#'tau_pt' 
+		#'tau_pt'
 		]
 
         if trainvar=="oldVar"  and channel=="2lss_1tau" :return [
-		'avg_dr_jet', 
-		'dr_lep1_tau',  
-		'dr_leps', 		
-		'lep2_conePt',  
-		'max_lep_eta', 
-		'mindr_lep1_jet', 
-		'nJet', 
-		'tau_pt' 
+		'avg_dr_jet',
+		'dr_lep1_tau',
+		'dr_leps',
+		'lep2_conePt',
+		'max_lep_eta',
+		'mindr_lep1_jet',
+		'nJet',
+		'tau_pt'
 		]
 
 	if channel=="1l_2tau" and all==True :return [
@@ -209,7 +215,7 @@ def trainVars(all):
 		'lumi',
 		'evt'
 		]
-		
+
 	if trainvar=="allVar" and channel=="1l_2tau"  and all==False :return [
 		'avg_dr_jet',
 		'dr_lep_fittedHadTop',
@@ -261,15 +267,24 @@ def trainVars(all):
 		'mindr_tau2_jet',
 		'mvaOutput_hadTopTagger',
 		'ptmiss',
-		'tau1_eta',
+		#'tau1_eta',
 		#'tau1_mva',
 		#'tau1_pt',
-		'tau2_eta',
+		#'tau2_eta',
 		#'tau2_mva',
 		#'tau2_pt',
 		'nBJetLoose',
 		'nBJetMedium',
-		'nJet'
+		'nJet',
+		'fittedHadTop_pt',
+		'fittedHadTop_eta',
+		'fittedHadTopKin_pt',
+		'fittedHadTopKin_eta',
+		'fittedHadTopP4KinBDTWithKin_pt',
+		'fittedHadTopP4KinBDTWithKin_eta',
+		'fittedHadTopP4BDTWithKin_pt',
+		'fittedHadTopP4BDTWithKin_eta',
+		'bWj1Wj2_isGenMatched'
 		]
 
 	if trainvar=="noHadTopTaggerVar" and channel=="1l_2tau" :return [
@@ -366,59 +381,86 @@ def trainVars(all):
 		'nJet'
 		]
 ####################################################################################################
-## Load data 
-# TTWJetsToLNu_fastsim  TTZToLLNuNu_fastsim 
+## Load data
+# TTWJetsToLNu_fastsim  TTZToLLNuNu_fastsim
 my_cols_list=trainVars(True)+['key','target','file'] #,'tau_frWeight','lep1_frWeight','lep1_frWeight'
 # those last are only for channels where selection is relaxed (2lss_1tau) === solve later
 data = pandas.DataFrame(columns=my_cols_list)
 if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
 if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu']
 for folderName in keys :
-	print (folderName) 
-	if 'TTT' in folderName : 
+	print (folderName)
+	if 'TTT' in folderName :
 		sampleName='TT'
 		target=0
-	if folderName=='ttHToNonbb' : 
+	if folderName=='ttHToNonbb' :
 		sampleName='signal'
 		target=1
-	if 'TTW' in folderName : 
+	if 'TTW' in folderName :
 		sampleName='TTW'
-		target=0  
-	if 'TTZ' in folderName : 
+		target=0
+	if 'TTZ' in folderName :
 		sampleName='TTZ'
-		target=0  
+		target=0
 	inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
-	if ('TTT' in folderName) or folderName=='ttHToNonbb' : 
-		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining_OS_central_*.root")
-		procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining_OS_central_*.root")
-		procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3_forBDTtraining_OS_central_*.root")
+	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
+		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining*OS_central_*.root")
+		procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining*OS_central_*.root")
+		procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3_forBDTtraining*OS_central_*.root")
 		list=procP1+procP2+procP3
-	else : 
-		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim_forBDTtraining_OS_central_*.root")
+	else :
+		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim_forBDTtraining*OS_central_*.root")
 		list=procP1
 	print ("Date: ", time.asctime( time.localtime(time.time()) ))
 	for ii in range(0, len(list)) : #
 		#print (list[ii],inputTree)
-		tfile = ROOT.TFile(list[ii])
-		tree = tfile.Get(inputTree)
+		try: tfile = ROOT.TFile(list[ii])
+		except :
+			#print "Doesn't exist"
+			#print ('file ', list[ii],' corrupt')
+			continue
+		try: tree = tfile.Get(inputTree)
+		except :
+			#print "Doesn't exist"
+			#print ('file ', list[ii],' corrupt')
+			continue
 		if tree is not None :
-			chunk_arr = tree2array(tree) #,  start=start, stop = stop)
-			chunk_df = pandas.DataFrame(chunk_arr) #
-			chunk_df['key']=folderName
-			chunk_df['target']=target
-			#chunk_df['file']=list[ii].split("_")[10]
-			if channel=="2lss_1tau" : data["totalWeight"] = data.evtWeight * data.tau_frWeight * data.lep1_frWeight * data.lep2_frWeight 
-			if channel=="1l_2tau" : data["totalWeight"] = data.evtWeight 
-			data=data.append(chunk_df, ignore_index=True)
+			try:
+				chunk_arr = tree2array(tree) #,  start=start, stop = stop)
+			except :
+				#print "Doesn't exist"
+				#print ('file ', list[ii],' corrupt')
+				continue
+			else :
+				chunk_df = pandas.DataFrame(chunk_arr) #
+				if ii ==0 : print (chunk_df.columns.values.tolist())
+				chunk_df['key']=folderName
+				chunk_df['target']=target
+				#chunk_df['file']=list[ii].split("_")[10]
+				if channel=="2lss_1tau" : # fix the wieghs with is_tight flag
+					chunk_df["totalWeight"] = chunk_df["evtWeight"] #* data.tau_frWeight * data.lep1_frWeight * data.lep2_frWeight
+				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight
+				data=data.append(chunk_df, ignore_index=True)
 		else : print ("file "+list[ii]+"was empty")
 		tfile.Close()
+	nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
+	nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
+	nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
+	nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
+	print "length of sig, bkg: ", nS, nB
+	print "truth:              ", nSthuth, nBtruth
 print (data.columns.values.tolist())
 n = len(data)
 nS = len(data.ix[data.target.values == 0])
 nB = len(data.ix[data.target.values == 1])
+
+nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1)])
+nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1)])
 print "length of sig, bkg: ", nS, nB
+print "truth:              ", nSthuth, nBtruth
 print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
-################################################################################# 
+print ("truth", data.loc[(data['target']==0) & (data['bWj1Wj2_isGenMatched']==1)]["totalWeight"].sum() , data.loc[(data['target']==1) & (data['bWj1Wj2_isGenMatched']==1)]["totalWeight"].sum() )
+#################################################################################
 ## Balance datasets
 #https://stackoverflow.com/questions/34803670/pandas-conditional-multiplication
 print ("norm", data.loc[data['target']==0]["totalWeight"].sum(),data.loc[data['target']==1]["totalWeight"].sum())
@@ -427,11 +469,11 @@ for tar in [0,1] : data.loc[data['target']==tar, ['totalWeight']] *= 100000/data
 weights="totalWeight"
 #print data.loc[data['target']==1]["totalWeight"]
 #print data.loc[data['target']==0,["totalWeight","file"]]
-# print data.loc[data['totalWeight']==np.nan, ['nJet','run','lumi','evt']] .values 
+# print data.loc[data['totalWeight']==np.nan, ['nJet','run','lumi','evt']] .values
 
 # drop events with NaN weights
 #data.dropna(thresh=0)
-data.dropna(subset=["totalWeight"],inplace = True) # data 
+data.dropna(subset=["totalWeight"],inplace = True) # data
 #print data[data['target']==0]["totalWeight"]
 #print data[data['target']==1]["totalWeight"]
 
@@ -446,14 +488,14 @@ for n, feature in enumerate(trainVars(False)):
     # add sub plot on our figure
 	plt.subplot(6, 6, n+1)
     # define range for histograms by cutting 1% of data from both ends
-	min_value, max_value = np.percentile(data[feature], [1, 99]) 
-	#print (min_value, max_value,feature) 
-	values, bins, _ = plt.hist(data.ix[data.target.values == 0, feature].values , weights= data.ix[data.target.values == 0, weights].values ,  
-                               range=(min_value, max_value), 
+	min_value, max_value = np.percentile(data[feature], [1, 99])
+	print (min_value, max_value,feature)
+	values, bins, _ = plt.hist(data.ix[data.target.values == 0, feature].values , weights= data.ix[data.target.values == 0, weights].values ,
+                               range=(min_value, max_value),
 							   label="TT", **hist_params )
-	values, bins, _ = plt.hist(data.ix[data.target.values == 1, feature].values, weights= data.ix[data.target.values == 1, weights].values , 
+	values, bins, _ = plt.hist(data.ix[data.target.values == 1, feature].values, weights= data.ix[data.target.values == 1, weights].values ,
                                range=(min_value, max_value), label='Signal', **hist_params)
-	areaSig = sum(np.diff(bins)*values) 
+	areaSig = sum(np.diff(bins)*values)
 	#print areaBKG, " ",areaBKG2 ," ",areaSig
 	if n == 0 : plt.legend(loc='best')
 	plt.title(feature)
@@ -462,13 +504,13 @@ plt.clf()
 #########################################################################################
 traindataset, valdataset  = train_test_split(data, test_size=0.5, random_state=7)
 #############################################################################################
-## Training parameters 
+## Training parameters
 
 if options.hypOpt==True :
 	param_grid = {
 				#'n_estimators': [1200,1500],
 				#'min_child_weight': [10,20,30],
-				'max_depth': [2,4,6],  
+				'max_depth': [2,4,6],
 				'learning_rate': [0.01,0.02,0.03]
 				}
 	scoring = "roc_auc"
@@ -478,9 +520,9 @@ if options.hypOpt==True :
 	fit_params = { "eval_set" : [(traindataset[trainVars(False)].values,traindataset["target"])],
                            "eval_metric" : "roc_auc",
                            "early_stopping_rounds" : early_stopping_rounds }
-	gs = GridSearchCV(cls, param_grid, scoring, fit_params, cv = cv, verbose = 1) 
+	gs = GridSearchCV(cls, param_grid, scoring, fit_params, cv = cv, verbose = 1)
 	gs.fit(traindataset[trainVars(False)].values,traindataset["target"])
-	for i, param in enumerate(gs.cv_results_["params"]): 
+	for i, param in enumerate(gs.cv_results_["params"]):
 		print("params : {} \n    cv auc = {}  +- {} ".format(param,gs.cv_results_["mean_test_score"][i],gs.cv_results_["std_test_score"][i]))
 	print(gs.best_params_)
 	print(gs.best_score_)
@@ -490,24 +532,27 @@ if options.hypOpt==True :
 if trainvar=="oldVar" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 1, learning_rate = 0.01) #,max_depth=20,n_estimators=50,learning_rate=0.5)
 if trainvar=="notForbidenVar" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01) #,max_depth=20,n_estimators=50,learning_rate=0.5)
 if trainvar=="notForbidenVarNoMEM" : cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
-if trainvar=="allVar" : 
+if trainvar=="allVar" :
 """
-cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 2, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
+cls = xgb.XGBClassifier(n_estimators = 2000, max_depth = 2, min_child_weight = 1, learning_rate = 0.01)  #,max_depth=20,n_estimators=50,learning_rate=0.5)
 
 cls.fit(
-	traindataset[trainVars(False)].values,  
-	traindataset.target.astype(np.bool),  
-	sample_weight= (traindataset[weights].astype(np.float64)),
-	eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
-	(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] ,  
-	verbose=True,eval_metric="auc"
+	traindataset[trainVars(False)].values,
+	traindataset.target.astype(np.bool),
+	sample_weight= (traindataset[weights].astype(np.float64))
+	#eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
+	#(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] ,
+	#verbose=True,eval_metric="auc"
 	)
 
-print ("XGBoost trained") 
+#if trainvar=="allVar" and channel=="1l_2tau" : evalData=valdataset.loc[ valdataset['lep1_genLepPt'] ]
+#else : evalData=valdataset
+
+print ("XGBoost trained")
 proba = cls.predict_proba(traindataset[trainVars(False)].values  )
 fpr, tpr, thresholds = roc_curve(traindataset["target"], proba[:,1] )
-train_auc = auc(fpr, tpr, reorder = True) 
-print("XGBoost train set auc - {}".format(train_auc)) 
+train_auc = auc(fpr, tpr, reorder = True)
+print("XGBoost train set auc - {}".format(train_auc))
 proba = cls.predict_proba(valdataset[trainVars(False)].values)
 fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1] )
 test_auct = auc(fprt, tprt, reorder = True)
@@ -532,39 +577,41 @@ if options.doXML==True :
 	"""
 	#print json.dumps(model, sort_keys=True)
 	#parse in command line: xmllint --format TMVABDT_2lss_1tau_XGB_wMEMallVars.xml
-	
+
 ##################################################
 """
 if trainvar=="oldVar" :  clc = catboost.CatBoostClassifier(iterations=1800, depth=4, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=True)
 if trainvar=="notForbidenVar" : clc = catboost.CatBoostClassifier(iterations=2000, depth=2, learning_rate=0.01, loss_function='Logloss',od_pval=0.01, verbose=False)
 if trainvar=="notForbidenVarNoMEM" : clc = catboost.CatBoostClassifier(iterations=1000, depth=3, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=False)
-if trainvar=="allVar" : 
-"""
-clc = catboost.CatBoostClassifier(iterations=1500, depth=2, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=False)
+if trainvar=="allVar" :
+
+clc = catboost.CatBoostClassifier(iterations=2000, depth=1, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=False)
 
 clc.fit(
-	traindataset[trainVars(False)].values,  
+	traindataset[trainVars(False)].values,
 	traindataset.target.astype(np.bool)
 	#sample_weight= np.absolute((traindataset[weights].astype(np.float64))),
 	#eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
-	#(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] 
+	#(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))]
 	)
 #model = pickle.dumps(clc) # clc.get_dump() #
 #xgboost2tmva.convert_model(model, trainVars(False), "TMVABDT_2lss_1tau_CB_wMEMallVars.xml")
 # xmllint --format TMVABDT_2lss_1tau_XGB_wMEMallVars.xml
-print ("CatBoost trained") 
+print ("CatBoost trained")
 proba = clc.predict_proba(traindataset[trainVars(False)].values  )
 fprc, tprc, thresholds = roc_curve(traindataset["target"], proba[:,1] )
-train_aucc = auc(fprc, tprc, reorder = True) 
-print("CatBoost train set auc - {}".format(train_aucc)) 
+train_aucc = auc(fprc, tprc, reorder = True)
+print("CatBoost train set auc - {}".format(train_aucc))
 proba = clc.predict_proba(valdataset[trainVars(False)].values)
 fprtc, tprtc, thresholds = roc_curve(valdataset["target"], proba[:,1] )
 test_auctc = auc(fprtc, tprtc, reorder = True)
 print("CatBoost test set auc - {}".format(test_auctc))
+"""
 ##################################################
-clf = GradientBoostingClassifier(max_depth=3,learning_rate=0.01,n_estimators=100,verbose=True,min_samples_leaf=10,min_samples_split=10)
-clf.fit(traindataset[trainVars(False)].values,  
-	traindataset.target.astype(np.bool),  
+
+clf = xgb.XGBClassifier(max_depth=2,learning_rate=0.01,n_estimators=100) # ,min_samples_leaf=10,min_samples_split=10
+clf.fit(traindataset[trainVars(False)].values,
+	traindataset.target,
 	sample_weight= (traindataset[weights].astype(np.float64))
 	)
 # this works, we just do not need
@@ -572,21 +619,44 @@ clf.fit(traindataset[trainVars(False)].values,
 print ("GradientBoosting trained")
 proba = clf.predict_proba(traindataset[trainVars(False)].values  )
 fprf, tprf, thresholdsf = roc_curve(traindataset["target"], proba[:,1] )
-train_aucf = auc(fprf, tprf, reorder = True) 
-print("GradientBoosting train set auc - {}".format(train_aucf)) 
+train_aucf = auc(fprf, tprf, reorder = True)
+print("GradientBoosting train set auc - {}".format(train_aucf))
 proba = clf.predict_proba(valdataset[trainVars(False)].values)
 fprtf, tprtf, thresholdsf = roc_curve(valdataset["target"], proba[:,1] )
 test_auctf = auc(fprtf, tprtf, reorder = True)
-print("GradientBoosting test set auc - {}".format(test_auctf)) 
+print("GradientBoosting test set auc - {}".format(test_auctf))
+##################################################
+"""
+#>>> tmva.fit(train_data, train_labels)
+traindataset.dropna(subset=[target],inplace = True)
+clt = TMVAClassifier(method='kBDT', NTrees=100, Shrinkage=0.1, nCuts=-1, BoostType='Grad')
+clt.fit(traindataset[trainVars(False)].values,
+	traindataset.target.values #,
+	#sample_weight= (traindataset[weights].astype(np.float64))
+	)
+# this works, we just do not need
+#sklearn_to_tmva.gbr_to_tmva(clf,data[trainVars(False)],trainVars(False),channel+"_GB_wMEMallVars.xml",coef=2)
+print ("TMVA trained")
+proba = clt.predict_proba(traindataset[trainVars(False)].values  )
+fprt, tprt, thresholdsf = roc_curve(traindataset["target"], proba[:,1] )
+train_auct = auc(fprt, tprt, reorder = True)
+print("TMVA train set auc - {}".format(train_auct))
+proba = clt.predict_proba(valdataset[trainVars(False)].values)
+fprtt, tprtt, thresholdsf = roc_curve(valdataset["target"], proba[:,1] )
+test_auctt = auc(fprtt, tprtt, reorder = True)
+print("TMVA test set auc - {}".format(test_auctf))
+#"""
 ##################################################
 fig, ax = plt.subplots()
 ## ROC curve
+#ax.plot(fprt, tprt, lw=1, label='TMVA train (area = %0.3f)'%(train_auct))
+#ax.plot(fprtt, tprtt, lw=1, label='TMVA test (area = %0.3f)'%(test_auctt))
 ax.plot(fprf, tprf, lw=1, label='GB train (area = %0.3f)'%(train_aucf))
 ax.plot(fprtf, tprtf, lw=1, label='GB test (area = %0.3f)'%(test_auctf))
 ax.plot(fpr, tpr, lw=1, label='XGB train (area = %0.3f)'%(train_auc))
 ax.plot(fprt, tprt, lw=1, label='XGB test (area = %0.3f)'%(test_auct))
-ax.plot(fprc, tprc, lw=1, label='CB train (area = %0.3f)'%(train_aucc))
-ax.plot(fprtc, tprtc, lw=1, label='CB test (area = %0.3f)'%(test_auctc))
+#ax.plot(fprc, tprc, lw=1, label='CB train (area = %0.3f)'%(train_aucc))
+#ax.plot(fprtc, tprtc, lw=1, label='CB test (area = %0.3f)'%(test_auctc))
 ax.set_ylim([0.0,1.0])
 ax.set_xlabel('False Positive Rate')
 ax.set_ylabel('True Positive Rate')
@@ -608,37 +678,39 @@ fig.savefig("{}/{}_{}_XGB_importance.pdf".format(channel,bdtType,trainvar))
 #print (list(valdataset))
 hist_params = {'normed': True, 'bins': 20 , 'histtype':'step'}
 plt.clf()
-y_pred = cls.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars(False)].values)[:, 1] #  
-y_predS = cls.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars(False)].values)[:, 1] # 
-plt.figure('XGB',figsize=(6, 6)) 
+y_pred = cls.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars(False)].values)[:, 1] #
+y_predS = cls.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars(False)].values)[:, 1] #
+plt.figure('XGB',figsize=(6, 6))
 values, bins, _ = plt.hist(y_pred , label="TT (XGB)", **hist_params)
 values, bins, _ = plt.hist(y_predS , label="signal", **hist_params )
 #plt.xscale('log')
 #plt.yscale('log')
 plt.legend(loc='best')
-plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_XGBclassifier.pdf')  
+plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_XGBclassifier.pdf')
 ###########################################################################
+"""
 plt.clf()
-y_pred = clc.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars(False)].values)[:, 1] #  
-y_predS = clc.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars(False)].values)[:, 1] # 
-plt.figure('CB',figsize=(6, 6)) 
+y_pred = clc.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars(False)].values)[:, 1] #
+y_predS = clc.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars(False)].values)[:, 1] #
+plt.figure('CB',figsize=(6, 6))
 values, bins, _ = plt.hist(y_pred , label="TT (CB)", **hist_params)
 values, bins, _ = plt.hist(y_predS , label="signal", **hist_params )
 #plt.xscale('log')
 #plt.yscale('log')
 plt.legend(loc='best')
-plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_CBclassifier.pdf')  
+plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_CBclassifier.pdf')
+"""
 ###########################################################################
 plt.clf()
-y_pred = clf.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars(False)].values)[:, 1] #  
-y_predS = clf.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars(False)].values)[:, 1] # 
-plt.figure( 'GB',figsize=(6, 6)) 
+y_pred = clf.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars(False)].values)[:, 1] #
+y_predS = clf.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars(False)].values)[:, 1] #
+plt.figure( 'GB',figsize=(6, 6))
 values, bins, _ = plt.hist(y_pred , label="TT (GB)", **hist_params)
 values, bins, _ = plt.hist(y_predS , label="signal", **hist_params )
 #plt.xscale('log')
 #plt.yscale('log')
 plt.legend(loc='best')
-plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_GBclassifier.pdf')  
+plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_GBclassifier.pdf')
 ########################################################################
 # plot correlation matrix
 """
@@ -653,8 +725,8 @@ for ii in [1,2] :
 	data = datad[trainVars(False)] #.loc[:,trainVars(False)] #dataHToNobbCSV[[features]]
 	correlations = data.corr()
 	fig = plt.figure()
-	
-	ax = fig.add_subplot(111) 
+
+	ax = fig.add_subplot(111)
 	#ax.xticks(rotation=90)
 	#ax.plot()
 	cax = ax.matshow(correlations, vmin=-1, vmax=1)
