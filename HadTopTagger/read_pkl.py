@@ -40,9 +40,8 @@ import subprocess
 from sklearn.externals import joblib
 from itertools import izip
 
-vec2=['CSV_b','qg_Wj2' ,'qg_Wj1','m_bWj1Wj2' ,'pT_bWj1Wj2','m_Wj1Wj2','nllKinFit','alphaKinFit','pT_b','pT_b_o_kinFit_pT_b',
-		'pT_Wj1_o_kinFit_pT_Wj1','pT_Wj2','pT_Wj2_o_kinFit_pT_Wj2','cosThetaW_rest','cosThetaWj1_restW']
-
+vec2=['CSV_b','qg_Wj2' ,'qg_Wj1','m_bWj1Wj2' ,'pT_bWj1Wj2','m_Wj1Wj2','pT_Wj2']
+vec=[0.23,0.11 ,0.99,131.1 ,112.5,50.33,37.4]
 
 def mul():
 	print 'Today is',ctime(time()), 'All python libraries we need loaded good	HTT'
@@ -55,6 +54,7 @@ def mul():
 	#	'm_Wj1Wj2' : 50.330856,
 	#	'pT_Wj2' : 37.480865}]
 
+
 	new_dict = OrderedDict([
 	('CSV_b' , 0.232256),
 	('qg_Wj2' , 0.118736),
@@ -63,6 +63,8 @@ def mul():
 	('pT_bWj1Wj2' , 112.474075),
 	('m_Wj1Wj2' , 50.330856),
 	('pT_Wj2' , 37.480865)])
+	## way #2, also works
+	# new_dict = OrderedDict(izip(vec2,vec))
 
 	print (new_dict)
 	data = pandas.DataFrame(columns=list(new_dict.keys()))
