@@ -3,10 +3,10 @@ Auxiliary code and config files for BDT training, used by the ttH with H->tautau
 
 Do cmsenv in the release you are going to work (eg CMSSW_9_4_0_pre1, it does not really matter as we only use ROOT of it)
 
-## there is no instalation necessary to use the scripts if you do have already sklearn and xgboost (that is the case of CMSSW_9X release)
+### there is no instalation necessary to use the scripts if you do have already sklearn and xgboost (that is the case of CMSSW_9X release). If you use 8X the scripts for training and reading will also work.
 
 =================================================
-## If you do need a local instalation of the ML packages starting from python2.7 (e.g. you do not want to use any cmssw stuff) the bellow can be used
+### If you do need a local instalation of the ML packages starting from python2.7 (e.g. you do not want to use any cmssw stuff) the bellow can be used
 
 Install conda to a home directory -- the recipe in the link bellow will install python2.7 althoguether
 https://conda.io/docs/user-guide/install/linux.html (with prefix)
