@@ -1,4 +1,10 @@
 # tth-bdt-training
+
+### Check out this package with the :
+cd $CMSSW_BASE/src/
+git clone https://github.com/HEP-KBFI/tth-bdt-training.git $CMSSW_BASE/src/tthAnalysis/bdtTraining
+
+
 Auxiliary code and config files for BDT training, used by the ttH with H->tautau analysis
 
 Do cmsenv in the release you are going to work (eg CMSSW_9_4_0_pre1, it does not really matter as we only use ROOT of it)
