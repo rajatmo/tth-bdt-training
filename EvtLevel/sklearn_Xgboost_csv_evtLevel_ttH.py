@@ -591,7 +591,7 @@ if options.HypOpt==True :
     			'learning_rate': [0.01,0.02,0.03]
 				}
 	scoring = "roc_auc"
-	early_stopping_rounds = 100
+	early_stopping_rounds = 100 # Will train until validation_0-auc hasn't improved in 100 rounds.
 	cv=3
 	cls = xgb.XGBClassifier()
 	fit_params = { "eval_set" : [(valdataset[trainVars(False)].values,valdataset["target"])],
@@ -616,6 +616,8 @@ if options.HypOpt==True :
 				#"best iteration"+str(gs.best_iteration_)+ "\n"+
 				#"best ntree limit"+str(gs.best_ntree_limit_)
 				)
+	for i, param in enumerate(gs.cv_results_["params"]):
+		file.write("params : {} \n    cv auc = {}  +- {} {}".format(param,gs.cv_results_["mean_test_score"][i],gs.cv_results_["std_test_score"][i]," \n"))
 	file.close()
 
 cls = xgb.XGBClassifier(n_estimators = options.ntrees, max_depth = options.treeDeph, min_child_weight = options.mcw, learning_rate = options.lr)
