@@ -40,7 +40,7 @@ import json
 
 from collections import OrderedDict
 
-# run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "noHTT" --bdtType "evtLevelTT_TTH"  >/dev/null 2>&1
+# run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "HTTWithKinFitKin" --bdtType "evtLevelTT_TTH" --ntrees  --treeDeph --lr  >/dev/null 2>&1
 # we have many trees
 # https://stackoverflow.com/questions/38238139/python-prevent-ioerror-errno-5-input-output-error-when-running-without-stdo
 
@@ -71,10 +71,7 @@ if channel=='2lss_1tau':
 
 bdtType=options.bdtType #"evtLevelTT_TTH"
 trainvar=options.variables
-#trainvar=str(options.variables)+"_ntrees_"+str(options.ntrees)+"_deph_"+str(options.treeDeph)+"_mcw_"+str(options.mcw)+"_lr_0o0"+str(int(options.lr*100)) #"allVar" #
-#trainvar="oldVar"
-#trainvar="notForbidenVar"
-#trainvar="notForbidenVarNoMEM"
+hyppar=str(options.variables)+"_ntrees_"+str(options.ntrees)+"_deph_"+str(options.treeDeph)+"_mcw_"+str(options.mcw)+"_lr_0o0"+str(int(options.lr*100))
 
 import shutil,subprocess
 proc=subprocess.Popen(['mkdir '+options.channel],shell=True,stdout=subprocess.PIPE)
@@ -343,30 +340,36 @@ def trainVars(all):
 
 	if trainvar=="HTTMVAonlyNoKinFitLepID" and channel=="1l_2tau"  and all==False :return [
 				'avg_dr_jet',
-				'dr_taus',
-				'ptmiss',
-				'lep_conePt',
+				#'dr_taus',
+				'htmiss',
+				#'ptmiss',
+				#'lep_conePt',
 				'mT_lep',
 				'mTauTauVis',
 				'mindr_lep_jet',
 				'mindr_tau1_jet',
 				'nJet',
 				'dr_lep_tau_ss',
-				"dr_lep_tau_lead",
+				#"dr_lep_tau_lead",
 				"costS_tau",
 				'mvaOutput_hadTopTaggerWithKinFit',
 				#"mT_lepHadTop",
-				"mT_lepHadTopH",
+				#"mT_lepHadTopH",
 				'lep_tth_mva',
 				'tau1_mva',
 				'tau2_mva',
+				#'HadTop_pt',
+				"tau1_pt",
+				"tau2_pt",
+				#"dr_HadTop_tau_lead"
 		]
 
 	if trainvar=="HTTMVAonlyWithKinFit" and channel=="1l_2tau"  and all==False :return [
 				'avg_dr_jet',
 				'dr_taus',
-				'ptmiss',
-				'lep_conePt',
+				#'ptmiss',
+				'htmiss',
+				#'lep_conePt',
 				'mT_lep',
 				'mTauTauVis',
 				'mindr_lep_jet',
@@ -384,7 +387,8 @@ def trainVars(all):
 	if trainvar=="HTTWithKinFitKin" and channel=="1l_2tau" and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
-						'ptmiss',
+						#'ptmiss',
+						'htmiss',
 						'mTauTauVis',
 						'mindr_lep_jet',
 						'mindr_tau1_jet',
@@ -393,24 +397,13 @@ def trainVars(all):
 						'nBJetLoose',
 						"tau1_pt",
 						"tau2_pt",
-						'lep_conePt',
+						#'lep_conePt',
 						'nJet',
 						"dr_lep_tau_lead",
 						'mT_lep',
 						'mvaOutput_hadTopTaggerWithKinFit',
-						'HadTop_pt'#,
-						#"mass_hadTopKinWithKin_lepton"
-						#'fittedHadTopP4BDTWithKin_pt',
-						#'fittedHadTopP4KinBDTWithKin_eta',
-						#'fittedHadTopP4BDTWithKin_eta',
-						#'dr_lep_fittedHadTop',
-						#"dr_hadTopKinWithKin_tau_lead",
-						#"dr_hadTopKinWithKin_tau_sublead",
-						#"dr_hadTopKinWithKin_tautau",
-						#"dr_hadTopKinWithKin_lepton",
-						#"costS_hadTopKinWithKin_tautau"
-						# mT top + lep transverse mass
-						# dr top SS / OS
+						'HadTop_pt',
+						"dr_HadTop_tau_lead"
 		]
 ####################################################################################################
 ## Load data
@@ -469,6 +462,7 @@ for folderName in keys :
 				chunk_df['target']=target
 				#chunk_df['file']=list[ii].split("_")[10]
 				if channel=="2lss_1tau" : # fix the wieghs with is_tight flag
+
 					chunk_df["totalWeight"] = chunk_df["evtWeight"] #* data.tau_frWeight * data.lep1_frWeight * data.lep2_frWeight
 				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight
 				data=data.append(chunk_df, ignore_index=True)
@@ -508,8 +502,11 @@ for tar in [0,1] : data.loc[data['target']==tar, ['totalWeight']] *= 100000/data
 
 weights="totalWeight"
 # drop events with NaN weights - for safety
-data.replace(to_replace=np.inf, value=np.NaN, inplace=True)
+#data.replace(to_replace=np.inf, value=np.NaN, inplace=True)
+#data.replace(to_replace=np.inf, value=np.zeros, inplace=True)
+#data = data.apply(lambda x: pandas.to_numeric(x,errors='ignore'))
 data.dropna(subset=["totalWeight"],inplace = True) # data
+data.fillna(0)
 
 nS = len(data.loc[data.target.values == 0])
 nB = len(data.loc[data.target.values == 1])
@@ -579,19 +576,21 @@ if channel=="1l_2tau" :
 	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_BDT.pdf")
 	plt.clf()
 #########################################################################################
-traindataset, valdataset  = train_test_split(data[trainVars(False)+["target","totalWeight"]], test_size=0.5, random_state=7)
+traindataset, valdataset  = train_test_split(data[trainVars(False)+["target","totalWeight"]], test_size=0.4, random_state=7)
+## to GridSearchCV the test_size should not be smaller than 0.4 == it is used for cross validation!
+## to final BDT fit test_size can go down to 0.1 without sign of overtraining
 #############################################################################################
 ## Training parameters
 if options.HypOpt==True :
 	# http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
 	param_grid = {
     			'n_estimators': [2000,2500,3000],
-    			#'min_child_weight': [3,10,15],
-    			'max_depth': [1,3,5,6],
+    			#'min_child_weight': [2,3,10],
+    			'max_depth': [1,2,3],
     			'learning_rate': [0.01,0.02,0.03]
 				}
 	scoring = "roc_auc"
-	early_stopping_rounds = 100 # Will train until validation_0-auc hasn't improved in 100 rounds.
+	early_stopping_rounds = 200 # Will train until validation_0-auc hasn't improved in 100 rounds.
 	cv=3
 	cls = xgb.XGBClassifier()
 	fit_params = { "eval_set" : [(valdataset[trainVars(False)].values,valdataset["target"])],
@@ -608,7 +607,7 @@ if options.HypOpt==True :
 	print("best score",gs.best_score_)
 	#print("best iteration",gs.best_iteration_)
 	#print("best ntree limit",gs.best_ntree_limit_)
-	file = open("{}/{}_{}_{}_GSCV.png".format(channel,bdtType,trainvar,str(len(trainVars(False)))),"w")
+	file = open("{}/{}_{}_{}_GSCV.log".format(channel,bdtType,trainvar,str(len(trainVars(False)))),"w")
 	file.write(
 				str(trainVars(False))+"\n"+
 				"best parameters"+str(gs.best_params_) + "\n"+
@@ -643,8 +642,13 @@ test_auct = auc(fprt, tprt, reorder = True)
 print("XGBoost test set auc - {}".format(test_auct))
 if options.doXML==True :
 	print ("Date: ", time.asctime( time.localtime(time.time()) ))
-	pklpath=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+"_"+str(len(trainVars(False)))+"Var.pkl"
-	pickle.dump(cls, open(pklpath, 'wb'))
+	pklpath=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+"_"+str(len(trainVars(False)))+"Var"
+	pickle.dump(cls, open(pklpath+".pkl", 'wb'))
+	file = open(pklpath+"_pkl.log","w")
+	file.write(str(trainVars(False))+"\n")
+	file.close()
+	print ("saved ",pklpath+".pkl")
+	print ("variables are: ",pklpath+"_pkl.log")
 	# save the model in file 'xgb.model.dump'
 	#model = cls.booster().get_dump(fmap='', with_stats=False) #.get_dump() #pickle.dumps(cls)
 	#xmlfile=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+".xml"
@@ -697,8 +701,8 @@ ax.set_xlabel('False Positive Rate')
 ax.set_ylabel('True Positive Rate')
 ax.legend(loc="lower right")
 ax.grid()
-fig.savefig("{}/{}_{}_{}_roc.png".format(channel,bdtType,trainvar,str(len(trainVars(False)))))
-fig.savefig("{}/{}_{}_{}_roc.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False)))))
+fig.savefig("{}/{}_{}_{}_{}_roc.png".format(channel,bdtType,trainvar,str(len(trainVars(False)))),hyppar)
+fig.savefig("{}/{}_{}_{}_{}_roc.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False)))),hyppar)
 ###########################################################################
 ## feature importance plot
 fig, ax = plt.subplots()
@@ -707,8 +711,8 @@ f_score_dict = {trainVars(False)[int(k[1:])] : v for k,v in f_score_dict.items()
 feat_imp = pandas.Series(f_score_dict).sort_values(ascending=True)
 feat_imp.plot(kind='barh', title='Feature Importances')
 fig.tight_layout()
-fig.savefig("{}/{}_{}_{}_XGB_importance.png".format(channel,bdtType,trainvar,str(len(trainVars(False)))))
-fig.savefig("{}/{}_{}_{}_XGB_importance.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False)))))
+fig.savefig("{}/{}_{}_{}_{}_XGB_importance.png".format(channel,bdtType,trainvar,str(len(trainVars(False)))),hyppar)
+fig.savefig("{}/{}_{}_{}_{}_XGB_importance.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False)))),hyppar)
 ###########################################################################
 #print (list(valdataset))
 hist_params = {'normed': True, 'bins': 10 , 'histtype':'step'}
@@ -721,7 +725,7 @@ values, bins, _ = plt.hist(y_predS , label="signal", **hist_params )
 #plt.xscale('log')
 #plt.yscale('log')
 plt.legend(loc='best')
-plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_'+str(len(trainVars(False)))+'_XGBclassifier.pdf')
+plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_'+str(len(trainVars(False)))+'_'+hyppar+'_XGBclassifier.pdf')
 ###########################################################################
 """
 plt.clf()
