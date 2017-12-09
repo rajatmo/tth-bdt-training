@@ -40,7 +40,8 @@ import json
 
 from collections import OrderedDict
 
-inputPath='matthias_trees/ntuple.root'
+#inputPath='matthias_trees/ntuple_tight.root'
+inputPath='matthias_trees/ntuple_tight.root'
 
 #  KEY: TTree	ttZ_train;2	object title
 #  KEY: TTree	ttZ_train;1	object title
@@ -49,7 +50,7 @@ ttjets_sl="ttjets_sl_pow_train"
 ttH="ttH2Nonbb_125_train"
 
 trainVars=[
-"ht_old",#"htmiss",
+"ht",#"htmiss",
 "tau2lep1_visiblemass",#'mTauTauVis',
 "tt_deltaR", #"dr_taus",   #tau1_pt tau2_pt
 "jet_deltaRavg", #'avg_dr_jet',
@@ -69,7 +70,7 @@ chunk_arrdl = tree2array(treedl)
 chunk_dfdl = pandas.DataFrame(chunk_arrdl) #
 #print (chunk_dfdl["jet_deltaRavg"])
 chunk_dfdl['target']=0
-chunk_dfdl["totalWeight"]=1 #chunk_dfdl['w_generator']*chunk_dfdl['w_csvweight']*chunk_dfdl['w_puweight']*chunk_dfdl['w_csvweight']
+chunk_dfdl["totalWeight"]=chunk_dfdl['w_generator']*chunk_dfdl['w_csvweight']*chunk_dfdl['w_puweight']*chunk_dfdl['w_csvweight']*chunk_dfdl['w_fake']
 data=data.append(chunk_dfdl, ignore_index=True)
 ############################
 treesl = tfile.Get(ttjets_sl)
@@ -77,7 +78,7 @@ chunk_arrsl = tree2array(treesl)
 chunk_dfsl = pandas.DataFrame(chunk_arrdl) #
 #print (chunk_dfsl["jet_deltaRavg"])
 chunk_dfsl['target']=0
-chunk_dfsl["totalWeight"]=1 #chunk_dfsl['w_generator']*chunk_dfsl['w_csvweight']*chunk_dfsl['w_puweight']*chunk_dfsl['w_csvweight']
+chunk_dfsl["totalWeight"]=chunk_dfsl['w_generator']*chunk_dfsl['w_csvweight']*chunk_dfsl['w_puweight']*chunk_dfsl['w_csvweight']*chunk_dfsl['w_fake']
 data=data.append(chunk_dfsl, ignore_index=True)
 ############################
 treettH = tfile.Get(ttH)
@@ -119,7 +120,7 @@ plt.clf()
 
 traindataset, valdataset  = train_test_split(data[trainVars+["target","totalWeight"]], test_size=0.2, random_state=7)
 
-clf = GradientBoostingClassifier(max_depth=3,learning_rate=0.01,n_estimators=500,min_samples_leaf=100) # ,min_samples_leaf=10,min_samples_split=10
+clf = GradientBoostingClassifier(max_depth=3,learning_rate=0.01,n_estimators=2500,min_samples_leaf=100) # ,min_samples_leaf=10,min_samples_split=10
 clf.fit(traindataset[trainVars].values,
 	traindataset.target.astype(np.bool),
 	sample_weight=(traindataset["totalWeight"].astype(np.float64))
