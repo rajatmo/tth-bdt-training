@@ -40,6 +40,13 @@ import json
 
 from collections import OrderedDict
 
+#from tth-bdt-training-test.data_manager import load_data
+#dm = __import__("tth-bdt-training-test.data_manager.py")
+
+#import imp
+#dm = imp.load_module("dm_name", "tth-bdt-training-test/data_manager.py")
+
+execfile("../python/data_manager.py")
 # run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "HTTWithKinFitKin" --bdtType "evtLevelTT_TTH" --ntrees  --treeDeph --lr  >/dev/null 2>&1
 # we have many trees
 # https://stackoverflow.com/questions/38238139/python-prevent-ioerror-errno-5-input-output-error-when-running-without-stdo
@@ -79,21 +86,24 @@ if channel=='2lss_1tau':
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-clenaedJets/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-clenaedJets
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec-BDT-noMEM-LooseLepMedTau-cleanjets/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-looseLepMedTau
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec-BDT-noMEM-LooseLepMedTau-TagT-fakeR/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec-BDT-noMEM-LooseLepMedTau-TagT-fakeR
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR/histograms/2lss_1tau/forBDTtraining_SS_OS/' # with charge tag, 2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR
+	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR/histograms/2lss_1tau/forBDTtraining_SS_OS/' # with charge tag, 2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec30-VHbb-wMEM-LooseLepMedTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
 	criteria=['lep1_isTight', 'lep2_isTight','tau_isTight',"failsTightChargeCut"]
+	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 	# 2017Dec-BDT-noMEM-LooseLepMedTau-TagT-fakeR
 	# 2017Dec-BDT-noMEM-LooseLepMedTau-cleanjets
 	# 2017Mar27_dr03mvaLoose
 	# ###########################
 	#channelInTree='2lss_1tau_lepSS_sumOS_Loose'
 	#inputPath='/home/arun/ttHAnalysis/2016/2017Mar27_dr03mvaLoose/histograms/2lss_1tau/forBDTtraining_SS_OS/' # /home/arun/ttHAnalysis/2016/2017Mar27_dr03mvaLoose/
-    # ###########################
+	# ###########################
 	#channelInTree='2lss_1tau_lepSS_sumOS_Fakeable_wFakeRateWeights'
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-fakableLepMedTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-fakableLepMedTau
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-fakableLepLooseTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-fakableLepMedTau
 	# #########################
-	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/' #  2017Dec08-BDT-noMEM-tighLep
+	channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/Tight_SS_OS'
 
 bdtType=options.bdtType #"evtLevelTT_TTH"
 trainvar=options.variables
@@ -142,11 +152,19 @@ def trainVars(all):
         if trainvar=="HTT" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
 			return [
 			'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'mT_lep1', 'mT_lep2', 'mTauTauVis2',
-			'mTauTauVis1', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
-			'ptmiss', 'max_lep_eta', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger',
-			'unfittedHadTop_pt', 'mbb', 'avg_dr_jet', 'nJet25_Recl'
+			'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet',
+			'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt',
+			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt',
+			'nJet25_Recl', 'avg_dr_jet'
+			]
+
+        if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
+			return [
+			'dr_lep1_tau',"memOutput_LR", 'dr_lep2_tau', 'dr_leps',
+			'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet',
+			'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt',
+			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt',
+			'nJet25_Recl', 'avg_dr_jet'
 			]
 
         if trainvar=="HTT_LepID" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
@@ -196,6 +214,17 @@ def trainVars(all):
 		#"mTauTauVis2"
 		]
 
+        if trainvar=="oldVarA"  and channel=="2lss_1tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
+		"nJet","mindr_lep1_jet","avg_dr_jet",
+		"max_lep_eta",
+		"lep2_conePt","dr_leps","tau_pt","dr_lep1_tau"
+		]
+
+        if trainvar=="oldVarA"  and channel=="2lss_1tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
+		"mindr_lep1_jet","mindr_lep2_jet", "avg_dr_jet", "max_lep_eta",
+		"lep1_conePt", "lep2_conePt", "mT_lep1", "dr_leps", "mTauTauVis1", "mTauTauVis2"
+		]
+
         if trainvar=="HTT_LepID" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
 			return [
 			'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
@@ -213,6 +242,15 @@ def trainVars(all):
 			'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
 			'ptmiss', 'tau_pt',
 			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger'
+			]
+
+        if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
+			return [
+			'avg_dr_jet', 'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
+			'lep1_conePt', 'lep2_conePt', 'mT_lep1', 'mT_lep2',
+			'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
+			'ptmiss', 'tau_pt',
+			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger',"memOutput_LR"
 			]
 
         if trainvar=="noHTT" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
@@ -502,99 +540,15 @@ def trainVars(all):
 		]
 ####################################################################################################
 ## Load data
-my_cols_list=trainVars(False)+['key','target','file']+criteria #,'tau_frWeight','lep1_frWeight','lep1_frWeight'
-testtruth="bWj1Wj2_isGenMatchedWithKinFit"
-# if channel=='2lss_1tau' : my_cols_list=my_cols_list+['tau_frWeight','lep1_frWeight','lep2_frWeight']
-# those last are only for channels where selection is relaxed (2lss_1tau) === solve later
-data = pandas.DataFrame(columns=my_cols_list)
-if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
-if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu']
-for folderName in keys :
-	print (folderName)
-	if 'TTT' in folderName :
-		sampleName='TT'
-		target=0
-	if folderName=='ttHToNonbb' :
-		sampleName='signal'
-		target=1
-	if 'TTW' in folderName :
-		sampleName='TTW'
-		target=0
-	if 'TTZ' in folderName :
-		sampleName='TTZ'
-		target=0
-	inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
-	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
-		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining*OS_central_*.root")
-		procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining*OS_central_*.root")
-		procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3_forBDTtraining*OS_central_*.root")
-		list=procP1+procP2+procP3
-	else :
-		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim_forBDTtraining*OS_central_*.root")
-		list=procP1
-	print ("Date: ", time.asctime( time.localtime(time.time()) ))
-	for ii in range(0, len(list)) : #
-		#print (list[ii],inputTree)
-		try: tfile = ROOT.TFile(list[ii])
-		except :
-			#print "Doesn't exist"
-			#print ('file ', list[ii],' corrupt')
-			continue
-		try: tree = tfile.Get(inputTree)
-		except :
-			#print "Doesn't exist"
-			#print ('file ', list[ii],' corrupt')
-			continue
-		if tree is not None :
-			try:
-				chunk_arr = tree2array(tree) #,  start=start, stop = stop)
-			except :
-				#print "Doesn't exist"
-				#print ('file ', list[ii],' corrupt')
-				continue
-			else :
-				chunk_df = pandas.DataFrame(chunk_arr) #
-				if ii ==0 : print (chunk_df.columns.values.tolist())
-				chunk_df['key']=folderName
-				chunk_df['target']=target
-				#chunk_df['file']=list[ii].split("_")[10]
-				if channel=="2lss_1tau" :
-					chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']
-				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight
-				###########
-				if channel=="2lss_1tau" :
-					data=data.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
-				else : #
-					#if 1>0 :
-					data=data.append(chunk_df, ignore_index=True)
-		else : print ("file "+list[ii]+"was empty")
-		tfile.Close()
-	if len(data) == 0 : continue
-	nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
-	nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
-	print "length of sig, bkg: ", nS, nB
-	if channel=="1l_2tau" or channel=="2lss_1tau" :
-		nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
-		nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
-		nSthuthKin = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
-		nBtruthKin = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
-		nShadthuth = len(data.ix[(data.target.values == 0) & (data.hadtruth.values==1) & (data.key.values==folderName)])
-		nBhadtruth = len(data.ix[(data.target.values == 1) & (data.hadtruth.values==1) & (data.key.values==folderName)])
-		print "truth:              ", nSthuth, nBtruth
-		print "truth Kin:          ", nSthuthKin, nBtruthKin
-		print "hadtruth:           ", nShadthuth, nBhadtruth
-print (data.columns.values.tolist())
-n = len(data)
-nS = len(data.ix[data.target.values == 0])
-nB = len(data.ix[data.target.values == 1])
-print "length of sig, bkg: ", nS, nB
-#print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
+data=load_data(inputPath,channelInTree,trainVars(False),criteria,testtruth,bdtType)
+dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(False),[],testtruth,bdtType)
+dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeTight,trainVars(False),[],testtruth,"all")
 
 if channel=="1l_2tau" or channel=="2lss_1tau":
-	nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1)])
-	nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1)])
+	nSthuth = len(data.ix[(data.target.values == 0) & (data[testtruth].values==1)])
+	nBtruth = len(data.ix[(data.target.values == 1) & (data[testtruth].values==1)])
 	print "truth:              ", nSthuth, nBtruth
-	print ("truth", data.loc[(data['target']==0) & (data['bWj1Wj2_isGenMatched']==1)]["totalWeight"].sum() , data.loc[(data['target']==1) & (data['bWj1Wj2_isGenMatched']==1)]["totalWeight"].sum() )
+	print ("truth", data.loc[(data[testtruth]==0) & (data[testtruth]==1)]["totalWeight"].sum() , data.loc[(data['target']==1) & (data[testtruth]==1)]["totalWeight"].sum() )
 #################################################################################
 ## Balance datasets
 #https://stackoverflow.com/questions/34803670/pandas-conditional-multiplication
@@ -603,6 +557,7 @@ print ("norm", data.loc[data['target']==0]["totalWeight"].sum(),data.loc[data['t
 #for tar in [0,1] :
 data.loc[data['target']==0, ['totalWeight']] *= 100000/data.loc[data['target']==0]["totalWeight"].sum()
 data.loc[data['target']==1, ['totalWeight']] *= 100000/data.loc[data['target']==1]["totalWeight"].sum()
+print data.columns.values.tolist()
 
 weights="totalWeight"
 # drop events with NaN weights - for safety
@@ -642,7 +597,58 @@ for n, feature in enumerate(trainVars(False)):
 plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT.pdf")
 plt.clf()
 #################################################################################
+hist_params = {'normed': True, 'bins': 20, 'alpha': 0.4}
+plt.figure(figsize=(50, 50))
+if bdtType=='evtLevelTT_TTH' : labelBKG = "tt"
+if bdtType=='evtLevelTTV_TTH' : labelBKG = "ttV"
+for n, feature in enumerate(trainVars(False)):
+    # add sub plot on our figure
+	plt.subplot(8, 8, n+1)
+    # define range for histograms by cutting 1% of data from both ends
+	min_value, max_value = np.percentile(data[feature], [0.0, 99])
+	print (min_value, max_value,feature)
+	values, bins, _ = plt.hist(abs(data.ix[data.target.values == 0, feature].values) ,
+							   weights= abs(data.ix[data.target.values == 0, weights].values.astype(np.float64)) ,
+                               range=(max(0.,min_value), max_value),cumulative=True,
+							   label='Fastsim LL', **hist_params )
+	values, bins, _ = plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 0, feature].values),
+							   weights= abs(dataTightFS.ix[dataTightFS.target.values == 0, weights].values.astype(np.float64)) ,
+							   cumulative=True,
+                               range=(max(0.,min_value), max_value), label='Fullsim', **hist_params)
+	areaSig = sum(np.diff(bins)*values)
+	#print areaBKG, " ",areaBKG2 ," ",areaSig
+	if n == 0 : plt.legend(loc='best')
+	plt.title(feature)
+plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT_BKG_"+labelBKG+"_fullsim.pdf")
+plt.clf()
+#################################################################################
+hist_params = {'normed': True, 'bins': 20, 'alpha': 0.4}
+plt.figure(figsize=(50, 50))
+if bdtType=='evtLevelTT_TTH' : labelBKG = "tt"
+if bdtType=='evtLevelTTV_TTH' : labelBKG = "ttV"
+for n, feature in enumerate(trainVars(False)):
+    # add sub plot on our figure
+	plt.subplot(8, 8, n+1)
+    # define range for histograms by cutting 1% of data from both ends
+	min_value, max_value = np.percentile(data[feature], [0.0, 99])
+	print (min_value, max_value,feature)
+	values, bins, _ = plt.hist(abs(data.ix[data.target.values == 1, feature].values) ,
+							   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
+                               range=(max(0.,min_value), max_value),cumulative=True,
+							   label='Fastsim LL', **hist_params )
+	values, bins, _ = plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 1, feature].values),
+							   weights= abs(dataTightFS.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64)) ,cumulative=True,
+                               range=(max(0.,min_value), max_value), label='Fullsim', **hist_params)
+	areaSig = sum(np.diff(bins)*values)
+	#print areaBKG, " ",areaBKG2 ," ",areaSig
+	if n == 0 : plt.legend(loc='best')
+	plt.title(feature)
+plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT_signal_fullsim.pdf")
+plt.clf()
+#################################################################################
+
 ### Plot aditional histograms
+
 if 1>0 : #channel=="1l_2tau" :
 	hist_params = {'normed': True, 'alpha': 0.4}
 	plt.figure(figsize=(15, 15))
@@ -657,12 +663,18 @@ if 1>0 : #channel=="1l_2tau" :
 	  #"mvaOutput_1l_2tau_ttbar_OldVar",
 	  #"mvaOutput_1l_2tau_ttbar_OldVarHTT",
 	'mvaOutput_hadTopTaggerWithKinFit',
-	'mvaOutput_hadTopTagger',
+	"mvaOutput_Hj_tagger","memOutput_LR",
+	'mvaOutput_Hjj_tagger',
+	#"mvaOutput_2lss_1tau_ttbar",
+	#"mvaOutput_2lss_1tau_ttV",
+	#"memOutput_tt_LR",  "memOutput_ttZ_LR", "memOutput_ttZ_Zll_LR",
+	"oldVar_from20_to_12", "oldVar_from20_to_7"#,
+	#'mvaOutput_hadTopTagger',
 	#'mvaOutput_2lss_ttbar', 'mvaOutput_Hj_tagger', 'mvaOutput_Hjj_tagger',
 	#'lep1_isTight', 'lep2_isTight','tau_isTight',
 	#"failsTightChargeCut",
 	#'mvaDiscr_2lss', 'mvaOutput_2lss_ttV',
-	'ncombo'
+	#'ncombo'
 	]):
 	    # add sub plot on our figure
 		plt.subplot(3, 3, n+1)
@@ -690,6 +702,109 @@ if 1>0 : #channel=="1l_2tau" :
 		plt.title(feature)
 	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_BDT.pdf")
 	plt.clf()
+##################################################################
+if 1>0 : #channel=="1l_2tau" :
+	hist_params = {'normed': True, 'alpha': 0.4}
+	plt.figure(figsize=(15, 5))
+	n=8
+	nbins=15
+	for n, feature  in enumerate([
+	'mvaOutput_hadTopTaggerWithKinFit',
+	"mvaOutput_Hj_tagger","memOutput_LR",
+	]):
+	    # add sub plot on our figure
+		plt.subplot(1, 3, n+1)
+	    # define range for histograms by cutting 1% of data from both ends
+		#if n==3 : nbins=20
+		#elif n==7 or n==8 : nbins=100
+		#else : nbins=10
+		min_value, max_value = np.percentile(data[feature], [1, 99])
+		print (min_value, max_value,feature)
+		values, bins, _ = plt.hist(abs(data.ix[data.target.values == 1, feature].values.astype(np.float64)) ,
+								   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
+	                               range=(max(min_value,0.), max_value),cumulative=True,
+								   label="Fastsim LL",
+								   bins=nbins,
+								   **hist_params )
+		values, bins, _ = plt.hist(abs(data.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
+								   weights= data.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value),cumulative=True,
+								   label='Fullsim',
+								   bins=nbins,
+								   **hist_params)
+		areaSig = sum(np.diff(bins)*values)
+		#print areaBKG, " ",areaBKG2 ," ",areaSig
+		if n == 0 : plt.legend(loc='best')
+		plt.title(feature)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_signal_fastsim_BDT.pdf")
+	plt.clf()
+##################################################################
+if 1>0 : #channel=="1l_2tau" :
+	hist_params = {'normed': True, 'alpha': 0.4}
+	plt.figure(figsize=(15, 5))
+	n=8
+	nbins=15
+	for n, feature  in enumerate([
+	'mvaOutput_hadTopTaggerWithKinFit',
+	"mvaOutput_Hj_tagger","memOutput_LR",
+	]):
+	    # add sub plot on our figure
+		plt.subplot(1, 3, n+1)
+	    # define range for histograms by cutting 1% of data from both ends
+		#if n==3 : nbins=20
+		#elif n==7 or n==8 : nbins=100
+		#else : nbins=10
+		min_value, max_value = np.percentile(data[feature], [1, 99])
+		print (min_value, max_value,feature)
+		values, bins, _ = plt.hist(abs(data.ix[data.target.values == 1, feature].values.astype(np.float64)) ,
+								   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
+	                               range=(max(min_value,0.), max_value),cumulative=True,
+								   label="Fastsim LL",
+								   bins=nbins,
+								   **hist_params )
+		values, bins, _ = plt.hist(abs(data.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
+								   weights= data.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value),cumulative=True,
+								   label='Fullsim',
+								   bins=nbins,
+								   **hist_params)
+		areaSig = sum(np.diff(bins)*values)
+		#print areaBKG, " ",areaBKG2 ," ",areaSig
+		if n == 0 : plt.legend(loc='best')
+		plt.title(feature)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_BKG_fastsim_BDT.pdf")
+	plt.clf()
+###################################################################
+totestcorr=["memOutput_LR",'mvaOutput_hadTopTaggerWithKinFit',
+"mvaOutput_Hj_tagger",
+'mvaOutput_Hjj_tagger',"nJet25_Recl"]
+totestcorrNames=["MEM",'HTT',
+"Hj_tagger",
+'Hjj_tagger',"nJet"]
+for ii in [1,2] :
+	if ii == 1 :
+		datad=data.loc[data['target'].values == 1]
+		label="signal"
+	else :
+		datad=data.loc[data['target'].values == 0]
+		label="BKG"
+	datacorr = datad[totestcorr] #.loc[:,trainVars(False)] #dataHToNobbCSV[[trainVars(True)]]
+	correlations = datacorr.corr()
+	fig = plt.figure(figsize=(5, 5))
+	ax = fig.add_subplot(111)
+	cax = ax.matshow(correlations, vmin=-1, vmax=1)
+	ticks = np.arange(0,len(totestcorr),1)
+	plt.rc('axes', labelsize=8)
+	ax.set_xticks(ticks)
+	ax.set_yticks(ticks)
+
+	ax.set_xticklabels(totestcorrNames,rotation=-90)
+	ax.set_yticklabels(totestcorrNames)
+	fig.colorbar(cax)
+	fig.tight_layout()
+	#plt.subplots_adjust(left=0.9, right=0.9, top=0.9, bottom=0.1)
+	plt.savefig("{}/{}_{}_{}_corrBDTs_{}.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False))),label))
+	ax.clear()
 #########################################################################################
 traindataset, valdataset  = train_test_split(data[trainVars(False)+["target","totalWeight"]], test_size=0.2, random_state=7)
 ## to GridSearchCV the test_size should not be smaller than 0.4 == it is used for cross validation!
@@ -763,12 +878,12 @@ fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1] )
 test_auct = auc(fprt, tprt, reorder = True)
 print("XGBoost test set auc - {}".format(test_auct))
 if channel=="2lss_1tau" : # 'lep1_isTight', 'lep2_isTight','tau_isTight',"failsTightChargeCut"
-	datatight=data.loc[ (data.lep1_isTight.values == 1) &
-						(data.lep2_isTight.values == 1) &
-						(data.tau_isTight.values == 1) &
-						(data.failsTightChargeCut.values == 0 ) ]
-	proba = cls.predict_proba(datatight[trainVars(False)].values)
-	fprtight, tprtight, thresholds = roc_curve(datatight["target"], proba[:,1] )
+	#datatight=data.loc[ (data.lep1_isTight.values == 1) &
+	#					(data.lep2_isTight.values == 1) &
+	#					(data.tau_isTight.values == 1) &
+	#					(data.failsTightChargeCut.values == 0 ) ]
+	proba = cls.predict_proba(dataTight[trainVars(False)].values)
+	fprtight, tprtight, thresholds = roc_curve(dataTight["target"], proba[:,1] )
 	test_auctight = auc(fprtight, tprtight, reorder = True)
 	print("XGBoost test set auc - tight lep ID - {}".format(test_auctight))
 #print cls.params_
@@ -786,26 +901,6 @@ if options.doXML==True :
 	#model = cls.booster().get_dump(fmap='', with_stats=False) #.get_dump() #pickle.dumps(cls)
 	#xmlfile=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+".xml"
 ##################################################
-"""
-clc = catboost.CatBoostClassifier(iterations=2000, depth=1, learning_rate=0.01, loss_function='Logloss',gradient_iterations=3,od_pval=0.01, verbose=False)
-clc.fit(
-	traindataset[trainVars(False)].values,
-	traindataset.target.astype(np.bool)
-	#sample_weight= np.absolute((traindataset[weights].astype(np.float64))),
-	#eval_set=[(traindataset[trainVars(False)].values,  traindataset.target.astype(np.bool),traindataset[weights].astype(np.float64)),
-	#(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))]
-	)
-print ("CatBoost trained")
-proba = clc.predict_proba(traindataset[trainVars(False)].values  )
-fprc, tprc, thresholds = roc_curve(traindataset["target"], proba[:,1] )
-train_aucc = auc(fprc, tprc, reorder = True)
-print("CatBoost train set auc - {}".format(train_aucc))
-proba = clc.predict_proba(valdataset[trainVars(False)].values)
-fprtc, tprtc, thresholds = roc_curve(valdataset["target"], proba[:,1] )
-test_auctc = auc(fprtc, tprtc, reorder = True)
-print("CatBoost test set auc - {}".format(test_auctc))
-##################################################
-"""
 ###############
 """
 clf = GradientBoostingClassifier(max_depth=3,learning_rate=0.02,n_estimators=500,min_samples_leaf=100) # ,min_samples_leaf=10,min_samples_split=10
@@ -824,7 +919,7 @@ test_auctf = auc(fprtf, tprtf, reorder = True)
 print("GradientBoosting test set auc - {}".format(test_auctf))
 """
 ##################################################
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(6, 6))
 ## ROC curve
 #ax.plot(fprf, tprf, lw=1, label='GB train (area = %0.3f)'%(train_aucf))
 #ax.plot(fprtf, tprtf, lw=1, label='GB test (area = %0.3f)'%(test_auctf))
@@ -913,5 +1008,4 @@ if options.HypOpt==False :
 		plt.savefig("{}/{}_{}_{}_corr_{}.png".format(channel,bdtType,trainvar,str(len(trainVars(False))),label))
 		plt.savefig("{}/{}_{}_{}_corr_{}.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False))),label))
 		ax.clear()
-
 ###################################################################

@@ -1,6 +1,8 @@
 # python map_2D_evtLevel_ttH.py --channel '2lss_1tau' --variables "oldVar" --nbins-start 5 --nbins-target 5
 from optparse import OptionParser
 parser = OptionParser()
+# python map_2D_evtLevel_ttH.py --channel '2lss_1tau' --variables "HTTMEM" --nbins-start 15 --nbins-target 5 --relaxedLepID &
+# python map_2D_evtLevel_ttH.py --channel '2lss_1tau' --variables "noHTT"  --doBDT --ntrees 500 --treeDeph 2 --lr 0.01  --mcw 1  --relaxedLepID --doXML --BDTtype "1B" &
 parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default='T')
 parser.add_option("--variables", type="string", dest="variables", help="  Set of variables to use -- it shall be put by hand in the code", default=1000)
 
@@ -44,7 +46,9 @@ if channel=='2lss_1tau':
 	#else :
 	channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
 	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/' #  2017Dec08-BDT-noMEM-tighLep
-	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_tightL_mediumTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/Tight_SS_OS'
+	#'/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_tightL_mediumTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2018Jan_BDT_fromVHbb_toTrees_fullsimData
+	# /hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/
 
 	#channelInTree='2lss_1tau_lepSS_sumOS_Fakeable_wFakeRateWeights'
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-fakableLepLooseTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-fakableLepMedTau
@@ -284,24 +288,26 @@ weights="totalWeight"
 doCSVfile=False
 loadTight=True
 doInFS=False
-if options.variables!="oldTrainCSV" or doCSVfile : #options.variables!="oldTrainCSV"
-	#
-	dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeTight,Variables_all,[],testtruth,"all")
-	if doInFS : data= dataTightFS
-	elif options.relaxedLepID==True : data=load_data(inputPath,channelInTree,Variables_all,[],testtruth,"all")
-	else : data=load_data(inputPathTight,channelInTreeTight,Variables_all,[],testtruth,"all") #
-	if doCSVfile : data=load_data_xml(data)
-	#if loadTight : dataTight=load_data(inputPathTight,channelInTreeTight,Variables_all,[],testtruth,"all")
+if channel=="2l_2tau" : data=load_data_2l2t()
+if channel=="2lss_1tau" or channel=="1l_2tau" :
+	if options.variables!="oldTrainCSV" or doCSVfile : #options.variables!="oldTrainCSV"
+		#
+		dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeTight,Variables_all,[],testtruth,"all")
+		if doInFS : data= dataTightFS
+		elif options.relaxedLepID==True : data=load_data(inputPath,channelInTree,Variables_all,[],testtruth,"all")
+		else : data=load_data(inputPathTight,channelInTreeTight,Variables_all,[],testtruth,"all") #
+		if doCSVfile : data=load_data_xml(data)
+		#if loadTight : dataTight=load_data(inputPathTight,channelInTreeTight,Variables_all,[],testtruth,"all")
 
-	#elif options.variables=="oldTrain":
-	#	data=load_data(inputPath,channelInTree,Variables_all,[],testtruth,"arun")
-else :
-	data = pandas.read_csv('arun_xml_2lss_1tau/arun_xml_2lss_1tau_FromAnalysis.csv')
-	keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
-	for folderName in keys :
-		nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
-		nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
-		print folderName,"length of sig, bkg: ", nS, nB
+		#elif options.variables=="oldTrain":
+		#	data=load_data(inputPath,channelInTree,Variables_all,[],testtruth,"arun")
+	else :
+		data = pandas.read_csv('arun_xml_2lss_1tau/arun_xml_2lss_1tau_FromAnalysis.csv')
+		keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
+		for folderName in keys :
+			nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
+			nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
+			print folderName,"length of sig, bkg: ", nS, nB
 #########################################################################################
 ## Load the BDTs - do 2D plot
 if channel=="2lss_1tau" :
@@ -352,7 +358,7 @@ else :
 	print dataTTV[["oldTrainTMVA_tt","oldTrainTMVA_ttV"]]
 
 bdtmax=1.0
-if "oldTrain" in BDTvar : bdtmin=-1.
+if "oldTrain" in BDTvar or channel=="2l_2tau": bdtmin=-1.
 else : bdtmin=0.
 factor=1.-bdtmin #2. | 1.
 
@@ -363,8 +369,14 @@ if BDTvar=="oldTrainCSV" :
 elif BDTvar=="oldTrain" :
 	ttBDT="mvaOutput_2lss_ttbar"
 	ttVBDT="mvaOutput_2lss_ttV"
+elif channel=="2lss_1tau" :
+	ttBDT="ttBDT"
+	ttVBDT="ttVBDT"
+elif channel=="2l_2tau" :
+	ttBDT="mva_tt"
+	ttVBDT="mva_ttv"
 
-if "oldTrain" in BDTvar :
+if "oldTrain" in BDTvar or channel=="2l_2tau":
 	tt_datainTT =dataTT[ttBDT].values
 	ttV_datainTT=dataTTV[ttBDT].values
 	ttH_datainTT=dataTTH[ttBDT].values
@@ -376,7 +388,6 @@ if "oldTrain" in BDTvar :
 	tt_datainTTV =dataTT[ttVBDT].values
 	ttV_datainTTV=dataTTV[ttVBDT].values
 	ttH_datainTTV=dataTTH[ttVBDT].values
-	#print (tt_datainTT,tt_datainTTV)
 	#testROC=np.concatenate(tt_datainTT,ttH_datainTT)
 	fpr, tpr, thresholds = roc_curve(dataTT["target"].append(dataTTH["target"]), dataTT[ttBDT].append(dataTTH[ttBDT]) )
 	print ("ROC TT data in TT bdt",BDTvar,auc(fpr, tpr, reorder = True))
@@ -389,22 +400,17 @@ if "oldTrain" in BDTvar :
 	print ("ROC all data in TT in bdt",BDTvar,auc(fpr, tpr, reorder = True))
 else :
 	clsTT=pickle.load(open(tt_file,'rb'))
-	#dataTT =data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton')]
-	#dataTTV=data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu')]
-	#dataTTH=data.ix[(data.key.values=='ttHToNonbb')]
-	####
+	dataTightFS[ttBDT]=clsTT.predict_proba(dataTightFS[trainVarsTT(BDTvar)].values)[:, 1]
 	tt_datainTT =clsTT.predict_proba(dataTT[trainVarsTT(BDTvar)].values)[:, 1]
 	ttV_datainTT=clsTT.predict_proba(dataTTV[trainVarsTT(BDTvar)].values)[:, 1]
 	ttH_datainTT=clsTT.predict_proba(dataTTH[trainVarsTT(BDTvar)].values)[:, 1]
 	###
-	#dataTT =data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton')]
-	#dataTTV=data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu')]
-	#dataTTH=data.ix[(data.key.values=='ttHToNonbb')]
 	clsTTV=pickle.load(open(ttV_file,'rb'))
+	dataTightFS[ttVBDT]=clsTTV.predict_proba(dataTightFS[trainVarsTTV(BDTvar)].values)[:, 1]
 	tt_datainTTV =clsTTV.predict_proba(dataTT[trainVarsTTV(BDTvar)].values)[:, 1]
 	ttV_datainTTV=clsTTV.predict_proba(dataTTV[trainVarsTTV(BDTvar)].values)[:, 1]
 	ttH_datainTTV=clsTTV.predict_proba(dataTTH[trainVarsTTV(BDTvar)].values)[:, 1]
-
+	#
 	testTT=dataTT.append(dataTTH)
 	testTTV=dataTTV.append(dataTTH)
 	testAll=testTTV.append(dataTT)
@@ -418,6 +424,9 @@ else :
 	testROC=clsTT.predict_proba(testAll[trainVarsTT(BDTvar)].values)
 	fpr, tpr, thresholds = roc_curve(testAll["target"].values, testROC[:,1] )
 	print ("ROC TT BDT in all",BDTvar,auc(fpr, tpr, reorder = True))
+	fpr, tpr, thresholds = roc_curve(dataTightFS["target"].values, dataTightFS[ttBDT].values )
+	print ("ROC TT BDT in all tight",BDTvar,auc(fpr, tpr, reorder = True))
+
 	testROCttV=clsTTV.predict_proba(testTT[trainVarsTTV(BDTvar)].values)
 	fpr, tpr, thresholds = roc_curve(testTT["target"].values, testROCttV[:,1])
 	print ("ROC TTV BDT in TT sample",BDTvar,auc(fpr, tpr, reorder = True))
@@ -427,6 +436,8 @@ else :
 	testROCttV=clsTTV.predict_proba(testAll[trainVarsTTV(BDTvar)].values)
 	fpr, tpr, thresholds = roc_curve(testAll["target"].values, testROCttV[:,1])
 	print ("ROC TTV BDT in all",BDTvar,auc(fpr, tpr, reorder = True))
+	fpr, tpr, thresholds = roc_curve(dataTightFS["target"].values, dataTightFS[ttVBDT].values )
+	print ("ROC TTV BDT in all tight",BDTvar,auc(fpr, tpr, reorder = True))
 ##############
 plt.figure(figsize=(20, 3))
 fig, ax = plt.subplots(figsize=(18, 6))
@@ -741,55 +752,25 @@ if options.doBDT == False :
 		#c3.SaveAs(channel+"/"+BDTvar+"_from"+str(nbins)+"_to_"+str(nbinsout)+"bin_relLepID"+str(options.relaxedLepID)+"_Voronoi.png")
 	################################################################
 	## VoronoiPlot1D() - 'tight lep'
-	if 1>0: #and "oldTrain" not in BDTvar:
-			if "oldTrain" not in BDTvar:
-				"""
-				tt_datainTTVless =clsTTV.predict_proba(dataTight.loc[
-									(dataTight.key.values=='TTTo2L2Nu') | (dataTight.key.values=='TTToSemilepton') ,
-									trainVarsTTV(BDTvar)].values)[:, 1]
-				ttV_datainTTVless=clsTTV.predict_proba(dataTight.loc[
-									(dataTight.key.values=='TTZToLLNuNu') | (dataTight.key.values=='TTWJetsToLNu'),
-									trainVarsTTV(BDTvar)].values)[:, 1]
-				ttH_datainTTVless=clsTTV.predict_proba(dataTight.loc[
-									(dataTight.key.values=='ttHToNonbb'),
-									trainVarsTTV(BDTvar)].values)[:, 1]
-				tt_datainTTless =clsTT.predict_proba(dataTight.loc[
-									(dataTight.key.values=='TTTo2L2Nu') | (dataTight.key.values=='TTToSemilepton') ,
-									trainVarsTT(BDTvar)].values)[:, 1]
-				ttV_datainTTless=clsTT.predict_proba(dataTight.loc[
-									(dataTight.key.values=='TTZToLLNuNu') | (dataTight.key.values=='TTWJetsToLNu'),
-									trainVarsTT(BDTvar)].values)[:, 1]
-				ttH_datainTTless=clsTT.predict_proba(dataTight.loc[
-									(dataTight.key.values=='ttHToNonbb'),
-									trainVarsTT(BDTvar)].values)[:, 1]
-				"""
-				tt_datainTTVless =clsTTV.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='TT'), trainVarsTTV(BDTvar)].values)[:, 1]
-				ttV_datainTTVless=clsTTV.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW'), trainVarsTTV(BDTvar)].values)[:, 1]
-				ttH_datainTTVless=clsTTV.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='signal'), trainVarsTTV(BDTvar)].values)[:, 1]
-				EWK_datainTTVless=clsTTV.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='EWK'), trainVarsTTV(BDTvar)].values)[:, 1]
-				rares_datainTTVless=clsTTV.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='Rares'), trainVarsTTV(BDTvar)].values)[:, 1]
-				tt_datainTTless =clsTT.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='TT'),trainVarsTT(BDTvar)].values)[:, 1]
-				ttV_datainTTless=clsTT.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW'), trainVarsTT(BDTvar)].values)[:, 1]
-				ttH_datainTTless=clsTT.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='signal'), trainVarsTT(BDTvar)].values)[:, 1]
-				EWK_datainTTless=clsTT.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='EWK'), trainVarsTT(BDTvar)].values)[:, 1]
-				rares_datainTTless=clsTT.predict_proba(dataTightFS.loc[(dataTightFS.proces.values=='Rares'), trainVarsTT(BDTvar)].values)[:, 1]
-			else :
-				tt_datainTTVless = dataTightFS.loc[(dataTightFS.proces.values=='TT'), ttVBDT].values
-				ttV_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW'), ttVBDT].values
-				ttH_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='signal'),ttVBDT].values
-				EWK_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='EWK'),ttVBDT].values
-				rares_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='Rares'),ttVBDT].values
-				tt_datainTTless =dataTightFS.loc[(dataTightFS.proces.values=='TT'), ttBDT].values
-				ttV_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW'), ttBDT].values
-				ttH_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='signal'),ttBDT].values
-				EWK_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='EWK'),ttBDT].values
-				rares_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='Rares'),ttBDT].values
+	if not  channel=="2l_2tau": #and "oldTrain" not in BDTvar:
+			#if "oldTrain" not in BDTvar:
+			tt_datainTTVless = dataTightFS.loc[(dataTightFS.proces.values=='TT'), ttVBDT].values
+			ttV_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW'), ttVBDT].values
+			ttH_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='signal'),ttVBDT].values
+			EWK_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='EWK'),ttVBDT].values
+			rares_datainTTVless=dataTightFS.loc[(dataTightFS.proces.values=='Rares'),ttVBDT].values
+			tt_datainTTless =dataTightFS.loc[(dataTightFS.proces.values=='TT'), ttBDT].values
+			ttV_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW'), ttBDT].values
+			ttH_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='signal'),ttBDT].values
+			EWK_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='EWK'),ttBDT].values
+			rares_datainTTless=dataTightFS.loc[(dataTightFS.proces.values=='Rares'),ttBDT].values
+
 			#if BDTvar!="oldTrain" :
 			hTT = ROOT.TH1F("hTTbarless","",hAuxHisto.GetNbinsX(), -0.5, hAuxHisto.GetNbinsX()-0.5);
 			hTTW   = ROOT.TH1F("hTTWless"  ,"",hAuxHisto.GetNbinsX(), -0.5, hAuxHisto.GetNbinsX()-0.5);
 			hTTH   = ROOT.TH1F("hTTHless"  ,"",hAuxHisto.GetNbinsX(), -0.5, hAuxHisto.GetNbinsX()-0.5);
 			hEWK   = ROOT.TH1F("hEWKless"  ,"",hAuxHisto.GetNbinsX(), -0.5, hAuxHisto.GetNbinsX()-0.5);
-			#hRares   = ROOT.TH1F("hRaresless"  ,"",hAuxHisto.GetNbinsX(), -0.5, hAuxHisto.GetNbinsX()-0.5);
+			hRares   = ROOT.TH1F("hRaresless"  ,"",hAuxHisto.GetNbinsX(), -0.5, hAuxHisto.GetNbinsX()-0.5);
 			mc  = ROOT.THStack("mc","");
 			weightTTV=dataTightFS.loc[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW'),"totalWeight"].values
 			weightTT=dataTightFS.loc[(dataTightFS.proces.values=='TT'),"totalWeight"].values
@@ -804,16 +785,16 @@ if options.doBDT == False :
 				if ii<len(weightTT) : hTT.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(tt_datainTTless[ii],tt_datainTTVless[ii])),weightTT[ii])
 				if ii<len(weightTTH) : hTTH.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(ttH_datainTTless[ii],ttH_datainTTVless[ii])),weightTTH[ii]) # +0.01
 				if ii<len(weightEWK) : hEWK.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(EWK_datainTTless[ii],EWK_datainTTVless[ii])),weightEWK[ii])
-				#if ii<len(weightRares) : hRares.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(rares_datainTTless[ii],rares_datainTTVless[ii])),weightRares[ii])
+				if ii<len(weightRares) : hRares.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(rares_datainTTless[ii],rares_datainTTVless[ii])),weightRares[ii])
 				#yTTH=ttH_datainTT #clsTT.predict_proba(dataTTH[trainVarsTT(BDTvar)].values)[:, 1]
 				#xTTH=ttH_datainTTV #clsTTV.predict_proba(dataTTH[trainVarsTTV(BDTvar)].values)[:, 1]
 			hTT.SetFillColor( 17 );
 			hTTH.SetFillColor( ROOT.kRed );
 			hTTW.SetFillColor( 8 );
-			hEWK.SetFillColor( 65 );
-			#hRares.SetFillColor( 5 );
+			hEWK.SetFillColor( 6 );
+			hRares.SetFillColor( 65 );
+			mc.Add(hRares);
 			mc.Add(hEWK);
-			#mc.Add(hRares);
 			mc.Add(hTTW);
 			mc.Add(hTTH);
 			mc.Add( hTT );
@@ -843,7 +824,7 @@ if options.doBDT == False :
 			l.AddEntry(hTTH  , "ttH", "f");
 			l.AddEntry(hTTW  , "ttV"       , "f");
 			l.AddEntry(hTT, "tt"        , "f");
-			#l.AddEntry(hRares, "rares"        , "f");
+			l.AddEntry(hRares, "rares"        , "f");
 			l.AddEntry(hEWK, "EWK"        , "f");
 			l.Draw();
 			latex= ROOT.TLatex();
@@ -918,140 +899,145 @@ if options.doBDT == False :
 			#"""
 			c4.Modified();
 			c4.Update();
-			print ("s/B in last bin (tight)",
-					h3.GetBinContent(h3.GetNbinsX()), # /hBKG1D.GetBinContent(h3.GetNbinsX())
-					h3.GetBinContent(h3.GetNbinsX()-1), #/hBKG1D.GetBinContent(h3.GetNbinsX()-1)
-					h2.GetBinContent(h3.GetNbinsX())
-					)
-
+			print ("s/B in last bin (tight)", h3.GetNbinsX(), h3.GetBinContent(h3.GetNbinsX()), h3.GetBinContent(h3.GetNbinsX()-1), h2.GetBinContent(h3.GetNbinsX()))
+			print ("loose yield weightTTV, weightTT, weightTTH, weightEWK, weightRares")
+			print (weightTTV.sum(), weightTT.sum(), weightTTH.sum(), weightEWK.sum(), weightRares)
 			c4.SaveAs(channel+"/"+BDTvar+"_from"+str(nbins)+"_to_"+str(nbinsout)+"bins_relLepID"+
 							str(options.relaxedLepID)+"_lessVoronoi1D.pdf")
 			#c4.SaveAs(channel+"/"+BDTvar+"_from"+str(nbins)+"_to_"+str(nbinsout)+"bins_Voronoi1D.png")
 	##############################################
-	## VoronoiPlot1D() loose lep
-	hTT = ROOT.TH1F("hTTbar","",hAuxHisto.GetNbinsX(), -0.5+1, 1+hAuxHisto.GetNbinsX()-0.5);
-	hTTW   = ROOT.TH1F("hTTW"  ,"",hAuxHisto.GetNbinsX(), -0.5+1, 1+hAuxHisto.GetNbinsX()-0.5);
-	hTTH   = ROOT.TH1F("hTTH"  ,"",hAuxHisto.GetNbinsX(), -0.5+1, 1+hAuxHisto.GetNbinsX()-0.5);
-	mc  = ROOT.THStack("mc","mc");
-	weightTTV=dataTTV["totalWeight"].values
-	weightTT=dataTT["totalWeight"].values
-	weightTTH=dataTTH["totalWeight"].values
-	print ("loose yield TT,TTV,TTH",weightTT.sum(),weightTTV.sum(),weightTTH.sum())
-	for ii in range(0,max(len(dataTTV),len(dataTT),len(dataTTH))) :
-		#if ii<20 : print (ttH_datainTTV[ii],ttH_datainTT[ii],hTargetBinning.FindBin(ttH_datainTTV[ii],ttH_datainTT[ii]), hTargetBinning.GetBinContent(hTargetBinning.FindBin(ttH_datainTTV[ii],ttH_datainTT[ii])))
-		if ii <len(ttV_datainTT) : hTTW.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(ttV_datainTT[ii],ttV_datainTTV[ii]))+1,weightTTV[ii]) # +0.0001
-		if ii < len(tt_datainTT) : hTT.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(tt_datainTT[ii],tt_datainTTV[ii]))+1,weightTT[ii]) #+0.01
-		if ii < len(ttH_datainTT) : hTTH.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(ttH_datainTT[ii],ttH_datainTTV[ii]))+1,weightTTH[ii]) # +0.01
-		#yTTH=ttH_datainTT #clsTT.predict_proba(dataTTH[trainVarsTT(BDTvar)].values)[:, 1]
-		#xTTH=ttH_datainTTV #clsTTV.predict_proba(dataTTH[trainVarsTTV(BDTvar)].values)[:, 1]
-	hTT.SetFillColor( 17 );
-	hTTH.SetFillColor( ROOT.kRed );
-	hTTW.SetFillColor( 8 );
-	mc.Add(hTTW);
-	mc.Add(hTTH);
-	mc.Add( hTT );
-	c5 = ROOT.TCanvas("c5","",500,500);
-	c5.cd();
-	c5.Divide(1,2,0,0);
-	c5.cd(1)
-	ROOT.gPad.SetLogy()
-	#c5.SetLogy()
-	ROOT.gPad.SetBottomMargin(0.001)
-	ROOT.gPad.SetTopMargin(0.065)
-	ROOT.gPad.SetRightMargin(0.01)
-	#ROOT.gPad.SetLabelSize(.4, "XY")
-	mc.Draw("HIST");
-	mc.SetMaximum(1.5* mc.GetMaximum());
-	mc.SetMinimum(0.1);
-	mc.GetHistogram().GetYaxis().SetTitle("Expected events/bin");
-	mc.GetHistogram().GetXaxis().SetTitle("Bin in the bdt1#times bdt2 plane");
-	mc.GetHistogram().GetXaxis().SetTitleSize(0.05);
-	mc.GetHistogram().GetXaxis().SetLabelSize(.06); #SetTitleOffset(1.1);
-	mc.GetHistogram().GetYaxis().SetTitleSize(0.05);
-	mc.GetHistogram().GetYaxis().SetLabelSize(.06);
-	#mc.GetHistogram().GetYaxis().SetTitleOffset(1.1);
-	l = ROOT.TLegend(0.15,0.7,0.47,0.9);
-	l.AddEntry(hTTH  , "ttH ", "f");
-	l.AddEntry(hTTW  , "ttV"       , "f");
-	l.AddEntry(hTT, "tt"        , "f");
-	l.Draw();
-	latex= ROOT.TLatex();
-	latex.SetTextSize(0.065);
-	latex.SetTextAlign(13);  #//align at top
-	latex.SetTextFont(62);
-	latex.DrawLatexNDC(.15,1.0,"CMS Simulation");
-	latex.DrawLatexNDC(.8,1.0,"#it{36 fb^{-1}}");
-	#latex1.DrawLatexNDC(0.5,.77,"looseLep")
-	latex.DrawLatexNDC(.55,.8,"from ("+str(nbins)+"^2) to "+str(nbinsout)+" bins");
-	if options.relaxedLepID : latex.DrawLatexNDC(.55,.9,BDTvar+" loose lep ");
-	else : latex.DrawLatexNDC(.55,.9,BDTvar+" tight lep ")
-	#"""
-	c5.cd(2)
-	ROOT.gPad.SetLogy()
-	#c5.SetLogy(1)
-	ROOT.gPad.SetTopMargin(0.001)
-	ROOT.gPad.SetRightMargin(0.01)
-	#ROOT.gPad.SetLabelSize(.1, "XY")
-	if not hTT.GetSumw2N() : hTT.Sumw2()
-	#if not hTTW.GetSumw2N() : hTTW.Sumw2()
-	h2=hTT.Clone()
-	h2.Add(hTTW)
-	hBKG1D=h2.Clone()
-	h3=hTTH.Clone()
-	#h3=Divide(h3,h2)
-	#"""
-	#h3=hTT.Clone()
-	if not h2.GetSumw2N() : h2.Sumw2()
-	if not h3.GetSumw2N() : h3.Sumw2()
-	for binn in range(0,h2.GetNbinsX()+1) :
-		ratio=0
-		ratio3=0
-		if h2.GetBinContent(binn) >0 :
-			ratio=h2.GetBinError(binn)/h2.GetBinContent(binn)
-			h2.SetBinContent(binn,ratio)
-		if h3.GetBinContent(binn) > 0 :
-			ratio3=h3.GetBinContent(binn)/hBKG1D.GetBinContent(binn)
-			h3.SetBinContent(binn,ratio3)
-		print (binn,ratio,ratio3)
-	#"""
-	h2.SetLineWidth(3)
-	h2.SetLineColor(8)
-	h2.SetFillStyle(3001)
-	h3.GetYaxis().SetRangeUser(0.01,1.4);
-	h3.SetLineWidth(3)
-	h3.SetFillStyle(3001)
-	h3.SetLineColor(28)
-	h3.Draw("HIST")
-	h3.GetYaxis().SetTitle("S/B");
-	#latex.DrawLatexNDC(.15,.65,"S/B");
-	h3.GetXaxis().SetTitle("Bin in the bdt1#times bdt2 plane");
-	h3.GetYaxis().SetTitleSize(0.05);
-	h3.GetYaxis().SetLabelSize(.06)
-	h3.GetXaxis().SetTitleSize(0.05);
-	h3.GetXaxis().SetLabelSize(.06)
-	#l2 = ROOT.TLegend(0.12,0.8,0.32,0.98);
-	#l2.AddEntry(h3  , "S/B" , "l");
-	#l2.AddEntry(h2  , "ttV + tt err/content", "l");
-	#l2.Draw("same");
-	#h2.Draw("HIST,SAME")
-	#c5.SetLogy(1)
-	#"""
-	c5.Modified();
-	c5.Update();
-	print ("s/B in last bin",
-			h3.GetBinContent(h3.GetNbinsX()), # /hBKG1D.GetBinContent(h3.GetNbinsX())
-			h3.GetBinContent(h3.GetNbinsX()-1), #/hBKG1D.GetBinContent(h3.GetNbinsX()-1)
-			h2.GetBinContent(h3.GetNbinsX())
-			)
-	c5.SaveAs(channel+"/"+BDTvar+"_from"+str(nbins)+"_to_"+str(nbinsout)+"bins_relLepID"+str(options.relaxedLepID)+"_Voronoi1D.pdf")
+	if 1>0 :
+		## VoronoiPlot1D() loose lep
+		hTT = ROOT.TH1F("hTTbar","",hAuxHisto.GetNbinsX(), -0.5+1, 1+hAuxHisto.GetNbinsX()-0.5);
+		hTTW   = ROOT.TH1F("hTTW"  ,"",hAuxHisto.GetNbinsX(), -0.5+1, 1+hAuxHisto.GetNbinsX()-0.5);
+		hTTH   = ROOT.TH1F("hTTH"  ,"",hAuxHisto.GetNbinsX(), -0.5+1, 1+hAuxHisto.GetNbinsX()-0.5);
+		mc  = ROOT.THStack("mc","mc");
+		weightTTV=dataTTV["totalWeight"].values
+		weightTT=dataTT["totalWeight"].values
+		weightTTH=dataTTH["totalWeight"].values
+		print ("loose yield TT,TTV,TTH",weightTT.sum(),weightTTV.sum(),weightTTH.sum())
+		for ii in range(0,max(len(dataTTV),len(dataTT),len(dataTTH))) :
+			#if ii<20 : print (ttH_datainTTV[ii],ttH_datainTT[ii],hTargetBinning.FindBin(ttH_datainTTV[ii],ttH_datainTT[ii]), hTargetBinning.GetBinContent(hTargetBinning.FindBin(ttH_datainTTV[ii],ttH_datainTT[ii])))
+			if ii <len(ttV_datainTT) : hTTW.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(ttV_datainTT[ii],ttV_datainTTV[ii]))+1,weightTTV[ii]) # +0.0001
+			if ii < len(tt_datainTT) : hTT.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(tt_datainTT[ii],tt_datainTTV[ii]))+1,weightTT[ii]) #+0.01
+			if ii < len(ttH_datainTT) : hTTH.Fill(hTargetBinning.GetBinContent(hTargetBinning.FindBin(ttH_datainTT[ii],ttH_datainTTV[ii]))+1,weightTTH[ii]) # +0.01
+			#yTTH=ttH_datainTT #clsTT.predict_proba(dataTTH[trainVarsTT(BDTvar)].values)[:, 1]
+			#xTTH=ttH_datainTTV #clsTTV.predict_proba(dataTTH[trainVarsTTV(BDTvar)].values)[:, 1]
+		hTT.SetFillColor( 17 );
+		hTTH.SetFillColor( ROOT.kRed );
+		hTTW.SetFillColor( 8 );
+		mc.Add(hTTW);
+		mc.Add(hTTH);
+		mc.Add( hTT );
+		c5 = ROOT.TCanvas("c5","",500,500);
+		c5.cd();
+		c5.Divide(1,2,0,0);
+		c5.cd(1)
+		ROOT.gPad.SetLogy()
+		#c5.SetLogy()
+		ROOT.gPad.SetBottomMargin(0.001)
+		ROOT.gPad.SetTopMargin(0.065)
+		ROOT.gPad.SetRightMargin(0.01)
+		#ROOT.gPad.SetLabelSize(.4, "XY")
+		mc.Draw("HIST");
+		mc.SetMaximum(1.5* mc.GetMaximum());
+		mc.SetMinimum(0.1);
+		mc.GetHistogram().GetYaxis().SetTitle("Expected events/bin");
+		mc.GetHistogram().GetXaxis().SetTitle("Bin in the bdt1#times bdt2 plane");
+		mc.GetHistogram().GetXaxis().SetTitleSize(0.05);
+		mc.GetHistogram().GetXaxis().SetLabelSize(.06); #SetTitleOffset(1.1);
+		mc.GetHistogram().GetYaxis().SetTitleSize(0.05);
+		mc.GetHistogram().GetYaxis().SetLabelSize(.06);
+		#mc.GetHistogram().GetYaxis().SetTitleOffset(1.1);
+		l = ROOT.TLegend(0.15,0.7,0.47,0.9);
+		l.AddEntry(hTTH  , "ttH ", "f");
+		l.AddEntry(hTTW  , "ttV"       , "f");
+		l.AddEntry(hTT, "tt"        , "f");
+		l.Draw();
+		latex= ROOT.TLatex();
+		latex.SetTextSize(0.065);
+		latex.SetTextAlign(13);  #//align at top
+		latex.SetTextFont(62);
+		latex.DrawLatexNDC(.15,1.0,"CMS Simulation");
+		latex.DrawLatexNDC(.8,1.0,"#it{36 fb^{-1}}");
+		#latex1.DrawLatexNDC(0.5,.77,"looseLep")
+		latex.DrawLatexNDC(.55,.8,"from ("+str(nbins)+"^2) to "+str(nbinsout)+" bins");
+		if options.relaxedLepID : latex.DrawLatexNDC(.55,.9,BDTvar+" loose lep ");
+		else : latex.DrawLatexNDC(.55,.9,BDTvar+" tight lep ")
+		#"""
+		c5.cd(2)
+		ROOT.gPad.SetLogy()
+		#c5.SetLogy(1)
+		ROOT.gPad.SetTopMargin(0.001)
+		ROOT.gPad.SetRightMargin(0.01)
+		#ROOT.gPad.SetLabelSize(.1, "XY")
+		if not hTT.GetSumw2N() : hTT.Sumw2()
+		#if not hTTW.GetSumw2N() : hTTW.Sumw2()
+		h2=hTT.Clone()
+		h2.Add(hTTW)
+		hBKG1D=h2.Clone()
+		h3=hTTH.Clone()
+		#h3=Divide(h3,h2)
+		#"""
+		#h3=hTT.Clone()
+		if not h2.GetSumw2N() : h2.Sumw2()
+		if not h3.GetSumw2N() : h3.Sumw2()
+		for binn in range(0,h2.GetNbinsX()+1) :
+			ratio=0
+			ratio3=0
+			if h2.GetBinContent(binn) >0 :
+				ratio=h2.GetBinError(binn)/h2.GetBinContent(binn)
+				h2.SetBinContent(binn,ratio)
+			if h3.GetBinContent(binn) > 0 :
+				ratio3=h3.GetBinContent(binn)/hBKG1D.GetBinContent(binn)
+				h3.SetBinContent(binn,ratio3)
+			print (binn,ratio,ratio3)
+		#"""
+		h2.SetLineWidth(3)
+		h2.SetLineColor(8)
+		h2.SetFillStyle(3001)
+		h3.GetYaxis().SetRangeUser(0.01,1.4);
+		h3.SetLineWidth(3)
+		h3.SetFillStyle(3001)
+		h3.SetLineColor(28)
+		h3.Draw("HIST")
+		h3.GetYaxis().SetTitle("S/B");
+		#latex.DrawLatexNDC(.15,.65,"S/B");
+		h3.GetXaxis().SetTitle("Bin in the bdt1#times bdt2 plane");
+		h3.GetYaxis().SetTitleSize(0.05);
+		h3.GetYaxis().SetLabelSize(.06)
+		h3.GetXaxis().SetTitleSize(0.05);
+		h3.GetXaxis().SetLabelSize(.06)
+		#l2 = ROOT.TLegend(0.12,0.8,0.32,0.98);
+		#l2.AddEntry(h3  , "S/B" , "l");
+		#l2.AddEntry(h2  , "ttV + tt err/content", "l");
+		#l2.Draw("same");
+		#h2.Draw("HIST,SAME")
+		#c5.SetLogy(1)
+		#"""
+		c5.Modified();
+		c5.Update();
+		print ("s/B in last bin",
+				h3.GetBinContent(h3.GetNbinsX()), # /hBKG1D.GetBinContent(h3.GetNbinsX())
+				h3.GetBinContent(h3.GetNbinsX()-1), #/hBKG1D.GetBinContent(h3.GetNbinsX()-1)
+				h2.GetBinContent(h3.GetNbinsX())
+				)
+		c5.SaveAs(channel+"/"+BDTvar+"_from"+str(nbins)+"_to_"+str(nbinsout)+"bins_relLepID"+str(options.relaxedLepID)+"_Voronoi1D.pdf")
 #################################################################
 if options.doBDT == True :
+	doPlotsBins=True
+	ttOnlyQuant=False
+	nmax=31
+	binByQuantiles=False
+	nminplot=5
+	nmaxplot=7
 	## do BDT from tt and ttV_file
 	print "training joint-BDT"
 	BDTtype=options.BDTtype
 	if BDTtype=="1B" : trainVars=["BDTtt","BDTttV"]
 	if BDTtype=="2MEM" : trainVars=["BDTtt","BDTttV",'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt','memOutput_LR']
 	if BDTtype=="noMEM" : trainVars=["BDTtt","BDTttV",'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt','memOutput_LR']
+	if BDTtype=="2HTT" : trainVars=["BDTtt","BDTttV",'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt']
 	data["BDTtt"] = clsTT.predict_proba(data[trainVarsTT(BDTvar)].values)[:, 1]
 	data["BDTttV"] = clsTTV.predict_proba(data[trainVarsTTV(BDTvar)].values)[:, 1]
 	dataTightFS["BDTtt"] = clsTT.predict_proba(dataTightFS[trainVarsTT(BDTvar)].values)[:, 1]
@@ -1099,7 +1085,7 @@ if options.doBDT == True :
 	print("XGBoost fulsim auc - {}".format(test_auctf))
 	f_score_dict =cls.booster().get_fscore()
 	f_score_dict = {trainVars[int(k[1:])] : v for k,v in f_score_dict.items()}
-	print("importance", f_score_dict)
+	if BDTtype=="1B" :  print("importance", f_score_dict)
 	###########################################################################
 	#print (list(valdataset))
 	#plt.clf()
@@ -1196,33 +1182,115 @@ if options.doBDT == True :
 	maxdataJoint=max(max(ttV_datainJoint),max(tt_datainJoint),max(ttH_datainJoint))
 	maxdataTT=max(max(ttV_datainTT),max(tt_datainTT),max(ttH_datainTT))
 	maxdataTTV=max(max(ttV_datainTTV),max(tt_datainTTV),max(ttH_datainTTV))
-	print ("max data Joint/TT/TTV",maxdataJoint,maxdataTTV,maxdataTT)
+	#
 	mindataJoint=min(min(ttV_datainJoint),min(tt_datainJoint),min(ttH_datainJoint))
 	mindataTT=min(max(ttV_datainTT),min(tt_datainTT),min(ttH_datainTT))
 	mindataTTV=min(min(ttV_datainTTV),min(tt_datainTTV),min(ttH_datainTTV))
+	print ("max data Joint/TT/TTV",maxdataJoint,maxdataTTV,maxdataTT)
 	print ("min data Joint/TT/TTV",mindataJoint,mindataTTV,mindataTT)
-	nmax=11
 	for ntarget in range(1,nmax) :
-		hTT = ROOT.TH1F("hTTbarless"+str(ntarget),"",ntarget, mindataJoint, maxdataJoint);
-		hTTW   = ROOT.TH1F("hTTWless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
-		hTTH   = ROOT.TH1F("hTTHless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
-		hEWK   = ROOT.TH1F("hEWKless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
-		hRares   = ROOT.TH1F("hRaresless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
-		##
-		hTT_ttV = ROOT.TH1F("hTTbarlessttV"+str(ntarget),"",ntarget, mindataTTV, maxdataTTV);
-		hTTW_ttV   = ROOT.TH1F("hTTWlessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
-		hTTH_ttV   = ROOT.TH1F("hTTHlessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
-		hEWK_ttV   = ROOT.TH1F("hEWKlessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
-		hRares_ttV   = ROOT.TH1F("hRareslessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
-		##
-		hTT_tt = ROOT.TH1F("hTTbarlesstt"+str(ntarget),"",ntarget, mindataTT, maxdataTT);
-		hTTW_tt   = ROOT.TH1F("hTTWlesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
-		hTTH_tt   = ROOT.TH1F("hTTHlesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
-		hEWK_tt   = ROOT.TH1F("hEWKlesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
-		hRares_tt   = ROOT.TH1F("hRareslesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
-		##
-		print ttV_datainJoint
-		print ("tight yield TT,TTV,TTH",weightTT.sum(),weightTTV.sum(),weightTTH.sum(),weightEWK.sum(),weightRares.sum())
+		if binByQuantiles==False :
+			hTT = ROOT.TH1F("hTTbarless"+str(ntarget),"",ntarget, mindataJoint, maxdataJoint);
+			hTTW   = ROOT.TH1F("hTTWless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
+			hTTH   = ROOT.TH1F("hTTHless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
+			hEWK   = ROOT.TH1F("hEWKless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
+			hRares   = ROOT.TH1F("hRaresless"+str(ntarget)  ,"",ntarget, mindataJoint, maxdataJoint);
+			##
+			hTT_ttV = ROOT.TH1F("hTTbarlessttV"+str(ntarget),"",ntarget, mindataTTV, maxdataTTV);
+			hTTW_ttV   = ROOT.TH1F("hTTWlessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
+			hTTH_ttV   = ROOT.TH1F("hTTHlessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
+			hEWK_ttV   = ROOT.TH1F("hEWKlessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
+			hRares_ttV   = ROOT.TH1F("hRareslessttV"+str(ntarget)  ,"",ntarget, mindataTTV, maxdataTTV);
+			##
+			hTT_tt = ROOT.TH1F("hTTbarlesstt"+str(ntarget),"",ntarget, mindataTT, maxdataTT);
+			hTTW_tt   = ROOT.TH1F("hTTWlesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
+			hTTH_tt   = ROOT.TH1F("hTTHlesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
+			hEWK_tt   = ROOT.TH1F("hEWKlesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
+			hRares_tt   = ROOT.TH1F("hRareslesstt"+str(ntarget)  ,"",ntarget, mindataTT, maxdataTT);
+		else :
+			hTTtoquantiles = ROOT.TH1F("hTTbartoquantiles"+str(ntarget),"",100, 0.0, 1.0);
+			hTTtoquantiles.GetXaxis().SetTitle("Nevents weighted (tt only)");
+			hTTtoquantiles.GetYaxis().SetTitle("Cumulative");
+			hTT_tttoquantiles = ROOT.TH1F("hTTbartoquantiles"+str(ntarget),"",100, 0.0, 1.0);
+			hTT_ttVtoquantiles = ROOT.TH1F("hTTVtoquantiles"+str(ntarget),"",100, 0.0, 1.0);
+			binsJoint=[]
+			bins_tt=[]
+			bins_ttV=[]
+			line = [[None for point in range(ntarget)] for ntype in range(3)]
+			line2 = [[None for point in range(ntarget)] for ntype in range(3)]
+			for ii in range(0,max(len(tt_datainJoint),len(ttV_datainJoint))) :
+				if ii<len(tt_datainJoint):
+					hTTtoquantiles.Fill(tt_datainJoint[ii],weightTT[ii])
+					hTT_tttoquantiles.Fill(tt_datainTT[ii],weightTT[ii])
+					hTT_ttVtoquantiles.Fill(tt_datainTTV[ii],weightTT[ii])
+				if ttOnlyQuant==False and ii<len(ttV_datainJoint):
+					hTTtoquantiles.Fill(ttV_datainJoint[ii],weightTTV[ii])
+					hTT_tttoquantiles.Fill(ttV_datainTT[ii],weightTTV[ii])
+					hTT_ttVtoquantiles.Fill(ttV_datainTTV[ii],weightTTV[ii])
+			c = ROOT.TCanvas("cCum","",600,600)
+			tags=["joint-BDT","tt-BDT","ttVBDT"]
+			l = ROOT.TLegend(0.6,0.16,0.85,0.3);
+			for n,histo in enumerate([hTTtoquantiles,hTT_tttoquantiles,hTT_ttVtoquantiles]) :
+				histo.Scale(1./histo.Integral());
+				histo.SetLineWidth(3)
+				histo.SetLineColor(2+n)
+				if n==0 : histo.GetCumulative().Draw();
+				else : histo.GetCumulative().Draw("same");
+				l.AddEntry(histo  , tags[n], "f");
+				histo.GetYaxis().SetRangeUser(0.,1.)
+				histo.SetMinimum(0.0)
+				xq= array.array('d', [0.] * (ntarget+1)) #[ii/nq for i in range(0,nq-1)] #np.empty(nq+1, dtype=object)
+				yq= array.array('d', [0.] * (ntarget+1)) # [0]*nq #np.empty(nq+1, dtype=object)
+				#if ntarget >1 :
+				for  ii in range(0,ntarget) : xq[ii]=(float(ii)/(ntarget))
+				xq[ntarget]=0.999999999
+				histo.GetQuantiles(ntarget,yq,xq)
+				#print ("quantiles",ntarget,len(xq),len(yq))
+				for  jj in range(0,ntarget) :
+						line[n][jj] = ROOT.TLine(0,xq[jj],yq[jj],xq[jj]);
+						line[n][jj].SetLineColor(2+n);
+						line[n][jj].Draw("same")
+						#
+						line2[n][jj] = ROOT.TLine(yq[jj],0,yq[jj],xq[jj]);
+						line2[n][jj].SetLineColor(2+n);
+						line2[n][jj].Draw("same")
+						#print ("bins=",ntarget,tags[n],xq[jj],yq[jj])
+				yq[ntarget]=1.0
+				if n==0 : binsJoint=yq
+				if n==1 : bins_tt=yq
+				if n ==2 : bins_ttV=yq
+			latex1= ROOT.TLatex();
+			latex1.SetTextSize(0.04);
+			latex1.SetTextAlign(13);  #//align at top
+			latex1.SetTextFont(42);
+			latex1.DrawLatexNDC(.17,.89,BDTvar+" "+BDTtype+" nbins="+str(ntarget));
+			latex1.DrawLatexNDC(0.17,.79,"FullSim")
+			if ttOnlyQuant==False : latex1.DrawLatexNDC(0.17,.84,"tt+ttV sample")
+			else : latex1.DrawLatexNDC(0.17,.84,"tt-sample only")
+			l.Draw("same")
+			c.Modified();
+			c.Update();
+			c.SaveAs(channel+'/'+BDTvar+'_ntarget'+str(ntarget)+'_jointBDT_fullsim_Cumulative.pdf')
+			################
+			print ("binsJoint",binsJoint)
+			hTT = ROOT.TH1F("hTTbarless"+str(ntarget),"",ntarget, binsJoint);
+			hTTW   = ROOT.TH1F("hTTWless"+str(ntarget)  ,"",ntarget, binsJoint);
+			hTTH   = ROOT.TH1F("hTTHless"+str(ntarget)  ,"",ntarget, binsJoint);
+			hEWK   = ROOT.TH1F("hEWKless"+str(ntarget)  ,"",ntarget, binsJoint);
+			hRares   = ROOT.TH1F("hRaresless"+str(ntarget)  ,"",ntarget, binsJoint);
+			##
+			hTT_ttV = ROOT.TH1F("hTTbarlessttV"+str(ntarget),"",ntarget, bins_ttV);
+			hTTW_ttV   = ROOT.TH1F("hTTWlessttV"+str(ntarget)  ,"",ntarget, bins_ttV);
+			hTTH_ttV   = ROOT.TH1F("hTTHlessttV"+str(ntarget)  ,"",ntarget, bins_ttV);
+			hEWK_ttV   = ROOT.TH1F("hEWKlessttV"+str(ntarget)  ,"",ntarget, bins_ttV);
+			hRares_ttV   = ROOT.TH1F("hRareslessttV"+str(ntarget)  ,"",ntarget, bins_ttV);
+			##
+			hTT_tt = ROOT.TH1F("hTTbarlesstt"+str(ntarget),"",ntarget, bins_tt);
+			hTTW_tt   = ROOT.TH1F("hTTWlesstt"+str(ntarget)  ,"",ntarget, bins_tt);
+			hTTH_tt   = ROOT.TH1F("hTTHlesstt"+str(ntarget)  ,"",ntarget, bins_tt);
+			hEWK_tt   = ROOT.TH1F("hEWKlesstt"+str(ntarget)  ,"",ntarget, bins_tt);
+			hRares_tt   = ROOT.TH1F("hRareslesstt"+str(ntarget)  ,"",ntarget, bins_tt);
+		#print ("tight yield TT,TTV,TTH",weightTT.sum(),weightTTV.sum(),weightTTH.sum(),weightEWK.sum(),weightRares.sum())
 		for ii in range(0,max(len(ttV_datainJoint),len(tt_datainJoint),len(ttH_datainJoint),len(EWK_datainJoint),len(rares_datainJoint))) :
 			if ii<len(weightTTV) :
 				hTTW.Fill(ttV_datainJoint[ii],weightTTV[ii])
@@ -1272,22 +1340,23 @@ if options.doBDT == True :
 		if hTTW_ttV.GetBinError(ntarget) >0 :
 			#print (ntarget,hTT_ttV.GetBinContent(ntarget),hTT_ttV.GetBinContent(ntarget)+hTTW_ttV.GetBinContent(ntarget),(hTTH_ttV.GetBinContent(ntarget))/(hTT_ttV.GetBinContent(ntarget)+hTTW_ttV.GetBinContent(ntarget)))
 			errOcont_ttV.append((hTT_ttV.GetBinError(ntarget)+hTTW_ttV.GetBinError(ntarget))/(hTT_ttV.GetBinContent(ntarget)+hTTW_tt.GetBinContent(ntarget)))
-			if hTT_ttV.GetBinError(ntarget) >0 :errOcontTT_ttV.append((hTT_ttV.GetBinError(ntarget))/(hTT_ttV.GetBinContent(ntarget)))
+			if hTT_ttV.GetBinError(ntarget) >0 : errOcontTT_ttV.append((hTT_ttV.GetBinError(ntarget))/(hTT_ttV.GetBinContent(ntarget)))
 			else : errOcontTT_ttV.append(1)
 			sOb_ttV.append((hTTH_ttV.GetBinContent(ntarget))/(hTT_ttV.GetBinContent(ntarget)+hTTW_ttV.GetBinContent(ntarget)))
 		else :
 			errOcont_ttV.append(1)
 			errOcontTT_ttV.append(1)
 			sOb_ttV.append(1)
-		if 0>1 : #if  ntarget in range(3,nmax) :
+		if doPlotsBins :
+		  if  ntarget in range(nminplot,nmaxplot) : #nmax
 			hTT.SetFillColor( 17 );
 			hTTH.SetFillColor( ROOT.kRed );
 			hTTW.SetFillColor( 8 );
-			hEWK.SetFillColor( 65 );
+			hEWK.SetFillColor( 6 );
 			hRares.SetFillColor( 65 );
 			mc  = ROOT.THStack("mc","");
+			mc.Add(hRares);
 			mc.Add(hEWK);
-			#mc.Add(hRares);
 			mc.Add(hTTW);
 			mc.Add(hTTH);
 			mc.Add( hTT );
@@ -1318,18 +1387,21 @@ if options.doBDT == True :
 			l.AddEntry(hTTH  , "ttH", "f");
 			l.AddEntry(hTTW  , "ttV"       , "f");
 			l.AddEntry(hTT, "tt"        , "f");
-			#l.AddEntry(hRares, "rares"        , "f");
+			l.AddEntry(hRares, "rares"        , "f");
 			l.AddEntry(hEWK, "Rares"        , "f");
 			l.Draw();
 			latex= ROOT.TLatex();
-			latex.SetTextSize(0.065);
+			latex.SetTextSize(0.075);
 			latex.SetTextAlign(13);  #//align at top
 			latex.SetTextFont(62);
 			latex.DrawLatexNDC(.15,1.0,"CMS Simulation");
 			latex.DrawLatexNDC(.8,1.0,"#it{36 fb^{-1}}");
 			#latex1.DrawLatexNDC(0.5,.77,"looseLep")
 			#latex.DrawLatexNDC(.55,.8,"from ("+str(nbins)+"^2) to "+str(nbinsout)+" bins");
-			latex.DrawLatexNDC(.55,.9,BDTvar);
+			latex.DrawLatexNDC(.55,.9,BDTvar+" "+BDTtype+" nbins="+str(ntarget));
+			if binByQuantiles==True :
+				if ttOnlyQuant==False : latex1.DrawLatexNDC(0.55,.84,"tt+ttV sample")
+				else : latex1.DrawLatexNDC(0.55,.78,"tt-sample only")
 			#"""
 			c4.cd(2)
 			#ROOT.gPad.SetLogy()
@@ -1393,12 +1465,15 @@ if options.doBDT == True :
 			#"""
 			c4.Modified();
 			c4.Update();
-			print ("s/B in last bin (tight)",
+			print ("s/B in last bin (tight)",h3.GetNbinsX(),
 					h3.GetBinContent(h3.GetNbinsX()), # /hBKG1D.GetBinContent(h3.GetNbinsX())
 					h3.GetBinContent(h3.GetNbinsX()-1), #/hBKG1D.GetBinContent(h3.GetNbinsX()-1)
 					h2.GetBinContent(h3.GetNbinsX())
 					)
-			c4.SaveAs(channel+'/'+BDTvar+'_ntarget'+str(ntarget)+'_jointBDT_fullsim.pdf')
+			if doPlotsBins==True :
+				if ttOnlyQuant==True : c4.SaveAs(channel+'/'+BDTvar+'TRT_ntarget'+str(ntarget)+'_jointBDT_fullsim_TTsam_quantiles.pdf')
+				else : c4.SaveAs(channel+'/'+BDTvar+'TRT_ntarget'+str(ntarget)+'_jointBDT_fullsim_TTpTTVsam_quantiles.pdf')
+			else : c4.SaveAs(channel+'/'+BDTvar+'_ntarget'+str(ntarget)+'_jointBDT_fullsim.pdf')
 	"""
 	print ("err/ct Joint",errOcont)
 	print ("err/ct Joint, only TT",errOcontTT)
@@ -1412,11 +1487,20 @@ if options.doBDT == True :
 	print ("err/ct ttVBDT, only TT",errOcontTT_ttV)
 	print ("S/B ttVBDT",sOb_ttV)
 	"""
-
+	title=" "
+	if binByQuantiles==True :
+		title="bin by Quantiles"
+		if ttOnlyQuant==False :
+			ext = "_TTpTTVsam_quantiles"
+			title=title+" tt+ttV sample"
+		else :
+			ext = "_TTsam_quantiles"
+			title=title+" tt-only sample"
 	xbinstarget=np.arange(1, nmax)
 	print (len(xbinstarget),len(sOb))
-	fig, ax = plt.subplots(figsize=(4, 4))
+	fig, ax = plt.subplots(figsize=(6, 6))
 	# plt.subplot(221)
+	plt.title(title)
 	plt.plot(xbinstarget,sOb,'ro-',label="Joint-BDT")
 	plt.plot(xbinstarget,sOb_tt,'go-',label="tt-BDT")
 	plt.plot(xbinstarget,sOb_ttV,'bo-',label="ttV-BDT")
@@ -1424,17 +1508,19 @@ if options.doBDT == True :
 	ax.set_xlabel('nbins')
 	ax.set_ylabel('ttH/(ttV+tt)')
 	plt.grid(True)
-	fig.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_fullsim_SoB.pdf')
+	if binByQuantiles==True : fig.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_fullsim'+ext+'_SoB.pdf')
+	else : fig.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_fullsim_SoB.pdf')
 	plt.clf()
 	###
-	fig, ax = plt.subplots(figsize=(4, 4))
+	fig, ax = plt.subplots(figsize=(6, 6))
 	# plt.subplot(221)
+	plt.title(title)
 	plt.plot(xbinstarget,errOcont,'ro-',label="Joint-BDT (TT+TTV)")
 	plt.plot(xbinstarget,errOcont_tt,'go-',label="tt-BDT (TT+TTV)")
 	plt.plot(xbinstarget,errOcont_ttV,'bo-',label="ttV-BDT (TT+TTV)")
-	plt.plot(xbinstarget,errOcontTT, 'ro--',label="Joint-BDT (TT only)")
-	plt.plot(xbinstarget,errOcontTT_tt, 'go--',label="tt-BDT (TT only)")
-	plt.plot(xbinstarget,errOcontTT_ttV, 'bo--',label="ttV-BDT (TT only)")
+	plt.plot(xbinstarget,errOcontTT, 'r--',label="Joint-BDT (TT only)")
+	plt.plot(xbinstarget,errOcontTT_tt, 'g--',label="tt-BDT (TT only)")
+	plt.plot(xbinstarget,errOcontTT_ttV, 'b--',label="ttV-BDT (TT only)")
 	plt.plot(xbinstarget,np.array([0.17]*len(xbinstarget)), 'k-')
 	plt.plot(xbinstarget,np.array([0.41]*len(xbinstarget)), 'k-')
 	#ax.set_ylim(ymin=0.009)
@@ -1445,94 +1531,8 @@ if options.doBDT == True :
 	ax.set_ylabel('err/content')
 	ax.legend(loc="best")
 	plt.grid(True)
-	fig.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_fullsim_ErrOcont.pdf')
+	if binByQuantiles==True : fig.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_fullsim'+ext+'_ErrOcont.pdf')
+	else : fig.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_fullsim_ErrOcont.pdf')
 	plt.clf()
-	"""
-	###########################################################################
-	plt.figure(figsize=(15, 5))
-
-	plt.subplot(1, 3, 0+1)
-	plt.hist2d(data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton'),"BDTttV"].values.astype(np.float64) ,
-				data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton'),"BDTtt"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton'), weights].values.astype(np.float64) ,
-				bins=10,normed=True)
-	plt.title("ttbar (SL+DL) sample")
-
-	plt.subplot(1, 3, 1+1)
-	plt.hist2d(data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu'),"BDTttV"].values.astype(np.float64) ,
-				data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu'),"BDTtt"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu'), weights].values.astype(np.float64) ,
-				bins=10,normed=True)
-	plt.title("ttW+ttZ sample")
-
-	plt.subplot(1, 3, 2+1)
-	plt.hist2d(data.ix[(data.key.values=='ttHToNonbb'),"BDTttV"].values.astype(np.float64) ,
-					 	data.ix[(data.key.values=='ttHToNonbb'),"BDTtt"].values.astype(np.float64) ,
-						weights= data.ix[(data.key.values=='ttHToNonbb'), weights].values.astype(np.float64) ,
-						bins=10, normed=True)
-	plt.title("ttH sample")
-
-	plt.savefig(channel+'/'+BDTvar+'_jointBDT_2D.pdf')
-	plt.clf()
-
-
-	plt.figure(figsize=(10, 5))
-	plt.subplot(1, 2, 0+1)
-	plt.hist(data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton'),"BDTttV"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton'), weights].values.astype(np.float64) ,
-				bins=10,normed=True,label="tt sample")
-	plt.hist(data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu'),"BDTttV"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu'), weights].values.astype(np.float64) ,
-				bins=10,normed=True,label="ttV sample")
-	plt.hist(data.ix[(data.key.values=='ttHToNonbb'),"BDTttV"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='ttHToNonbb'), weights].values.astype(np.float64) ,
-				bins=10,normed=True,label="ttH")
-	plt.legend(loc='best')
-	plt.subplot(1, 2, 1+1)
-	plt.hist(data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton'),"BDTtt"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='TTTo2L2Nu') | (data.key.values=='TTToSemilepton'), weights].values.astype(np.float64) ,
-				bins=30,normed=True,label="tt sample")
-	plt.hist(data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu'),"BDTtt"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='TTZToLLNuNu') | (data.key.values=='TTWJetsToLNu'), weights].values.astype(np.float64) ,
-				bins=30,normed=True,label="ttV sample")
-	plt.hist(data.ix[(data.key.values=='ttHToNonbb'),"BDTtt"].values.astype(np.float64) ,
-				weights= data.ix[(data.key.values=='ttHToNonbb'), weights].values.astype(np.float64) ,
-				bins=30,normed=True,label="ttH")
-	plt.legend(loc='best')
-	plt.savefig(channel+'/'+BDTvar+'_jointBDT_1D.pdf')
-	plt.clf()
-
-
-	x=data.ix[data.target.values == 0, "BDTtt"].values
-	y=data.ix[data.target.values == 1, "BDTttV"].values
-	x_min, x_max = x.min() - 1, x.max() + 1
-	y_min, y_max = y.min() - 1, y.max() + 1
-	#h=.02
-	xx, yy = np.meshgrid(np.arange(x_min, x_max), np.arange(y_min, y_max))
-	Z = cls.predict(np.c_[xx.ravel(), yy.ravel()])
-	Z = Z.reshape(xx.shape)
-	plt.contourf(xx, yy, Z, cmap=plt.cm.coolwarm, alpha=0.8)
-
-	plt.hist2d(data.ix[data.target.values == 0, "BDTtt"].values , data.ix[data.target.values == 0, "BDTttV"].values ,
-							   weights= abs(data.ix[data.target.values == 0, weights].values.astype(np.float64)) ,
-                               cmap="Oranges",normed=True)
-	plt.hist2d(data.ix[data.target.values == 1, "BDTttV"].values , data.ix[data.target.values == 1, "BDTtt"].values ,
-							   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
-							   cmap="Purples",normed=True)
-	plt.title("test")
-	plt.savefig(channel+"/"+BDTvar+"_2D_BDT.pdf")
-
-
-	xx, yy = make_meshgrid(X0, X1)
-
-	#for clf, title, ax in zip(models, titles, sub.flatten()):
-	plot_contours(ax, clf, xx, yy,cmap=plt.cm.coolwarm, alpha=0.8)
-	ax.scatter(X0, X1, c=y, cmap=plt.cm.coolwarm, s=20, edgecolors='k')
-	ax.set_xlim(xx.min(), xx.max())
-	ax.set_ylim(yy.min(), yy.max())
-	ax.set_xlabel('Sepal length')
-	ax.set_ylabel('Sepal width')
-	ax.set_xticks(())
-	ax.set_yticks(())
-	ax.set_title("test")
-	"""
+	print ("max data Joint/TT/TTV",maxdataJoint,maxdataTTV,maxdataTT)
+	print ("min data Joint/TT/TTV",mindataJoint,mindataTTV,mindataTT)
