@@ -5,21 +5,34 @@ from array import array
 from ROOT import *
 from math import sqrt, sin, cos, tan, exp
 
-
+# python do_limits_2D.py --channel "2lss_1tau" --variables "noHTT" --doLimits
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default="2lss_1tau")
 parser.add_option("--variables", type="string", dest="variables", help="  Set of variables to use -- it shall be put by hand in the code", default=1000)
 parser.add_option("--doPlots", action="store_true", dest="doPlots", help="If you call this will not do plots with repport", default=False)
 parser.add_option("--doLimits", action="store_true", dest="doLimits", help="If you call this will not do plots with repport", default=False)
+parser.add_option("--plotLimits", action="store_true", dest="plotLimits", help="If you call this will not do plots with repport", default=False)
 (options, args) = parser.parse_args()
 
 user="acaan"
-channel='2lss_1tau'
-label='2018Jan18_VHbb_addMEM'
+channel=options.channel
 year="2016"
-sourceoriginal="/home/"+user+"/ttHAnalysis/"+year+"/"+label+"/datacards/"+channel+"/prepareDatacards_"+channel+"_sumOS_"
-source=workingDir+"/"+options.channel+"_"+label+"/"+options.variables+"/prepareDatacards_"+channel+"_sumOS_"
+
+if channel == "2lss_1tau" :
+    label="2018Jan13_VHbb_addMEM"
+    sourceoriginal="/home/"+user+"/ttHAnalysis/"+year+"/"+label+"/datacards/"+channel+"/prepareDatacards_"+channel+"_sumOS_"
+    source=workingDir+"/"+options.channel+"_"+label+"/"+options.variables+"/prepareDatacards_"+channel+"_sumOS_"
+    nStart= [15,20]
+    nTarget= [5,6,7,8,9,10]
+if channel == "1l_2tau" :
+    label= "1l_2tau_2018Feb02_VHbb_TightTau" #"1l_2tau_2018Feb01_VHbb_VTightTau" #"1l_2tau_2018Jan30_VHbb_VVTightTau" #"1l_2tau_2018Jan30_VHbb_VTightTau" # "1l_2tau_2018Jan30_VHbb"
+    mom="/home/"+user+"/ttHAnalysis/"+year+"/"+label+"/datacards/"+channel
+    sourceoriginal=mom+"/prepareDatacards_"+channel+"_"
+    nStart= [15,10,8]
+    nTarget= [4,5,6,7,8,9,10]
+
+
 local=workingDir+"/"+options.channel+"_"+label+"/"+options.variables+"/"
 sources=[]
 print sourceoriginal
@@ -37,10 +50,8 @@ def run_cmd(command):
   print stderr
   return stdout
 
-nStart= [15,20]
-nTarget= [5,6,7,8,9,10]
 
-if not options.doLimits:
+if not options.doLimits and not options.plotLimits :
     execfile("../python/data_manager.py")
     import matplotlib
     matplotlib.use('agg')
@@ -59,7 +70,8 @@ if not options.doLimits:
             my_file = sourceoriginal+options.variables+'_from'+str(nstart)+'_to_'+str(ntarget)+'.root'
             if os.path.exists(my_file) : print (my_file,"reading ")
             else : print (my_file,"does not exist ")
-            result=GetRatio(my_file)
+            namepdf=local+options.variables+'_from'+str(nstart)+'_to_'+str(ntarget)+'_plots.pdf'
+            result=GetRatio(my_file,namepdf)
             errOcontTTLast=errOcontTTLast+[result[0]] if result[0]<1.001 else errOcontSUMLast+[1.0]
             #errOcontTTPLast=errOcontTTPLast+[result[1]] if ratiohSumP<1.001 else errOcontSUMPLast+[1.0]
             errOcontSUMLast=errOcontSUMLast+[result[2]] if result[2]<1.001 else errOcontSUMLast+[1.0]
@@ -103,30 +115,31 @@ if options.doLimits:
             file.write(makeplots+ "\n")
     file.close()
 
- #########################################
- ## make limits
- if plotLimits :
-     print "do limits"
-     print sources
+#########################################
+## make limits
+if options.plotLimits :
+     execfile("../python/data_manager.py")
+     import matplotlib
+     matplotlib.use('agg')
+     import matplotlib.pyplot as plt
+     print "plot limits"
      fig, ax = plt.subplots(figsize=(5, 5))
      #plt.title(options.BINtype+" binning")
      colorsToDo=['r','g','b','m','y','c']
-     for nn,source in enumerate(sources) :
-         limits=ReadLimits(bdtTypesToDo[nn], binstoDo, options.BINtype,originalBinning,local)
-         print (len(binstoDo),len(limits[0]))
-         plt.plot(binstoDo,limits[0], colorsToDo[nn]+'o-',label=bdtTypesToDo[nn])
-         plt.plot(binstoDo,limits[1], colorsToDo[nn]+'-')
-         plt.plot(binstoDo,limits[3], colorsToDo[nn]+'-')
+     for nn,nstart in enumerate(nStart) :
+         limits=ReadLimits("none", nTarget, "2D",20,local,nstart,0)
+         print (len(nTarget),len(limits[0]))
+         plt.plot(nTarget,limits[0], colorsToDo[nn]+'o-',label=str(nstart)+' start bins')
+         plt.plot(nTarget,limits[1], colorsToDo[nn]+'-')
+         plt.plot(nTarget,limits[3], colorsToDo[nn]+'-')
      ax.legend(loc='best', fancybox=False, shadow=False , ncol=1)
      ax.set_xlabel('nbins')
      ax.set_ylabel('limits')
-     plt.text(2.3, 2.4, options.BINtype+" binning "+" "+options.variables )
-     plt.text(2.3, 2.53, "CMS"  ,  fontweight='bold' )
-     plt.text(4.3, 2.53, "preliminary" )
-     plt.text(max(binstoDo)-6.0, 2.53, "35.9/fb (13 TeV)"   )
-     plt.axis((min(binstoDo),max(binstoDo),0.7,2.5))
-     if options.BINtype == "quantiles" : namefig=options.channel+'_'+label+'/'+options.variables+'/'+options.variables+'_fullsim_limits_quantiles.pdf'
-     if options.BINtype == "regular": namefig=options.channel+'_'+label+'/'+options.variables+'/'+options.variables+'_fullsim_limits.pdf'
-     if options.BINtype == "ranged" : namefig=options.channel+'_'+label+'/'+options.variables+'/'+options.variables+'_fullsim_limits_ranged.pdf'
+     plt.text(5.1, 2.4, "2D map -"+" "+options.variables )
+     #plt.text(5.1, 2.53, "CMS"  ,  fontweight='bold' )
+     #plt.text(5.7, 2.53, "preliminary" )
+     #plt.text(8, 2.53, "35.9/fb (13 TeV)"   )
+     plt.axis((min(nTarget),max(nTarget),0.7,6.5))
+     namefig=options.channel+'_'+label+'/'+options.variables+'/'+options.variables+'_fullsim_limits_2Dmap.pdf'
      fig.savefig(namefig)
      print ("saved",namefig)

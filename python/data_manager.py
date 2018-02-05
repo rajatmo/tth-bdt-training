@@ -7,9 +7,118 @@ from ROOT.Math import PtEtaPhiEVector,VectorUtil
 import ROOT
 import math , array
 
-def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
+def load_ttHGen() :
+    procP1=glob.glob("/hdfs/cms/store/user/atiko/VHBBHeppyV25tthtautau/MC/ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix/VHBB_HEPPY_V25tthtautau_ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_Py8_mWCutfix__RunIISummer16MAv2-PUMoriond17_80r2as_2016_TrancheIV_v6_ext1-v1/170207_122849/0000/tree_*.root")
+    list=procP1
+    for ii in range(0, len(list)) : #
+    	#print (list[ii],inputTree)
+    	try: tfile = ROOT.TFile(list[ii])
+    	except :
+    		#print "Doesn't exist"
+    		#print ('file ', list[ii],' corrupt')
+    		continue
+    	try: tree = tfile.Get("tree")
+    	except :
+    		#print "Doesn't exist"
+    		#print ('file ', list[ii],' corrupt')
+    		continue
+    	if tree is not None :
+    		try:
+    			chunk_arr = tree2array(tree) #,  start=start, stop = stop)
+    		except :
+    			#print "Doesn't exist"
+    			#print ('file ', list[ii],' corrupt')
+    			continue
+    		else :
+    			chunk_df = pandas.DataFrame(chunk_arr) #
+    			#if ii ==0 : print (chunk_df.columns.values.tolist())
+    			chunk_df['key']=folderName
+    			chunk_df['target']=target
+    			data=data.append(chunk_df, ignore_index=True)
+    	else : print ("file "+list[ii]+"was empty")
+    	tfile.Close()
+        	#if len(data) == 0 : continue
+        #print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
+        return data
+
+
+
+def load_dataGen(inputPath,channelInTree,variables,criteria,testtruth,folderName) :
     print variables
     my_cols_list=variables+['key','target','file']+criteria #,'tau_frWeight','lep1_frWeight','lep1_frWeight' trainVars(False)
+    # if channel=='2lss_1tau' : my_cols_list=my_cols_list+['tau_frWeight','lep1_frWeight','lep2_frWeight']
+    # those last are only for channels where selection is relaxed (2lss_1tau) === solve later
+    data = pandas.DataFrame(columns=my_cols_list)
+    #if bdtType=="all" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
+    #if bdtType=="all" : keys=['TTToSemilepton']
+    #for folderName in keys :
+    if 1>0 :
+    	print (folderName, channelInTree)
+    	if 'TTT' in folderName :
+    		sampleName='TT'
+    		target=0
+    	if folderName=='ttHToNonbb' :
+    		sampleName='signal'
+    		target=1
+    	if 'TTW' in folderName :
+    		sampleName='TTW'
+    		target=0
+    	if 'TTZ' in folderName :
+    		sampleName='TTZ'
+    		target=0
+    	inputTree = channelInTree+'/sel/evtntupleGen/'+sampleName+'/evtTree'
+        # inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
+
+    	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
+            procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining*OS_central_*.root")
+            procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining*OS_central_*.root")
+            procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3_forBDTtraining*OS_central_*.root")
+            list=procP1+procP2+procP3
+        else :
+            procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim_forBDTtraining*OS_central_*.root")
+            list=procP1
+    	#print ("Date: ", time.asctime( time.localtime(time.time()) ))
+    	for ii in range(0, len(list)) : #
+    		#print (list[ii],inputTree)
+    		try: tfile = ROOT.TFile(list[ii])
+    		except :
+    			#print "Doesn't exist"
+    			#print ('file ', list[ii],' corrupt')
+    			continue
+    		try: tree = tfile.Get(inputTree)
+    		except :
+    			#print "Doesn't exist"
+    			#print ('file ', list[ii],' corrupt')
+    			continue
+    		if tree is not None :
+    			try:
+    				chunk_arr = tree2array(tree) #,  start=start, stop = stop)
+    			except :
+    				#print "Doesn't exist"
+    				#print ('file ', list[ii],' corrupt')
+    				continue
+    			else :
+    				chunk_df = pandas.DataFrame(chunk_arr) #
+    				#if ii ==0 : print (chunk_df.columns.values.tolist())
+    				chunk_df['key']=folderName
+    				chunk_df['target']=target
+    				data=data.append(chunk_df, ignore_index=True)
+    		else : print ("file "+list[ii]+"was empty")
+    		tfile.Close()
+    	#if len(data) == 0 : continue
+        data = data.ix[data.evtWeight.values <1]
+    	nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
+    	nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
+    if folderName=='ttHToNonbb' : print (data.columns.values.tolist())
+    nS = len(data.ix[data.target.values == 0])
+    nB = len(data.ix[data.target.values == 1])
+    print channelInTree," length of sig, bkg: ", nS, nB
+    #print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
+    return data
+
+def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
+    print variables
+    my_cols_list=variables+['key','target',"totalWeight"] #+criteria #,'tau_frWeight','lep1_frWeight','lep1_frWeight' trainVars(False)
     # if channel=='2lss_1tau' : my_cols_list=my_cols_list+['tau_frWeight','lep1_frWeight','lep2_frWeight']
     # those last are only for channels where selection is relaxed (2lss_1tau) === solve later
     data = pandas.DataFrame(columns=my_cols_list)
@@ -31,7 +140,8 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     	if 'TTZ' in folderName :
     		sampleName='TTZ'
     		target=0
-    	inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
+    	#inputTree = channelInTree+'/sel/evtntupleGen/'+sampleName+'/evtTree'
+        inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
         if bdtType!="arun" :
         	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
         		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining*OS_central_*.root")
@@ -70,16 +180,15 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     				#chunk_df['file']=list[ii].split("_")[10]
     				if channel=="2lss_1tau" and bdtType!="arun" :
     					chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']
-    				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight
-    				###########
+    				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
     				if channel=="2lss_1tau"  and len(criteria)>0:
     					data=data.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
-    				else : #
-    					#if 1>0 :
-    					data=data.append(chunk_df, ignore_index=True)
+    				else : data=data.append(chunk_df, ignore_index=True)
     		else : print ("file "+list[ii]+"was empty")
     		tfile.Close()
     	if len(data) == 0 : continue
+        #data = data.ix[data.evtWeight.values <1]
+        #data = data.ix[data.genWeight.values <10]
     	nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
     	nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
     	print folderName,"length of sig, bkg: ", nS, nB
@@ -134,13 +243,13 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     'TTJets_SingleLeptFromT_ext1',
     'TTJets_SingleLeptFromTbar',
     'TTJets_SingleLeptFromTbar_ext1',
-    'ST_tW_antitop_5f_inclusiveDecays',
-    'ST_tW_top_5f_inclusiveDecays',
-    'ST_s-channel_4f_leptonDecays',
-    'ST_t-channel_antitop_4f_inclusiveDecays',
-    'ST_t-channel_top_4f_inclusiveDecays', # + tH
-    'THQ',
-    'THW'
+    #'ST_tW_antitop_5f_inclusiveDecays',
+    #'ST_tW_top_5f_inclusiveDecays',
+    #'ST_s-channel_4f_leptonDecays',
+    #'ST_t-channel_antitop_4f_inclusiveDecays',
+    #'ST_t-channel_top_4f_inclusiveDecays', # + tH
+    #'THQ',
+    #'THW'
     ] # +6 fastsim
     samplesTTW=['TTWJetsToLNu_ext1','TTWJetsToLNu_ext2']
     samplesTTZ=['TTZToLL_M10_ext2', 'TTZToLL_M10_ext1', 'TTZToLL_M-1to10']
@@ -237,6 +346,8 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     		else : print ("file "+list[ii]+"was empty")
     		tfile.Close()
     	if len(dataloc) == 0 : continue
+        dataloc=dataloc.ix[dataloc.evtWeight.values <1]
+        dataloc=dataloc.ix[dataloc.genWeight.values <10]
     	nS = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.proces.values==sampleName)])
     	nB = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.proces.values==sampleName)])
     	print sampleName,"length of sig, bkg: ", nS, nB
@@ -286,6 +397,10 @@ def load_data_xml (dataIn) :
     data.to_csv('arun_xml_2lss_1tau/arun_xml_2lss_1tau_FromAnalysis.csv')
     return data
 
+def gauss(x, *p):
+    A, mu, sigma = p
+    return A*numpy.exp(-(x-mu)**2/(2.*sigma**2))
+
 def reverse_colourmap(cmap, name = 'my_cmap_r'):
     reverse = []
     k = []
@@ -329,12 +444,10 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     c4.Divide(1,2,0,0);
     c4.cd(1)
     ROOT.gPad.SetLogy()
-    #c5.SetLogy()
     ROOT.gPad.SetBottomMargin(0.001)
     ROOT.gPad.SetTopMargin(0.065)
     ROOT.gPad.SetRightMargin(0.01)
     ROOT.gPad.SetLeftMargin(0.12)
-    #ROOT.gPad.SetLabelSize(.4, "XY")
     mc.Draw("HIST");
     mc.SetMaximum(15* mc.GetMaximum());
     mc.SetMinimum(max(0.04* mc.GetMinimum(),0.01));
@@ -342,7 +455,7 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     mc.GetHistogram().GetYaxis().SetTitle("Expected events/bin");
     mc.GetHistogram().GetXaxis().SetTitle("Bin in the bdt1#times bdt2 plane");
     mc.GetHistogram().GetXaxis().SetTitleSize(0.06);
-    mc.GetHistogram().GetXaxis().SetLabelSize(.06); #SetTitleOffset(1.1);
+    mc.GetHistogram().GetXaxis().SetLabelSize(.06);
     mc.GetHistogram().GetYaxis().SetTitleSize(0.06);
     mc.GetHistogram().GetYaxis().SetLabelSize(.06);
     l = ROOT.TLegend(0.16,0.6,0.3,0.9);
@@ -388,7 +501,6 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     h2.SetLineWidth(3)
     h2.SetLineColor(2)
     h2.SetFillStyle(3690)
-    h3.GetYaxis().SetRangeUser(0.01,1.0);
     h3.SetLineWidth(3)
     h3.SetFillStyle(3690)
     h3.SetLineColor(28)
@@ -412,7 +524,6 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     c4.Modified();
     c4.Update();
     print ("s/B in last bin (tight)", h3.GetNbinsX(), h3.GetBinContent(h3.GetNbinsX()), h3.GetBinContent(h3.GetNbinsX()-1), h2.GetBinContent(h3.GetNbinsX()))
-
     c4.SaveAs(name+".pdf")
     print ("saved",name+".pdf")
 
@@ -436,8 +547,8 @@ def getQuantiles(histoP,ntarget,xmax) :
     histoP.GetXaxis().SetRangeUser(0.,1.)
     histoP.GetYaxis().SetRangeUser(0.,1.)
     histoP.SetMinimum(0.0)
-    xq= array.array('d', [0.] * (ntarget+1)) #[ii/nq for i in range(0,nq-1)] #np.empty(nq+1, dtype=object)
-    yq= array.array('d', [0.] * (ntarget+1)) # [0]*nq #np.empty(nq+1, dtype=object)
+    xq= array.array('d', [0.] * (ntarget+1))
+    yq= array.array('d', [0.] * (ntarget+1))
     yqbin= array.array('d', [0.] * (ntarget+2))
     for  ii in range(0,ntarget) : xq[ii]=(float(ii)/(ntarget))
     xq[ntarget]=0.999999999
@@ -537,7 +648,8 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
         xmindef=minmax[1][0]
         xmaxdef=minmax[1][1]
     else :
-        xmin=0.0
+        if minmax[1][0] < 0 : xmin=-1.0
+        else : xmin=0.0
         xmax=1.0
         xmaxdef=minmax[1][1]
         xmindef=minmax[1][0]
@@ -576,13 +688,8 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
         if BINtype=="regular" : name=histSource+"_"+str(nbins)+"bins.root"
         if BINtype=="ranged" : name=histSource+"_"+str(nbins)+"bins_ranged.root"
         if BINtype=="quantiles" :
-            ## do the quantiles in the sum o BKG
             name=histSource+"_"+str(nbins+1)+"bins_quantiles.root"
-            #nbinsQuant=getQuantiles(hSum,nbins,xmax)
             nbinsQuant=getQuantiles(hFakes,nbins,xmax)
-            #print (nbins+1,nbinsQuant)
-            #nbinsQuant=getQuantiles(hSumAll,nbins,xmax)
-            #print ("quantiles",nbins,nbinsQuant,nbinsQuant[nbins],nbinsQuant[nbins-1],nbinsQuant[nbins-2])
             xmaxLbin=xmaxLbin+[nbinsQuant[nbins-1]]
         fileOut  = TFile(name, "recreate");
         hTTi = TH1F()
@@ -605,21 +712,14 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
                 histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
             elif BINtype=="quantiles" :
                 histo=TH1F( nameHisto, nameHisto , nbins+1 , nbinsQuant)
-            #if not histo.GetSumw2N() : histo.Sumw2()
-            #print histogramCopy.GetNbinsX()
-            #if not BINtype=="none" :
-            #print ("fine binning",histogramCopy.GetXaxis().GetBinLowEdge(1),histogramCopy.GetXaxis().GetBinLowEdge(2))
-            #if bdtType=="1B" and nbins ==4 : print ("quantiles",histo.GetXaxis().GetBinLowEdge(1),histo.GetXaxis().GetBinLowEdge(2),histo.GetXaxis().GetBinLowEdge(3),histo.GetXaxis().GetBinLowEdge(4),histo.GetXaxis().GetBinLowEdge(5))
             for place in range(1,histogramCopy.GetNbinsX() + 1) :
                 content =      histogramCopy.GetBinContent(place)
                 binErrorCopy = histogramCopy.GetBinError(place);
                 newbin =       histo.FindBin(histogramCopy.GetBinCenter(place))
                 binError =     histo.GetBinError(newbin);
                 histo.SetBinContent(newbin, histo.GetBinContent(newbin)+content)
-                #if histo.GetName() == "ttH_hww" or histo.GetName() == "ttH_hzz" or histo.GetName() ==  "ttH_htt" : print (content,newbin)
-                histogram.SetBinError(newbin,sqrt(binError*binError+binErrorCopy*binErrorCopy))
+                histogram.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
             if not histogram.GetSumw2N() : histogram.Sumw2()
-            #histo.SetBinErrorOption(1) # https://root.cern.ch/doc/v608/classTH1.html#ac6e38c12259ab72c0d574614ee5a61c7
             if histogramCopy.GetName() == "fakes_data" or histogramCopy.GetName() =="TTZ" or histogramCopy.GetName() =="TTW" or histogramCopy.GetName() =="TTWW" or histogramCopy.GetName() == "EWK" :
                 print ("rebinned",histo.GetName(),histo.Integral())
             histo.Write()
@@ -697,10 +797,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
             xminQuant=xminQuant+[xmindef]
     print ("min",xmindef,xmin)
     print ("max",xmaxdef,xmax)
-    #print ("errOcont",errOcontTTLast)
-    #print ("errOcont",errOcontSUMLast)
     return [errOcontTTLast,errOcontTTPLast,errOcontSUMLast,errOcontSUMPLast,lastQuant,xmaxQuant,xminQuant]
-            #errTTLast,contTTLast,errSUMLast,contSUMLast]
 
 def ReadLimits(bdtType,nbin, BINtype,originalBinning,local,nstart,ntarget):
     central=[]

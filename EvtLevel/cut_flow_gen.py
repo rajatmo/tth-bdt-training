@@ -260,7 +260,9 @@ if 0> 1 :
     ################################
     ntotal=len(datatotal)
     print (key, "total", len(datatotal))
-    datatotal=datatotal.ix[((datatotal.genPtAntiTopWj1.values >0) | (datatotal.genPtTopWj1.values >0))]
+    datatotal=datatotal.ix[(
+    (datatotal.genPtAntiTopWj1.values >0) | (datatotal.genPtTopWj1.values >0)
+    )]
     print (key, "total 1 Had-top", len(datatotal),float(len(datatotal))/ntotal)
     datatotal=dataTight.ix[(
                 ((dataTight.genPtAntiTopWj1.values >0) & (dataTight.genPtTopWj1.values >0))
@@ -285,11 +287,21 @@ if 0> 1 :
                 )]
     print (key, "total 1 or 2 Had-top + trigger + bpt >25 GeV",  len(datatotaltrig1),float(len(datatotaltrig1))/ntotalTrig)
     datatotaltrig1=datatotaltrig.ix[(
-                ((datatotaltrig.genPtAntiTopWj1.values >0) & (datatotaltrig.genPtAntiTopB.values >25) & (abs(datatotaltrig.genEtaAntiTopB.values) <2.5)) |
-                ((datatotaltrig.genPtTopWj1.values >0) & (datatotaltrig.genPtTopB.values >25)  & (abs(datatotaltrig.genEtaTopB.values) <2.5))
+                (
+                   (datatotaltrig.genPtAntiTopWj1.values >0) & (datatotaltrig.genPtAntiTopB.values >25) &
+                   (abs(datatotaltrig.genEtaAntiTopB.values) <2.5)
+                   ) | (
+                   (datatotaltrig.genPtTopWj1.values >0) & (datatotaltrig.genPtTopB.values >25)  &
+                   (abs(datatotaltrig.genEtaTopB.values) <2.5)
+                   )
                 ) | (
-                ((datatotaltrig.genPtAntiTopWj1.values >0) & (datatotaltrig.genPtAntiTopB.values >25)  & (abs(datatotaltrig.genEtaAntiTopB.values) <2.5)) &
-                ((datatotaltrig.genPtTopWj1.values >0) & (datatotaltrig.genPtTopB.values >25)  & (abs(datatotaltrig.genEtaTopB.values) <2.5))
+                  (
+                  (datatotaltrig.genPtAntiTopWj1.values >0) & (datatotaltrig.genPtAntiTopB.values >25)  &
+                  (abs(datatotaltrig.genEtaAntiTopB.values) <2.5)
+                  ) & (
+                    (datatotaltrig.genPtTopWj1.values >0) & (datatotaltrig.genPtTopB.values >25)  &
+                    (abs(datatotaltrig.genEtaTopB.values) <2.5)
+                    )
                 )]
     print (key, "total 1 or 2 Had-top + trigger + bpt >25 GeV + beta <2.5",  len(datatotaltrig1),float(len(datatotaltrig1))/ntotalTrig)
     datatotaltrig1=datatotaltrig.ix[(

@@ -5,6 +5,8 @@ from sklearn import datasets
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.cross_validation import train_test_split
 import pandas
+import matplotlib.mlab as mlab
+from scipy.stats import norm
 #from pandas import HDFStore,DataFrame
 import math
 import sklearn_to_tmva
@@ -71,36 +73,22 @@ parser.add_option("--mcw", type="int", dest="mcw", help="hyp", default=1)
 channel=options.channel #"1l_2tau"
 if channel=='1l_2tau':
 	channelInTree='1l_2tau_OS_Tight'
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Nov30-BDT-ncombo/histograms/1l_2tau/forBDTtraining_OS/' # loose lepton, relaxed tau
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-MEM/histograms/1l_2tau/forBDTtraining_OS/'#   normal lepton , tight tau
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-tight/histograms/1l_2tau/forBDTtraining_OS/' # 2017Dec08-BDT-tight lepton and tau tight
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec-BDT-noMEM-LooseLepMedTau-TagT-fakeR/histograms/1l_2tau/forBDTtraining_OS/'#  - tight lepton, medium tau
-	# 2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR , tight lepton, medium tau and failsTightChargeCut flag
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/1l_2tau_2018Jan26_forBDT_tightLmediumT/histograms/1l_2tau/forBDTtraining_OS/' #  - tight lepton, loose tau || 1l_2tau_2018Jan24_forBDT_tightLlooseT || 1l_2tau_2018Jan24_forBDT_tightLmediumT || 1l_2tau_2018Jan24_forBDT_tightLisolooseT
+	channelInTreeTight='1l_2tau_OS_Tight'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/1l_2tau_2018Jan26_forBDT_tightLtightT/histograms/1l_2tau/forBDTtraining_OS/'
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan28_BDT_toTrees_FS_looseT/histograms/1l_2tau/Tight_OS/'
+	# 2018Jan28_BDT_toTrees_FS_looseT | 1l_2tau_2018Jan23_VHbb_tree | 2018Jan28_BDT_toTrees_FS
+	# 2018Jan26_BDT_fromVHbb_toTrees_fullsimData
+	criteria=[]
+	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
+	FullsimWP="Medium"
+	FastsimWP="Medium"
 
 if channel=='2lss_1tau':
 	channelInTree='2lss_1tau_lepSS_sumOS_Loose'
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Oct24/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-MEM/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-	# 2017Dec08-BDT-MEM -- with HTT correct
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM -- HTT and truth correct
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-clenaedJets/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-clenaedJets
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec-BDT-noMEM-LooseLepMedTau-cleanjets/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-looseLepMedTau
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec-BDT-noMEM-LooseLepMedTau-TagT-fakeR/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec-BDT-noMEM-LooseLepMedTau-TagT-fakeR
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR/histograms/2lss_1tau/forBDTtraining_SS_OS/' # with charge tag, 2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR
 	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec30-VHbb-wMEM-LooseLepMedTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
 	criteria=['lep1_isTight', 'lep2_isTight','tau_isTight',"failsTightChargeCut"]
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
-	# 2017Dec-BDT-noMEM-LooseLepMedTau-TagT-fakeR
-	# 2017Dec-BDT-noMEM-LooseLepMedTau-cleanjets
-	# 2017Mar27_dr03mvaLoose
-	# ###########################
-	#channelInTree='2lss_1tau_lepSS_sumOS_Loose'
-	#inputPath='/home/arun/ttHAnalysis/2016/2017Mar27_dr03mvaLoose/histograms/2lss_1tau/forBDTtraining_SS_OS/' # /home/arun/ttHAnalysis/2016/2017Mar27_dr03mvaLoose/
-	# ###########################
-	#channelInTree='2lss_1tau_lepSS_sumOS_Fakeable_wFakeRateWeights'
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-fakableLepMedTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-fakableLepMedTau
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-fakableLepLooseTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-fakableLepMedTau
-	# #########################
 	channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
 	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/'
 	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/Tight_SS_OS'
@@ -262,40 +250,38 @@ def trainVars(all):
 			]
 
 	if channel=="1l_2tau" and all==True :return [
-		'avg_dr_jet',
-		'dr_lep_fittedHadTop',
-		'dr_lep_tau_os',
-		'dr_lep_tau_ss',
-		'dr_taus',
-		'evtWeight',
-		'fittedHadTop_eta',
-		'fittedHadTop_pt',
-		'genWeight',
-		'htmiss',
-		'lep_conePt',
-		'lep_eta',
-		'lep_pt',
-		'lep_tth_mva',
-		'lumiScale',
-		'mT_lep',
-		'mTauTauVis',
-		'mindr_lep_jet',
-		'mindr_tau1_jet',
-		'mindr_tau2_jet',
-		'mvaOutput_hadTopTagger',
-		'ptmiss',
-		'tau1_eta',
-		'tau1_mva',
-		'tau1_pt',
-		'tau2_eta',
-		'tau2_mva',
-		'tau2_pt',
-		'nBJetLoose',
-		'nBJetMedium',
-		'nJet'
-		'run',
-		'lumi',
-		'evt'
+		#"lep_pt",
+		"lep_conePt", #
+		#"lep_eta",
+		#"lep_tth_mva",
+		"mindr_lep_jet", "mindr_tau1_jet", "mindr_tau2_jet",
+		"avg_dr_jet", "ptmiss",
+		"htmiss", "mT_lep",
+		#"tau1_mva", "tau2_mva",
+		"tau1_pt", "tau2_pt",
+		"tau1_eta", "tau2_eta",
+		"dr_taus",
+		"dr_lep_tau_os",
+		"dr_lep_tau_ss",
+		"dr_lep_tau_lead",
+		"dr_lep_tau_sublead",
+		"dr_HadTop_tau_lead","dr_HadTop_tau_sublead", "dr_HadTop_tautau",
+		"dr_HadTop_lepton","mass_HadTop_lepton",
+		"costS_HadTop_tautau",
+		"costS_tau",
+		"mTauTauVis",
+		#"lumiScale",
+		"mvaOutput_hadTopTagger",
+		#'mvaOutput_Hj_tagger',# "mvaOutput_Hjj_tagger",
+		#"mvaOutput_hadTopTaggerWithKinFit",
+		"mT_lepHadTop", #
+		"mT_lepHadTopH",
+		"HadTop_pt","HadTop_eta",
+		"dr_lep_HadTop",
+		"dr_HadTop_tau_OS","dr_HadTop_tau_SS",
+		"nJet" ,
+		"nBJetLoose" , "nBJetMedium",
+		"genWeight", "evtWeight",
 		]
 
         if trainvar=="oldVar"  and channel=="1l_2tau" and bdtType=="evtLevelTT_TTH" and all==False :return [
@@ -323,26 +309,31 @@ def trainVars(all):
 	]
 
 	if trainvar=="noHTT" and channel=="1l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
-		#"lep_pt",
-		"lep_conePt", #"lep_eta", #"lep_tth_mva",
-		"mindr_lep_jet", #"mindr_tau1_jet",
-		"mindr_tau2_jet",
-		"avg_dr_jet", #"ptmiss",
-		"mT_lep", #"htmiss", #"tau1_mva", "tau2_mva",
-		#"tau1_pt",
-		"tau2_pt",
-		#"tau1_eta", "tau2_eta",
-		"dr_taus", #"dr_lep_tau_os",
-		"dr_lep_tau_ss", #"dr_lep_tau_lead", #"dr_lep_tau_sublead",
-		#"costS_tau",
-		"mTauTauVis"#,
-		#"lumiScale", "genWeight", "evtWeight",
-		#"mT_lepHadTop" #,"mT_lepHadTopH"
-		#"HadTop_pt","HadTop_eta","dr_lep_HadTop","dr_HadTop_tau_OS","dr_HadTop_tau_SS",
-		#"dr_HadTop_tau_lead", #"dr_HadTop_tau_sublead",
-		#"dr_HadTop_tautau",
-		#"dr_HadTop_lepton","mass_HadTop_lepton", "costS_HadTop_tautau",
-		#"mvaOutput_hadTopTaggerWithKinFit", #"mvaOutput_hadTopTagger",
+		'avg_dr_jet',
+		'dr_taus',
+		#'htmiss',
+		'ptmiss',
+		'lep_conePt',
+		'mT_lep',
+		'mTauTauVis',
+		'mindr_lep_jet',
+		'mindr_tau1_jet',
+		#'mindr_tau2_jet',
+		#'nJet',
+		#'dr_lep_tau_os',
+		'dr_lep_tau_ss',
+		#"dr_lep_tau_lead",
+		"dr_lep_tau_sublead",
+		"costS_tau",
+		#"dr_HadTop_tau_OS",
+		#"dr_HadTop_tau_SS",
+		#"tau1_eta",
+		#"tau2_eta"
+		#"mT_lepHadTop",
+		#"mT_lepHadTopH",
+		#'nBJetLoose',
+		"tau1_pt",
+		"tau2_pt"
 		]
 
 	if trainvar=="HTTMVAonlyWithKinFit" and channel=="1l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
@@ -412,41 +403,28 @@ def trainVars(all):
 		"tau2_pt"
 		]
 
-  # ['avg_dr_jet', 'dr_taus', 'ptmiss', 'lep_conePt', 'mT_lep',
-  # 'mTauTauVis', 'mindr_lep_jet', 'mindr_tau1_jet', 'nJet', 'dr_lep_tau_ss',
-  # 'dr_lep_tau_lead', 'costS_tau']
 	if trainvar=="noHTT" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
 		'avg_dr_jet',
 		'dr_taus',
 		#'htmiss',
 		'ptmiss',
-		'lep_conePt',
-		#'lep_eta',
-		#'lep_pt',
-		#'lep_tth_mva',
+		#'lep_conePt',
 		'mT_lep',
+		"nJet",
 		'mTauTauVis',
 		'mindr_lep_jet',
 		'mindr_tau1_jet',
-		#'mindr_tau2_jet',
-		#'tau1_eta',
-		#'tau1_mva',
-		#'tau1_pt',
-		#'tau2_eta',
-		#'tau2_mva',
-		#'tau2_pt',
-		#'nBJetLoose',
-		#'nBJetMedium',
-		'nJet',
+		'mindr_tau2_jet',
+		#'nJet',
 		#'dr_lep_tau_os',
-		'dr_lep_tau_ss',
+		#'dr_lep_tau_ss',
 		"dr_lep_tau_lead",
 		#"dr_lep_tau_sublead",
 		"costS_tau",
 		#"dr_HadTop_tau_OS",
 		#"dr_HadTop_tau_SS",
 		#"mT_lepHadTop",
-		"mT_lepHadTopH",
+		#"mT_lepHadTopH",
 		'nBJetLoose',
 		"tau1_pt",
 		"tau2_pt"
@@ -517,32 +495,73 @@ def trainVars(all):
 				"tau2_pt"
 		]
 
-	if trainvar=="HTTWithKinFitKin" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
+	if trainvar=="HTT" and channel=="1l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
-						#'ptmiss',
-						'htmiss',
+						#'htmiss',
+						'ptmiss',
+						'lep_conePt',
+						'mT_lep',
 						'mTauTauVis',
 						'mindr_lep_jet',
 						'mindr_tau1_jet',
+						#'mindr_tau2_jet',
+						#'nJet',
+						#'dr_lep_tau_os',
 						'dr_lep_tau_ss',
+						#"dr_lep_tau_lead",
+						"dr_lep_tau_sublead",
 						"costS_tau",
+						#"dr_HadTop_tau_OS",
+						#"dr_HadTop_tau_SS",
+						#"mT_lepHadTop",
+						#"mT_lepHadTopH",
+						#'nBJetLoose',
+						"tau1_pt",
+						"tau2_pt",
+						'mvaOutput_hadTopTaggerWithKinFit',
+						#'HadTop_pt',
+						#"dr_HadTop_tau_lead",
+						#"mvaOutput_Hj_tagger",
+						#'mvaOutput_Hjj_tagger',
+		]
+
+	if trainvar=="HTT" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
+						'avg_dr_jet',
+						'dr_taus',
+						#'htmiss',
+						'ptmiss',
+						#'lep_conePt',
+						'mT_lep',
+						"nJet",
+						'mTauTauVis',
+						'mindr_lep_jet',
+						'mindr_tau1_jet',
+						'mindr_tau2_jet',
+						#'nJet',
+						#'dr_lep_tau_os',
+						#'dr_lep_tau_ss',
+						"dr_lep_tau_lead",
+						#"dr_lep_tau_sublead",
+						"costS_tau",
+						#"dr_HadTop_tau_OS",
+						#"dr_HadTop_tau_SS",
+						#"mT_lepHadTop",
+						#"mT_lepHadTopH",
 						'nBJetLoose',
 						"tau1_pt",
 						"tau2_pt",
-						#'lep_conePt',
-						'nJet',
-						"dr_lep_tau_lead",
-						'mT_lep',
 						'mvaOutput_hadTopTaggerWithKinFit',
 						'HadTop_pt',
-						"dr_HadTop_tau_lead"
+						#"dr_HadTop_tau_lead",
+						"mvaOutput_Hj_tagger",
+						#'mvaOutput_Hjj_tagger',
 		]
 ####################################################################################################
 ## Load data
-data=load_data(inputPath,channelInTree,trainVars(False),criteria,testtruth,bdtType)
-dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(False),[],testtruth,bdtType)
-dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeTight,trainVars(False),[],testtruth,"all")
+data=load_data(inputPath,channelInTree,trainVars(True),[],testtruth,bdtType)
+dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(True),[],testtruth,bdtType)
+dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeTight,trainVars(True),[],testtruth,"all")
 
 if channel=="1l_2tau" or channel=="2lss_1tau":
 	nSthuth = len(data.ix[(data.target.values == 0) & (data[testtruth].values==1)])
@@ -573,13 +592,13 @@ print "length of sig, bkg without NaN: ", nS, nB
 
 #################################################################################
 ### Plot histograms of training variables
-hist_params = {'normed': True, 'bins': 40, 'alpha': 0.4}
+hist_params = {'normed': True, 'bins': 15, 'alpha': 0.4}
 plt.figure(figsize=(50, 50))
 if bdtType=='evtLevelTT_TTH' : labelBKG = "tt"
 if bdtType=='evtLevelTTV_TTH' : labelBKG = "ttV"
-for n, feature in enumerate(trainVars(False)):
+for n, feature in enumerate(trainVars(True)):
     # add sub plot on our figure
-	plt.subplot(8, 8, n+1)
+	plt.subplot(7, 7, n+1)
     # define range for histograms by cutting 1% of data from both ends
 	min_value, max_value = np.percentile(data[feature], [0.0, 99])
 	print (min_value, max_value,feature)
@@ -592,58 +611,13 @@ for n, feature in enumerate(trainVars(False)):
                                range=(max(0.,min_value), max_value), label='Signal', **hist_params)
 	areaSig = sum(np.diff(bins)*values)
 	#print areaBKG, " ",areaBKG2 ," ",areaSig
+	plt.ylim(ymin=0.00001)
 	if n == 0 : plt.legend(loc='best')
 	plt.title(feature)
+	#plt.xscale('log')
+	#plt.yscale('log')
+plt.ylim(ymin=0)
 plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT.pdf")
-plt.clf()
-#################################################################################
-hist_params = {'normed': True, 'bins': 20, 'alpha': 0.4}
-plt.figure(figsize=(50, 50))
-if bdtType=='evtLevelTT_TTH' : labelBKG = "tt"
-if bdtType=='evtLevelTTV_TTH' : labelBKG = "ttV"
-for n, feature in enumerate(trainVars(False)):
-    # add sub plot on our figure
-	plt.subplot(8, 8, n+1)
-    # define range for histograms by cutting 1% of data from both ends
-	min_value, max_value = np.percentile(data[feature], [0.0, 99])
-	print (min_value, max_value,feature)
-	values, bins, _ = plt.hist(abs(data.ix[data.target.values == 0, feature].values) ,
-							   weights= abs(data.ix[data.target.values == 0, weights].values.astype(np.float64)) ,
-                               range=(max(0.,min_value), max_value),cumulative=True,
-							   label='Fastsim LL', **hist_params )
-	values, bins, _ = plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 0, feature].values),
-							   weights= abs(dataTightFS.ix[dataTightFS.target.values == 0, weights].values.astype(np.float64)) ,
-							   cumulative=True,
-                               range=(max(0.,min_value), max_value), label='Fullsim', **hist_params)
-	areaSig = sum(np.diff(bins)*values)
-	#print areaBKG, " ",areaBKG2 ," ",areaSig
-	if n == 0 : plt.legend(loc='best')
-	plt.title(feature)
-plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT_BKG_"+labelBKG+"_fullsim.pdf")
-plt.clf()
-#################################################################################
-hist_params = {'normed': True, 'bins': 20, 'alpha': 0.4}
-plt.figure(figsize=(50, 50))
-if bdtType=='evtLevelTT_TTH' : labelBKG = "tt"
-if bdtType=='evtLevelTTV_TTH' : labelBKG = "ttV"
-for n, feature in enumerate(trainVars(False)):
-    # add sub plot on our figure
-	plt.subplot(8, 8, n+1)
-    # define range for histograms by cutting 1% of data from both ends
-	min_value, max_value = np.percentile(data[feature], [0.0, 99])
-	print (min_value, max_value,feature)
-	values, bins, _ = plt.hist(abs(data.ix[data.target.values == 1, feature].values) ,
-							   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
-                               range=(max(0.,min_value), max_value),cumulative=True,
-							   label='Fastsim LL', **hist_params )
-	values, bins, _ = plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 1, feature].values),
-							   weights= abs(dataTightFS.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64)) ,cumulative=True,
-                               range=(max(0.,min_value), max_value), label='Fullsim', **hist_params)
-	areaSig = sum(np.diff(bins)*values)
-	#print areaBKG, " ",areaBKG2 ," ",areaSig
-	if n == 0 : plt.legend(loc='best')
-	plt.title(feature)
-plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT_signal_fullsim.pdf")
 plt.clf()
 #################################################################################
 
@@ -663,12 +637,12 @@ if 1>0 : #channel=="1l_2tau" :
 	  #"mvaOutput_1l_2tau_ttbar_OldVar",
 	  #"mvaOutput_1l_2tau_ttbar_OldVarHTT",
 	'mvaOutput_hadTopTaggerWithKinFit',
-	"mvaOutput_Hj_tagger","memOutput_LR",
+	"mvaOutput_Hj_tagger", #"memOutput_LR",
 	'mvaOutput_Hjj_tagger',
 	#"mvaOutput_2lss_1tau_ttbar",
 	#"mvaOutput_2lss_1tau_ttV",
 	#"memOutput_tt_LR",  "memOutput_ttZ_LR", "memOutput_ttZ_Zll_LR",
-	"oldVar_from20_to_12", "oldVar_from20_to_7"#,
+	#"oldVar_from20_to_12", "oldVar_from20_to_7"#,
 	#'mvaOutput_hadTopTagger',
 	#'mvaOutput_2lss_ttbar', 'mvaOutput_Hj_tagger', 'mvaOutput_Hjj_tagger',
 	#'lep1_isTight', 'lep2_isTight','tau_isTight',
@@ -697,90 +671,196 @@ if 1>0 : #channel=="1l_2tau" :
 								   bins=nbins,
 								   **hist_params)
 		areaSig = sum(np.diff(bins)*values)
+		plt.ylim(ymin=0.0001)
 		#print areaBKG, " ",areaBKG2 ," ",areaSig
 		if n == 0 : plt.legend(loc='best')
 		plt.title(feature)
 	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_BDT.pdf")
 	plt.clf()
 ##################################################################
+
 if 1>0 : #channel=="1l_2tau" :
+	##############################################################
 	hist_params = {'normed': True, 'alpha': 0.4}
-	plt.figure(figsize=(15, 5))
+	plt.figure(figsize=(40, 40))
 	n=8
-	nbins=15
-	for n, feature  in enumerate([
-	'mvaOutput_hadTopTaggerWithKinFit',
-	"mvaOutput_Hj_tagger","memOutput_LR",
-	]):
-	    # add sub plot on our figure
-		plt.subplot(1, 3, n+1)
-	    # define range for histograms by cutting 1% of data from both ends
-		#if n==3 : nbins=20
-		#elif n==7 or n==8 : nbins=100
-		#else : nbins=10
+	nbins=20
+	residualsSignal=[]
+	for n, feature  in enumerate(trainVars(True)):
+		plt.subplot(7, 7, n+1)
 		min_value, max_value = np.percentile(data[feature], [1, 99])
 		print (min_value, max_value,feature)
-		values, bins, _ = plt.hist(abs(data.ix[data.target.values == 1, feature].values.astype(np.float64)) ,
-								   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
-	                               range=(max(min_value,0.), max_value),cumulative=True,
-								   label="Fastsim LL",
-								   bins=nbins,
-								   **hist_params )
-		values, bins, _ = plt.hist(abs(data.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
-								   weights= data.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(max(min_value,0.), max_value),cumulative=True,
-								   label='Fullsim',
+		plot1= plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
+								   weights= dataTightFS.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label='Fullsim '+FullsimWP+' tau',
 								   bins=nbins,
 								   **hist_params)
-		areaSig = sum(np.diff(bins)*values)
-		#print areaBKG, " ",areaBKG2 ," ",areaSig
+		plot2 = plt.hist(abs(data.ix[data.target.values == 1, feature].values.astype(np.float64)) ,
+								   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label="Fastsim "+FastsimWP+" tau",
+								   bins=nbins,
+								   **hist_params )
+		residualsSignal=residualsSignal+[(plot1[0]-plot2[0])/(plot1[0])]
+		plt.ylim(ymin=0.00001)
 		if n == 0 : plt.legend(loc='best')
 		plt.title(feature)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_signal_fastsim_BDT.pdf")
+		#plt.xscale('log')
+		#plt.yscale('log')
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fastsim_fullsim.pdf")
 	plt.clf()
-##################################################################
-if 1>0 : #channel=="1l_2tau" :
-	hist_params = {'normed': True, 'alpha': 0.4}
-	plt.figure(figsize=(15, 5))
-	n=8
-	nbins=15
-	for n, feature  in enumerate([
-	'mvaOutput_hadTopTaggerWithKinFit',
-	"mvaOutput_Hj_tagger","memOutput_LR",
-	]):
-	    # add sub plot on our figure
-		plt.subplot(1, 3, n+1)
-	    # define range for histograms by cutting 1% of data from both ends
-		#if n==3 : nbins=20
-		#elif n==7 or n==8 : nbins=100
-		#else : nbins=10
+	#print ("residualsSignal",residualsSignal)
+	residualsSignal=np.nan_to_num(residualsSignal)
+	for n, feature  in enumerate(trainVars(True)):
+		(mu, sigma) = norm.fit(residualsSignal[n])
+		plt.subplot(7, 7, n+1)
+		n, bins, patches = plt.hist(residualsSignal[n], label='Residuals Full('+FullsimWP+')/Fastsim('+FastsimWP+')  Signal')
+		# add a 'best fit' line
+		y = mlab.normpdf( bins, mu, sigma)
+		l = plt.plot(bins, y, 'r--', linewidth=2)
+		plt.ylim(ymin=0)
+		plt.title(feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma))
+		print feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_Signal_fullsim_residuals.pdf")
+	plt.clf()
+	##################################################################
+	residualsBKG=[]
+	for n, feature  in enumerate(trainVars(True)):
+		plt.subplot(7, 7, n+1)
 		min_value, max_value = np.percentile(data[feature], [1, 99])
 		print (min_value, max_value,feature)
-		values, bins, _ = plt.hist(abs(data.ix[data.target.values == 1, feature].values.astype(np.float64)) ,
-								   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
-	                               range=(max(min_value,0.), max_value),cumulative=True,
-								   label="Fastsim LL",
-								   bins=nbins,
-								   **hist_params )
-		values, bins, _ = plt.hist(abs(data.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
-								   weights= data.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(max(min_value,0.), max_value),cumulative=True,
-								   label='Fullsim',
+		plot1 = plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 0, feature].values.astype(np.float64)),
+								   weights= dataTightFS.ix[dataTightFS.target.values == 0, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label='Fullsim '+FullsimWP+' tau',
 								   bins=nbins,
 								   **hist_params)
-		areaSig = sum(np.diff(bins)*values)
-		#print areaBKG, " ",areaBKG2 ," ",areaSig
+		plot2 = plt.hist(abs(data.ix[data.target.values == 0, feature].values.astype(np.float64)) ,
+								   weights= abs(data.ix[data.target.values == 0, weights].values.astype(np.float64)) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label="Fastsim ("+FastsimWP+") tau",
+								   bins=nbins,
+								   **hist_params )
+		residualsBKG=residualsBKG+[(plot1[0]-plot2[0])/(plot1[0])]
+		plt.ylim(ymin=0.00000000000000000001)
 		if n == 0 : plt.legend(loc='best')
 		plt.title(feature)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_BKG_fastsim_BDT.pdf")
+		#plt.xscale('log')
+		#plt.yscale('log')
+	plt.ylim(ymin=0)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim_fullsim.pdf")
+	plt.clf()
+
+	residualsBKG=np.nan_to_num(residualsBKG)
+	for n, feature  in enumerate(trainVars(True)):
+		(mu, sigma) = norm.fit(residualsBKG[n])
+		plt.subplot(7, 7, n+1)
+		n, bins, patches = plt.hist(residualsBKG[n], label='Residuals Full('+FullsimWP+')/Fastsim('+FastsimWP+') BKG')
+		# add a 'best fit' line
+		y = mlab.normpdf( bins, mu, sigma)
+		l = plt.plot(bins, y, 'r--', linewidth=2)
+		plt.ylim(ymin=0)
+		plt.title(feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma))
+		print feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fullsim"+FullsimWP+"_residuals.pdf")
+	plt.clf()
+
+	##################################################################
+	hist_params = {'normed': True, 'alpha': 0.4}
+	plt.figure(figsize=(40, 40))
+	for n, feature  in enumerate(trainVars(True)):
+	    # add sub plot on our figure
+		plt.subplot(7, 7, n+1)
+		min_value, max_value = np.percentile(data[feature], [1, 99])
+		print (min_value, max_value,feature)
+		plot1= plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 0, feature].values.astype(np.float64)),
+								   weights= dataTightFS.ix[dataTightFS.target.values == 0, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label='Fastsim Tight tau',
+								   bins=nbins,
+								   **hist_params)
+		plot2= plt.hist(abs(data.ix[data.target.values == 0, feature].values.astype(np.float64)) ,
+								   weights= abs(data.ix[data.target.values == 0, weights].values.astype(np.float64)) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label="Fastsim "+FastsimWP+" tau",
+								   bins=nbins,
+								   **hist_params )
+		if n == 0 : plt.legend(loc='best')
+		plt.ylim(ymin=0.00001)
+		plt.title(feature)
+		#plt.xscale('log')
+		#plt.yscale('log')
+	plt.ylim(ymin=0)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim"+FastsimWP+"_tight.pdf")
+	plt.clf()
+	##################################################################
+	hist_params = {'normed': True, 'alpha': 0.4}
+	plt.figure(figsize=(40, 40))
+	for n, feature  in enumerate(trainVars(True)):
+	    # add sub plot on our figure
+		plt.subplot(7, 7, n+1)
+		min_value, max_value = np.percentile(data[feature], [1, 99])
+		print (min_value, max_value,feature)
+		plot1= plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
+								   weights= dataTightFS.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label='Fastsim Tight tau',
+								   bins=nbins,
+								   **hist_params)
+		plot2= plt.hist(abs(data.ix[data.target.values == 1, feature].values.astype(np.float64)) ,
+								   weights= abs(data.ix[data.target.values == 1, weights].values.astype(np.float64)) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label="Fastsim "+FastsimWP+" tau",
+								   bins=nbins,
+								   **hist_params )
+		if n == 0 : plt.legend(loc='best')
+		plt.ylim(ymin=0.00001)
+		plt.title(feature)
+		#plt.xscale('log')
+		#plt.yscale('log')
+	plt.ylim(ymin=0)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim"+FastsimWP+"_tight.pdf")
+	plt.clf()
+	##################################################################
+	hist_params = {'normed': True, 'alpha': 0.4}
+	plt.figure(figsize=(40, 40))
+
+	for n, feature  in enumerate(trainVars(True)):
+		plt.subplot(7, 7, n+1)
+		min_value, max_value = np.percentile(data[feature], [1, 99])
+		print (min_value, max_value,feature)
+		plot1= plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
+								   weights= dataTightFS.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label='Fullsim signal '+FullsimWP+' tau',
+								   bins=nbins,
+								   **hist_params)
+		plot2= plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 0, feature].values.astype(np.float64)),
+								   weights= dataTightFS.ix[dataTightFS.target.values == 0, weights].values.astype(np.float64) ,
+	                               range=(max(min_value,0.), max_value), #cumulative=True,
+								   label='Fullsim BKG '+FullsimWP+' tau',
+								   bins=nbins,
+								   **hist_params)
+		plt.ylim(ymin=0.00001)
+		#plt.xscale('log')
+		#plt.yscale('log')
+		#if n == 0 :
+		#	print ("BKG",plot1[0],plot2[0],plot2[1])
+		#	print ("residuals",plot1[0]-plot2[0],plot2[1])
+		if n == 0 : plt.legend(loc='best')
+		plt.title(feature)
+	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fullsim"+FullsimWP+".pdf")
 	plt.clf()
 ###################################################################
-totestcorr=["memOutput_LR",'mvaOutput_hadTopTaggerWithKinFit',
+if channel=="22lss_1tau" : njet="nJet25_Recl"
+else : njet="nJet"
+totestcorr=['mvaOutput_hadTopTaggerWithKinFit',
 "mvaOutput_Hj_tagger",
-'mvaOutput_Hjj_tagger',"nJet25_Recl"]
-totestcorrNames=["MEM",'HTT',
+'mvaOutput_Hjj_tagger',] #]
+totestcorrNames=['HTT',
 "Hj_tagger",
-'Hjj_tagger',"nJet"]
+'Hjj_tagger',njet]
 for ii in [1,2] :
 	if ii == 1 :
 		datad=data.loc[data['target'].values == 1]
@@ -869,24 +949,32 @@ cls.fit(
 print trainVars(False)
 print traindataset[trainVars(False)].columns.values.tolist()
 print ("XGBoost trained")
-proba = cls.predict_proba(traindataset[trainVars(False)].values  )
-fpr, tpr, thresholds = roc_curve(traindataset["target"], proba[:,1] )
+proba = cls.predict_proba(traindataset[trainVars(False)].values )
+fpr, tpr, thresholds = roc_curve(traindataset["target"], proba[:,1],
+	sample_weight=(traindataset[weights].astype(np.float64)) )
 train_auc = auc(fpr, tpr, reorder = True)
 print("XGBoost train set auc - {}".format(train_auc))
-proba = cls.predict_proba(valdataset[trainVars(False)].values)
-fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1] )
+proba = cls.predict_proba(valdataset[trainVars(False)].values )
+fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1], sample_weight=(valdataset[weights].astype(np.float64))  )
 test_auct = auc(fprt, tprt, reorder = True)
 print("XGBoost test set auc - {}".format(test_auct))
-if channel=="2lss_1tau" : # 'lep1_isTight', 'lep2_isTight','tau_isTight',"failsTightChargeCut"
-	#datatight=data.loc[ (data.lep1_isTight.values == 1) &
-	#					(data.lep2_isTight.values == 1) &
-	#					(data.tau_isTight.values == 1) &
-	#					(data.failsTightChargeCut.values == 0 ) ]
-	proba = cls.predict_proba(dataTight[trainVars(False)].values)
-	fprtight, tprtight, thresholds = roc_curve(dataTight["target"], proba[:,1] )
-	test_auctight = auc(fprtight, tprtight, reorder = True)
-	print("XGBoost test set auc - tight lep ID - {}".format(test_auctight))
-#print cls.params_
+proba = cls.predict_proba(dataTight[trainVars(False)].values )
+fprtight, tprtight, thresholds = roc_curve(dataTight["target"], proba[:,1], sample_weight=(dataTight[weights].astype(np.float64))  )
+test_auctight = auc(fprtight, tprtight, reorder = True)
+print("XGBoost test set auc - tight lep ID - {}".format(test_auctight))
+proba = cls.predict_proba(dataTightFS[trainVars(False)].values)
+fprtightF, tprtightF, thresholds = roc_curve(dataTightFS["target"], proba[:,1], sample_weight=(dataTightFS[weights].astype(np.float64)) )
+test_auctightF = auc(fprtightF, tprtightF, reorder = True)
+print("XGBoost test set auc - fullsim all - {}".format(test_auctightF))
+if bdtType=="evtLevelTT_TTH" :
+	tightTT=dataTightFS.ix[(dataTightFS.proces.values=='TT') | (dataTightFS.proces.values=='signal')]
+if bdtType=="evtLevelTTV_TTH" :
+	tightTT=dataTightFS.ix[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW') | (dataTightFS.proces.values=='signal')]
+proba = cls.predict_proba(tightTT[trainVars(False)].values)
+fprtightFI, tprtightFI, thresholds = roc_curve(tightTT["target"], proba[:,1], sample_weight=(tightTT[weights].astype(np.float64)))
+test_auctightFI = auc(fprtightFI, tprtightFI, reorder = True)
+print("XGBoost test set auc - fullsim individual - {}".format(test_auctightFI))
+
 pklpath=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+"_"+str(len(trainVars(False)))+"Var"
 print ("Done  ",pklpath,hyppar)
 if options.doXML==True :
@@ -901,24 +989,6 @@ if options.doXML==True :
 	#model = cls.booster().get_dump(fmap='', with_stats=False) #.get_dump() #pickle.dumps(cls)
 	#xmlfile=channel+"/"+channel+"_XGB_"+trainvar+"_"+bdtType+".xml"
 ##################################################
-###############
-"""
-clf = GradientBoostingClassifier(max_depth=3,learning_rate=0.02,n_estimators=500,min_samples_leaf=100) # ,min_samples_leaf=10,min_samples_split=10
-clf.fit(traindataset[trainVars(False)].values,
-	traindataset.target.astype(np.bool),
-	sample_weight=(traindataset[weights].astype(np.float64))
-	)
-print ("GradientBoosting trained")
-proba = clf.predict_proba(traindataset[trainVars(False)].values  )
-fprf, tprf, thresholdsf = roc_curve(traindataset["target"], proba[:,1] )
-train_aucf = auc(fprf, tprf, reorder = True)
-print("GradientBoosting train set auc - {}".format(train_aucf))
-proba = clf.predict_proba(valdataset[trainVars(False)].values)
-fprtf, tprtf, thresholdsf = roc_curve(valdataset["target"], proba[:,1] )
-test_auctf = auc(fprtf, tprtf, reorder = True)
-print("GradientBoosting test set auc - {}".format(test_auctf))
-"""
-##################################################
 fig, ax = plt.subplots(figsize=(6, 6))
 ## ROC curve
 #ax.plot(fprf, tprf, lw=1, label='GB train (area = %0.3f)'%(train_aucf))
@@ -927,7 +997,10 @@ ax.plot(fpr, tpr, lw=1, label='XGB train (area = %0.3f)'%(train_auc))
 ax.plot(fprt, tprt, lw=1, label='XGB test (area = %0.3f)'%(test_auct))
 #ax.plot(fprc, tprc, lw=1, label='CB train (area = %0.3f)'%(train_aucc))
 ax.plot(fprtight, tprtight, lw=1, label='XGB test - tight ID (area = %0.3f)'%(test_auctight))
+ax.plot(fprtightFI, tprtightFI, lw=1, label='XGB test - Fullsim (area = %0.3f)'%(test_auctightFI))
+#ax.plot(fprtightF, tprtightF, lw=1, label='XGB test - Fullsim All (area = %0.3f)'%(test_auctightF))
 ax.set_ylim([0.0,1.0])
+ax.set_xlim([0.0,1.0])
 ax.set_xlabel('False Positive Rate')
 ax.set_ylabel('True Positive Rate')
 ax.legend(loc="lower right")
@@ -1008,4 +1081,27 @@ if options.HypOpt==False :
 		plt.savefig("{}/{}_{}_{}_corr_{}.png".format(channel,bdtType,trainvar,str(len(trainVars(False))),label))
 		plt.savefig("{}/{}_{}_{}_corr_{}.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False))),label))
 		ax.clear()
-###################################################################
+	###################################################################
+	for ii in [1,2] :
+		if ii == 1 :
+			datad=dataTightFS.loc[dataTightFS['target'].values == 1]
+			label="signal"
+		else :
+			datad=dataTightFS.loc[dataTightFS['target'].values == 0]
+			label="BKG"
+		datacorr = datad[trainVars(False)] #.loc[:,trainVars(False)] #dataHToNobbCSV[[trainVars(True)]]
+		correlations = datacorr.corr()
+		fig = plt.figure(figsize=(10, 10))
+		ax = fig.add_subplot(111)
+		cax = ax.matshow(correlations, vmin=-1, vmax=1)
+		ticks = np.arange(0,len(trainVars(False)),1)
+		plt.rc('axes', labelsize=8)
+		ax.set_xticks(ticks)
+		ax.set_yticks(ticks)
+		ax.set_xticklabels(trainVars(False),rotation=-90)
+		ax.set_yticklabels(trainVars(False))
+		fig.colorbar(cax)
+		fig.tight_layout()
+		#plt.subplots_adjust(left=0.9, right=0.9, top=0.9, bottom=0.1)
+		plt.savefig("{}/{}_{}_{}_corr_{}_FS.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False))),label))
+		ax.clear()
