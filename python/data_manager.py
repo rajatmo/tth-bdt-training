@@ -450,7 +450,7 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     ROOT.gPad.SetLeftMargin(0.12)
     mc.Draw("HIST");
     mc.SetMaximum(15* mc.GetMaximum());
-    mc.SetMinimum(max(0.04* mc.GetMinimum(),0.01));
+    mc.SetMinimum(max(0.04* mc.GetMinimum(),0.000000000001));
     mc.GetYaxis().SetRangeUser(0.01,110);
     mc.GetHistogram().GetYaxis().SetTitle("Expected events/bin");
     mc.GetHistogram().GetXaxis().SetTitle("Bin in the bdt1#times bdt2 plane");
@@ -703,8 +703,9 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
             nameHisto=histogramCopy.GetName()
             histogram.SetName(histogramCopy.GetName()+"_"+str(nn)+BINtype)
             histogramCopy.SetName(histogramCopy.GetName()+"Copy_"+str(nn)+BINtype)
-            if histogramCopy.GetName() == "fakes_data" or histogramCopy.GetName() =="TTZ" or histogramCopy.GetName() =="TTW" or histogramCopy.GetName() =="TTWW" or histogramCopy.GetName() == "EWK" :
-                print ("not rebinned",histogramCopy.GetName(),histogramCopy.Integral())
+            #histogramCopy.SetBit(ROOT.TH1.kCanRebin)
+            #if histogramCopy.GetName() == "fakes_data" or histogramCopy.GetName() =="TTZ" or histogramCopy.GetName() =="TTW" or histogramCopy.GetName() =="TTWW" or histogramCopy.GetName() == "EWK" :
+            #print ("not rebinned",histogramCopy.GetName(),histogramCopy.Integral())
             if BINtype=="none" :
                 histo=histogramCopy.Clone()
                 histo.SetName(nameHisto)
@@ -712,14 +713,17 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
                 histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
             elif BINtype=="quantiles" :
                 histo=TH1F( nameHisto, nameHisto , nbins+1 , nbinsQuant)
-            for place in range(1,histogramCopy.GetNbinsX() + 1) :
+
+            for place in range(0,histogramCopy.GetNbinsX() + 1) :
                 content =      histogramCopy.GetBinContent(place)
                 binErrorCopy = histogramCopy.GetBinError(place);
-                newbin =       histo.FindBin(histogramCopy.GetBinCenter(place))
+                newbin =       histo.GetXaxis().FindBin(histogramCopy.GetXaxis().GetBinUpEdge(place)) #GetBinCenter(place))
                 binError =     histo.GetBinError(newbin);
-                histo.SetBinContent(newbin, histo.GetBinContent(newbin)+content)
-                histogram.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
-            if not histogram.GetSumw2N() : histogram.Sumw2()
+                contentNew =   histo.GetBinContent(newbin)
+                histo.AddBinContent(newbin, content)
+                histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
+                #if histogramCopy.GetBinCenter(place) > 0.174 and  content>0 and bdtType=="1B" and nbins==20 : print ("overflow bin", histogramCopy.GetBinCenter(place),content,nameHisto)
+            #if not histo.GetSumw2N() : histo.Sumw2()
             if histogramCopy.GetName() == "fakes_data" or histogramCopy.GetName() =="TTZ" or histogramCopy.GetName() =="TTW" or histogramCopy.GetName() =="TTWW" or histogramCopy.GetName() == "EWK" :
                 print ("rebinned",histo.GetName(),histo.Integral())
             histo.Write()
@@ -760,7 +764,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
         fileOut.Write()
         print (name+" created")
         if doplots and bdtType=="1B":
-            if nbins==4  :
+            if nbins==20  :
                 if BINtype=="none" : namepdf=histSource
                 if BINtype=="regular" : namepdf=histSource+"_"+str(nbins)+"bins"
                 if BINtype=="ranged" : namepdf=histSource+"_"+str(nbins)+"bins_ranged"
@@ -775,7 +779,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
         if BINtype=="ranged" or BINtype=="regular" : hSumi = TH1F( "hSum", "hSum" , nbins , xmin , xmax)
         elif BINtype=="quantiles" : hSumi = TH1F( "hSum", "hSum" , nbins , nbinsQuant)
         if not hSumi.GetSumw2N() : hSumi.Sumw2()
-        for place in range(1,hSumCopy.GetNbinsX() + 1) :
+        for place in range(1,hSumCopy.GetNbinsX() + 2) :
             content=hSumCopy.GetBinContent(place)
             newbin=hSumi.FindBin(hSumCopy.GetBinCenter(place))
             binErrorCopy = hSumCopy.GetBinError(place);
