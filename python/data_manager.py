@@ -717,7 +717,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
             for place in range(0,histogramCopy.GetNbinsX() + 1) :
                 content =      histogramCopy.GetBinContent(place)
                 binErrorCopy = histogramCopy.GetBinError(place);
-                newbin =       histo.GetXaxis().FindBin(histogramCopy.GetXaxis().GetBinUpEdge(place)) #GetBinCenter(place))
+                newbin =       histo.GetXaxis().FindBin(histogramCopy.GetXaxis().GetBinCenter(place))
                 binError =     histo.GetBinError(newbin);
                 contentNew =   histo.GetBinContent(newbin)
                 histo.AddBinContent(newbin, content)
