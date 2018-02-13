@@ -37,6 +37,19 @@ if channel=='1l_2tau':
 	criteria=[]
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 
+if channel=="2l_2tau": # see Feb10
+	channelInTree='2l_2tau_sumOS_Loose'
+	#channelInTree='2l_2tau_sumOS_Tight'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_BDT_LLepVVLTau/histograms/2l_2tau/forBDTtraining_sumOS/' #
+	criteria=[]
+	testtruth="None"
+	# /hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_BDT_LLepVVLTau/
+	channelInTreeTight='2l_2tau_sumOS_Tight'
+	#channelInTreeTight='2l_2tau_sumOS_Loose'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_BDT_TLepTTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+	channelInTreeFS='2l_2tau_sumOS_Tight'
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_VHbb_trees_TLepTTau//histograms/2l_2tau/Tight_sumOS/'
+
 if channel=='2lss_1tau':
 	if options.relaxedLepID==True :
 		channelInTree='2lss_1tau_lepSS_sumOS_Loose'
@@ -65,7 +78,6 @@ import sys , time
 from ROOT import TMVA
 import sklearn
 from sklearn import datasets
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.cross_validation import train_test_split
 import pandas
 import ROOT
@@ -272,7 +284,7 @@ def trainVarsTT(trainvar):
 			"mvaOutput_Hj_tagger"
 			]
 
-        if trainvar=="oldVar"  and channel=="1l_2tau" and bdtType=="evtLevelTT_TTH" and all==False :return [
+        if trainvar=="oldVar"  and channel=="1l_2tau" :return [
 		"htmiss",
 		'mTauTauVis',
 		"dr_taus",
@@ -283,6 +295,17 @@ def trainVarsTT(trainvar):
 		"tau2_pt"
 		]
 
+        if trainvar=="noHTT" and channel=="2l_2tau" :return [
+			"mTauTauVis", "cosThetaS_hadTau",
+			'tau1_pt','tau2_pt',
+			"mindr_lep1_jet",
+			"mT_lep1",
+			"mindr_tau1_jet",
+			"mindr_tau2_jet",
+			"avr_dr_lep_tau",
+			"is_OS",
+			"nBJetLoose",
+			]
 
 def trainVarsTTV(trainvar):
 
@@ -402,7 +425,7 @@ def trainVarsTTV(trainvar):
 			'mvaOutput_hadTopTaggerWithKinFit'
 			]
 
-        if trainvar=="oldVar"  and channel=="1l_2tau" and bdtType=="evtLevelTTV_TTH" and all==False :return [
+        if trainvar=="oldVar"  and channel=="1l_2tau"  :return [
 		"htmiss",
 		'mTauTauVis',
 		"dr_taus",
@@ -412,6 +435,21 @@ def trainVarsTTV(trainvar):
 		"tau1_pt",
 		"tau2_pt"
 		]
+
+        if trainvar=="noHTT" and channel=="2l_2tau"  :return [
+			'mTauTauVis',
+			'tau1_pt',
+			'lep1_conePt',
+			'mindr_lep1_jet',
+			'mT_lep1',
+			'lep2_conePt',
+			'mindr_tau1_jet',
+			'dr_taus',
+			'dr_lep1_tau1',
+			"avr_dr_lep_tau",
+			"is_OS",
+			'nJet'
+			]
 
 ####################################################################################################
 ## Load data
@@ -424,7 +462,7 @@ weights="totalWeight"
 doCSVfile=False
 doInFS=False
 if channel=="2l_2tau" : data=load_data_2l2t()
-if channel=="2lss_1tau" or channel=="1l_2tau" :
+if channel=="2lss_1tau" or channel=="1l_2tau"  or channel=="2l_2tau" :
 	if options.variables!="oldTrainCSV" or doCSVfile : #options.variables!="oldTrainCSV"
 		if options.relaxedLepID==True : data=load_data(inputPath,channelInTree,Variables_all,[],testtruth,"all")
 		else : data=load_data(inputPathTight,channelInTreeTight,Variables_all,[],testtruth,"all") #
@@ -471,8 +509,10 @@ if channel=="1l_2tau":
 	if BDTvar=="noHTT" : tt_file=basepkl+"/1l_2tau_XGB_noHTT_evtLevelTT_TTH_13Var.pkl" #
 	if BDTvar=="HTT" : tt_file=basepkl+"/1l_2tau_XGB_HTT_evtLevelTT_TTH_17Var.pkl"
 
-	#('saved ', '1l_2tau/1l_2tau_XGB_noHTT_evtLevelTTV_TTH_9Var.pkl')
-	#('saved ', '1l_2tau/1l_2tau_XGB_noHTT_evtLevelTT_TTH_10Var.pkl')
+if channel=="2l_2tau":
+	basepkl="/home/acaan/CMSSW_9_4_0_pre1/src/tth-bdt-training-test/EvtLevel/2l_2tau"
+	if BDTvar=="noHTT" : ttV_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTTV_TTH_12Var.pkl"
+	if BDTvar=="noHTT" : tt_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTT_TTH_11Var.pkl" #
 
 if doInFS :
 	dataTT =dataTightFS.ix[(dataTightFS.proces.values=='TT')]
@@ -519,7 +559,7 @@ elif channel=="2l_2tau" :
 	ttBDT="mva_tt"
 	ttVBDT="mva_ttv"
 
-if "oldTrain" in BDTvar or channel=="2l_2tau":
+if "oldTrain" in BDTvar :
 	tt_datainTT =dataTT[ttBDT].values
 	ttV_datainTT=dataTTV[ttBDT].values
 	ttH_datainTT=dataTTH[ttBDT].values
@@ -617,8 +657,8 @@ else :
 	test_auca=auc(fpra, tpra, reorder = True)
 	print ("ROC TTV BDT in all",BDTvar,test_auca)
 	testROCttV=clsTTV.predict_proba(dataTightFS[trainVarsTTV(BDTvar)].values)
-	fprat, tprat, thresholds = roc_curve(dataTightFS["target"].values, testROCttV[:,1], sample_weight=(dataTightFS[weights].astype(np.float64)))
-	test_aucat=auc(fprat, tprat, reorder = True)
+	fpratttV, tpratttV, thresholds = roc_curve(dataTightFS["target"].values, testROCttV[:,1], sample_weight=(dataTightFS[weights].astype(np.float64)))
+	test_aucatttV=auc(fpratttV, tpratttV, reorder = True)
 	print ("ROC TTV BDT in all tight",BDTvar,test_aucat)
 	tight=dataTightFS.ix[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW') | (dataTightFS.proces.values=='signal')]
 	testROCttV=clsTTV.predict_proba(tight[trainVarsTTV(BDTvar)].values)
@@ -626,18 +666,17 @@ else :
 	test_auctight=auc(fprtight, tprtight, reorder = True)
 	print ("ROC TTV BDT in TTV FS",BDTvar,)
 	testROCttV=clsTTV.predict_proba(tightAll[trainVarsTTV(BDTvar)].values)
-	fprtightF, tprtightF, thresholds = roc_curve(tightAll["target"].values, testROCttV[:,1], sample_weight=(tightAll[weights].astype(np.float64))  )
-	test_auctightF=auc(fprtightF, tprtightF, reorder = True)
+	fprtightFttV, tprtightFttV, thresholds = roc_curve(tightAll["target"].values, testROCttV[:,1], sample_weight=(tightAll[weights].astype(np.float64))  )
+	test_auctightFttV=auc(fprtightFttV, tprtightFttV, reorder = True)
 	print ("ROC TTV BDT in all FS",BDTvar,test_auctightF)
 	##################################################
 	fig, ax = plt.subplots(figsize=(6, 6))
-	ax.plot(fpr, tpr, lw=1, label='TTV-BDT in TT-sample MT-FastSim (area = %0.3f)'%(test_auc))
+	ax.plot(fpr, tpr, lw=1, label='TTV-BDT in TT-sample MT-FastSim (area = %0.3f)'%(test_aucttV))
 	ax.plot(fprttV, tprttV, lw=1, label='TTV-BDT in TTV-sample MT-FastSim (area = %0.3f)'%(test_aucttV))
 	ax.plot(fprtight, tprtight, lw=1, label='TTV-BDT in TTV-Fulsim (area = %0.3f)'%(test_auctight))
-
 	ax.plot(fpra, tpra, lw=1, label='TTV-BDT in TT+TTV MT-FastSim (area = %0.3f)'%(test_auca))
 	ax.plot(fprat, tprat, lw=1, label='TTV-BDT in TT+TTV Tight-FastSim (area = %0.3f)'%(test_aucat))
-	ax.plot(fprtightF, tprtightF, lw=1, label='TTV-BDT in TT+TTV-Fullsim (area = %0.3f)'%(test_auctightF))
+	ax.plot(fprtightF, tprtightF, lw=1, label='TTV-BDT in TT+TTV-Fullsim (area = %0.3f)'%(test_auctightFttV))
 	ax.set_ylim([0.0,1.0])
 	ax.set_xlim([0.0,1.0])
 	ax.set_xlabel('False Positive Rate')
@@ -1251,6 +1290,9 @@ if options.doBDT == True :
 	data["BDTttV"] = clsTTV.predict_proba(data[trainVarsTTV(BDTvar)].values)[:, 1]
 	dataTightFS["BDTtt"] = clsTT.predict_proba(dataTightFS[trainVarsTT(BDTvar)].values)[:, 1]
 	dataTightFS["BDTttV"] = clsTTV.predict_proba(dataTightFS[trainVarsTTV(BDTvar)].values)[:, 1]
+	# balance datasets
+	data.loc[data['target']==0, ['totalWeight']] *= 100000/data.loc[data['target']==0]["totalWeight"].sum()
+	data.loc[data['target']==1, ['totalWeight']] *= 100000/data.loc[data['target']==1]["totalWeight"].sum()
 	traindataset, valdataset  = train_test_split(data[trainVars+["target","totalWeight"]], test_size=0.2, random_state=7)
 	cls =  xgb.XGBClassifier(
 				n_estimators = options.ntrees,
@@ -1281,61 +1323,91 @@ if options.doBDT == True :
 		print ("variables are: ",pklpath+"_pkl.log")
 	print ("XGBoost trained")
 	proba = cls.predict_proba(traindataset[trainVars].values  )
-	fpr, tpr, thresholds = roc_curve(traindataset["target"], proba[:,1], sample_weight=(traindataset[weights].astype(np.float64)) )
-	train_auc = auc(fpr, tpr, reorder = True)
-	print("XGBoost train set auc - {}".format(train_auc))
+	fprJ, tprJ, thresholds = roc_curve(traindataset["target"], proba[:,1], sample_weight=(traindataset[weights].astype(np.float64)) )
+	train_aucJ = auc(fprJ, tprJ, reorder = True)
+	print("XGBoost train set auc - {}".format(train_aucJ))
 	proba = cls.predict_proba(valdataset[trainVars].values)
-	fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1], sample_weight=(valdataset[weights].astype(np.float64)) )
-	test_auct = auc(fprt, tprt, reorder = True)
-	print("XGBoost test set auc - {}".format(test_auct))
+	fprtJ, tprtJ, thresholds = roc_curve(valdataset["target"], proba[:,1], sample_weight=(valdataset[weights].astype(np.float64)) )
+	test_auctJ = auc(fprtJ, tprtJ, reorder = True)
+	print("XGBoost test set auc - {}".format(test_auctJ))
 	tightTT=dataTightFS.ix[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW') |(dataTightFS.proces.values=='TT') | (dataTightFS.proces.values=='signal')]
 	proba = cls.predict_proba(tightTT[trainVars].values)
-	fprtf, tprtf, thresholds = roc_curve(tightTT["target"], proba[:,1], sample_weight=(tightTT[weights].astype(np.float64)))
-	test_auctf = auc(fprtf, tprtf, reorder = True)
-	print("XGBoost fulsim (TT+TTV) auc - {}".format(test_auctf))
+	fprtfJ, tprtfJ, thresholds = roc_curve(tightTT["target"], proba[:,1], sample_weight=(tightTT[weights].astype(np.float64)))
+	test_auctfJ = auc(fprtfJ, tprtfJ, reorder = True)
+	print("XGBoost fulsim (TT+TTV) auc - {}".format(test_auctfJ))
+	tightTT=dataTightFS.ix[(dataTightFS.proces.values=='TT') | (dataTightFS.proces.values=='signal')]
+	proba = cls.predict_proba(tightTT[trainVars].values)
+	fprtftJ, tprtftJ, thresholds = roc_curve(tightTT["target"], proba[:,1], sample_weight=(tightTT[weights].astype(np.float64)))
+	test_auctftJ = auc(fprtftJ, tprtftJ, reorder = True)
+	print("XGBoost fulsim (TT) auc - {}".format(test_auctftJ))
 	proba = cls.predict_proba(dataTightFS[trainVars].values)
-	fprtfA, tprtfA, thresholds = roc_curve(dataTightFS["target"], proba[:,1], sample_weight=(dataTightFS[weights].astype(np.float64)) )
-	test_auctfA = auc(fprtfA, tprtfA, reorder = True)
-	print("XGBoost fulsim all auc - {}".format(test_auctfA))
+	fprtfAJ, tprtfAJ, thresholds = roc_curve(dataTightFS["target"], proba[:,1], sample_weight=(dataTightFS[weights].astype(np.float64)) )
+	test_auctfAJ = auc(fprtfAJ, tprtfAJ, reorder = True)
+	print("XGBoost fulsim all auc - {}".format(test_auctfAJ))
 	f_score_dict =cls.booster().get_fscore()
 	f_score_dict = {trainVars[int(k[1:])] : v for k,v in f_score_dict.items()}
 	if BDTtype=="1B" :  print("importance", f_score_dict)
 	###########################################################################
 	#print (list(valdataset))
 	#plt.clf()
-	hist_params = {'normed': True, 'bins': 7 , 'histtype':'step', 'lw': 3}
-	fig, ax = plt.subplots(figsize=(5, 5))
+	hist_params = {'normed': True, 'bins': 15 , 'histtype':'step', 'lw': 3}
+	fig= plt.subplots(figsize=(5, 5))
 	# plt.subplot(221)
 	y_pred = cls.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars].values)[:, 1] #
 	y_predS = cls.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars].values)[:, 1] #
 	#plt.figure('XGB',figsize=(6, 6))
-	ax.hist(y_pred , label="TT + TTV", **hist_params)
-	ax.hist(y_predS , label="signal", **hist_params )
+	plt.hist(y_pred , label="TT + TTV", **hist_params)
+	plt.hist(y_predS , label="signal", **hist_params )
 	#plt.xscale('log')
 	#plt.yscale('log')
-	ax.set_xlim([0.0,1.0])
-	ax.set_ylim([0.0,1.0])
-	ax.legend(loc='upper left')
+	#locmin = matplotlib.ticker.LogLocator(base=10.0, subs=(0.1,0.2,0.4,0.6,0.8,1,2,4,6,8,10 ))
+	#ax.xaxis.set_minor_locator(locmin)
+	#ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+	#ax.yaxis.set_minor_locator(locmin)
+	#ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+	#ax.set_xlim([0.01,1.0])
+	#ax.set_ylim([0.01,40.0])
+	plt.legend(loc='upper left')
 	plt.show()
-	fig.savefig(channel+'/'+BDTvar+'_jointBDT_XGBclassifier.pdf')
+	plt.savefig(channel+'/'+BDTvar+'_jointBDT_XGBclassifier.pdf')
 	plt.clf()
 	##################################################
-	fig, ax = plt.subplots(figsize=(5, 5))
+	fig= plt.subplots(figsize=(5, 5))
 	# plt.subplot(221)
 	## ROC curve
 	#ax.plot(fprf, tprf, lw=1, label='GB train (area = %0.3f)'%(train_aucf))
 	#ax.plot(fprtf, tprtf, lw=1, label='GB test (area = %0.3f)'%(test_auctf))
-	ax.plot(fpr, tpr, lw=1, label='XGB train (area = %0.3f)'%(train_auc))
-	ax.plot(fprt, tprt, lw=1, label='XGB test (area = %0.3f)'%(test_auct))
+	plt.plot(fprJ, tprJ, lw=1, label='XGB train (area = %0.3f)'%(train_aucJ))
+	plt.plot(fprtJ, tprtJ, lw=1, label='XGB test (area = %0.3f)'%(test_auctJ))
 	#ax.plot(fprc, tprc, lw=1, label='CB train (area = %0.3f)'%(train_aucc))
-	ax.plot(fprtf, tprtf, lw=1, label='FullSim (TT+TTV) (area = %0.3f)'%(test_auctf))
-	ax.plot(fprtfA, tprtfA, lw=1, label='FullSim all (area = %0.3f)'%(test_auctfA))
-	ax.set_ylim([0.0,1.0])
-	ax.set_xlabel('False Positive Rate')
-	ax.set_ylabel('True Positive Rate')
-	ax.legend(loc="lower right")
+	plt.plot(fprtfJ, tprtfJ, lw=1, label='FullSim (TT+TTV) (area = %0.3f)'%(test_auctfJ))
+	plt.plot(fprtfAJ, tprtfAJ, lw=1, label='FullSim all (area = %0.3f)'%(test_auctfAJ))
+	plt.ylim(ymin=0.0,ymax=1.0)
+	plt.xlim(xmin=0.0,xmax=1.0)
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.legend(loc="lower right")
 	#ax.grid()
-	fig.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_roc.pdf')
+	plt.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_roc.pdf')
+	plt.clf()
+	###########################################################################
+	fig= plt.subplots(figsize=(5, 5))
+	# plt.subplot(221)
+	## ROC curve
+	#ax.plot(fprf, tprf, lw=1, label='GB train (area = %0.3f)'%(train_aucf))
+	#ax.plot(fprtf, tprtf, lw=1, label='GB test (area = %0.3f)'%(test_auctf))
+	#plt.plot(fprat, tprat, lw=1, label='TT-BDT in TT-BKG (area = %0.3f)'%(test_aucat))
+	plt.plot(fprtightFttV, tprtightFttV, lw=1, label='TTV-BDT in TT+TTV-BKG (area = %0.3f)'%(test_auctightFttV))
+	plt.plot(fprtightF, tprtightF, lw=1, label='TT-BDT in TT+TTV-BKG (area = %0.3f)'%(test_auctightF))
+	#plt.plot(fprtftJ, tprtftJ, lw=1, label='Joint-BDT in TT-BKG (area = %0.3f)'%(test_auctftJ))
+	plt.plot(fprtfAJ, tprtfAJ, lw=1, label='Joint-BDT in TT+TTV-BKG (area = %0.3f)'%(test_auctfAJ))
+	plt.ylim(ymin=0.0,ymax=1.0)
+	plt.xlim(xmin=0.0,xmax=1.0)
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.legend(loc="lower right")
+	#ax.grid()
+	plt.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_roc_comparisons.pdf')
 	plt.clf()
 	###########################################################################
 	for ii in [1,2] :

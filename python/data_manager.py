@@ -124,6 +124,7 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     data = pandas.DataFrame(columns=my_cols_list)
     if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
     if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu']
+    if bdtType=="evtLevelSUM_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
     if bdtType=="all" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
     if bdtType=="arun" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
     for folderName in keys :
@@ -142,67 +143,85 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     		target=0
     	#inputTree = channelInTree+'/sel/evtntupleGen/'+sampleName+'/evtTree'
         inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
-        if bdtType!="arun" :
-        	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
-        		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining*OS_central_*.root")
-        		procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining*OS_central_*.root")
-        		procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3_forBDTtraining*OS_central_*.root")
-        		list=procP1+procP2+procP3
-        	else :
-        		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim_forBDTtraining*OS_central_*.root")
-        		list=procP1
-        else : list=["arun_xml_2lss_1tau/ntuple_2lss_1tau_SS_OS_all.root"]
+        #ttHToNonbb_fastsim_p3_disabled_disabled_forBDTtraining_OS_central_2.root
+    	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
+    		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1*_forBDTtraining*OS_central_*.root")
+    		procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2*_forBDTtraining*OS_central_*.root")
+    		procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3*_forBDTtraining*OS_central_*.root")
+    		list=procP1+procP2+procP3
+    	else :
+    		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim*_forBDTtraining*OS_central_*.root")
+    		list=procP1
+
     	#print ("Date: ", time.asctime( time.localtime(time.time()) ))
     	for ii in range(0, len(list)) : #
-    		#print (list[ii],inputTree)
-    		try: tfile = ROOT.TFile(list[ii])
-    		except :
-    			#print "Doesn't exist"
-    			#print ('file ', list[ii],' corrupt')
-    			continue
-    		try: tree = tfile.Get(inputTree)
-    		except :
-    			#print "Doesn't exist"
-    			#print ('file ', list[ii],' corrupt')
-    			continue
-    		if tree is not None :
-    			try:
-    				chunk_arr = tree2array(tree) #,  start=start, stop = stop)
-    			except :
-    				#print "Doesn't exist"
-    				#print ('file ', list[ii],' corrupt')
-    				continue
-    			else :
-    				chunk_df = pandas.DataFrame(chunk_arr) #
-    				#if ii ==0 : print (chunk_df.columns.values.tolist())
-    				chunk_df['key']=folderName
-    				chunk_df['target']=target
-    				#chunk_df['file']=list[ii].split("_")[10]
-    				if channel=="2lss_1tau" and bdtType!="arun" :
-    					chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']
-    				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
-    				if channel=="2lss_1tau"  and len(criteria)>0:
-    					data=data.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
-    				else : data=data.append(chunk_df, ignore_index=True)
-    		else : print ("file "+list[ii]+"was empty")
-    		tfile.Close()
-    	if len(data) == 0 : continue
-        #data = data.ix[data.evtWeight.values <1]
-        #data = data.ix[data.genWeight.values <10]
-    	nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
-    	nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
-    	print folderName,"length of sig, bkg: ", nS, nB
-    	if (channel=="1l_2tau" or channel=="2lss_1tau") and bdtType!="arun" :
-    		nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
-    		nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
-    		nSthuthKin = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
-    		nBtruthKin = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
-    		nShadthuth = len(data.ix[(data.target.values == 0) & (data.hadtruth.values==1) & (data.key.values==folderName)])
-    		nBhadtruth = len(data.ix[(data.target.values == 1) & (data.hadtruth.values==1) & (data.key.values==folderName)])
-    		print "truth:              ", nSthuth, nBtruth
-    		print "truth Kin:          ", nSthuthKin, nBtruthKin
-    		print "hadtruth:           ", nShadthuth, nBhadtruth
+            #print (list[ii],inputTree)
+            try: tfile = ROOT.TFile(list[ii])
+            except :
+            	#print "Doesn't exist"
+            	#print ('file ', list[ii],' corrupt')
+            	continue
+            try: tree = tfile.Get(inputTree)
+            except :
+            	#print "Doesn't exist"
+            	#print ('file ', list[ii],' corrupt')
+            	continue
+            if tree is not None :
+            	try:
+            		chunk_arr = tree2array(tree) #,  start=start, stop = stop)
+            	except :
+            		#print "Doesn't exist"
+            		#print ('file ', list[ii],' corrupt')
+            		continue
+            	else :
+            		chunk_df = pandas.DataFrame(chunk_arr) #
+            		#if ii ==0 : print (chunk_df.columns.values.tolist())
+            		chunk_df['key']=folderName
+            		chunk_df['target']=target
+            		if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
+            		if channel=="2lss_1tau" :
+            			chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']
+            		if channel=="3l_1tau" : chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']*chunk_df['lep3_frWeight']
+            		if channel=="2l_2tau" :
+                            #df[df < pd.Timedelta(0)] = 0
+                            chunk_df["min_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].min(axis=1)#min(chunk_df['dr_lep1_tau1'],chunk_df['dr_lep1_tau2'],chunk_df['dr_lep2_tau1'],chunk_df['dr_lep2_tau2']).any()
+                            chunk_df["max_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].max(axis=1)
+                            chunk_df["avr_dr_lep_tau"]=(chunk_df['dr_lep1_tau1']+chunk_df['dr_lep1_tau2']+chunk_df['dr_lep2_tau1']+chunk_df['dr_lep2_tau2'])/4.
+                            chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
+                            chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
+                            chunk_df["avr_lep_eta"]=abs(chunk_df["lep2_eta"]+chunk_df["lep1_eta"])/2.
+                            chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
+                            chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
+                            chunk_df["avr_tau_eta"]=abs(chunk_df["tau2_eta"]+chunk_df["tau1_eta"])/2.
+                            chunk_df["leptonPairCharge"]=abs(chunk_df["leptonPairCharge"])
+                            chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
+                            chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
+            		if channel=="2lss_1tau"  and len(criteria)>0:
+            			data=data.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
+            		else : data=data.append(chunk_df, ignore_index=True)
+            else : print ("file "+list[ii]+"was empty")
+            tfile.Close()
+        if len(data) == 0 : continue
+        nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
+        nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
+        print folderName,"length of sig, bkg: ", nS, nB , data.ix[(data.target.values == 0) & (data.key.values==folderName)]["totalWeight"].sum(), data.ix[(data.target.values == 1) & (data.key.values==folderName)]["totalWeight"].sum()
+        if channel=="2l_2tau" :
+            print "OS | SS ", len(data.ix[(data["leptonPairCharge"].values == 0) & (data.key.values==folderName)]), len(data.ix[(data["leptonPairCharge"].values == 2) & (data.key.values==folderName)])
+        if channel=="1l_2tau" :
+            print "pos | neg (weight) ",folderName , len(data.ix[(data["genWeight"].values > 0) & (data.key.values==folderName)]), len(data.ix[(data["genWeight"].values < 0) & (data.key.values==folderName)])
+            print "pos | neg (evtweight) ",folderName , len(data.ix[(data["evtWeight"].values > 0) & (data.key.values==folderName)]), len(data.ix[(data["evtWeight"].values < 0) & (data.key.values==folderName)])
+        if (channel=="1l_2tau" or channel=="2lss_1tau") :
+        	nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
+        	nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
+        	nSthuthKin = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
+        	nBtruthKin = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
+        	nShadthuth = len(data.ix[(data.target.values == 0) & (data.hadtruth.values==1) & (data.key.values==folderName)])
+        	nBhadtruth = len(data.ix[(data.target.values == 1) & (data.hadtruth.values==1) & (data.key.values==folderName)])
+        	print "truth:              ", nSthuth, nBtruth
+        	print "truth Kin:          ", nSthuthKin, nBtruthKin
+        	print "hadtruth:           ", nShadthuth, nBhadtruth
     if folderName=='ttHToNonbb' : print (data.columns.values.tolist())
+
     n = len(data)
     nS = len(data.ix[data.target.values == 0])
     nB = len(data.ix[data.target.values == 1])
@@ -276,10 +295,6 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     'tZq_ll_4f',
     'WpWpJJ_EWK-QCD']
     dataloc = pandas.DataFrame(columns=my_cols_list)
-    if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
-    if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu']
-    if bdtType=="all" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
-    if bdtType=="arun" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
     for sampleName in sampleNames :
     	print (sampleName, channelInTree)
     	if sampleName=='TT' : #'TTT' in folderName :
@@ -303,11 +318,14 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     	inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
         #print (folderNames)
         list=[]
+
         for folderName in folderNames :
+            #print inputPath+"/"+folderName+"/"+folderName+"*Tight_*.root"
             # TGJets_forBDTtraining_lepSS_sumOS_central_1.root
             #procP1=glob.glob(inputPath+"/"+folderName+"/"+folderName+"_forBDTtraining*OS_central_*.root")
             #WWTo2L2Nu_DoubleScattering_Tight_lepSS_sumOS_central_1.root
-            procP1=glob.glob(inputPath+"/"+folderName+"/"+folderName+"_Tight_*.root")
+            # /hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb09_VHbb_tree_TLepVTTau/histograms/2l_2tau/Tight_sumOS/ttHJetToNonbb_M125_amcatnlo/ttHJetToNonbb_M125_amcatnlo_disabled_disabled_Tight_OS_central_1.root
+            procP1=glob.glob(inputPath+"/"+folderName+"/"+folderName+"*Tight_*.root")
             list= list+procP1
             #if sampleName=='TT' : print (folderName)
     	#print (list)
@@ -332,14 +350,31 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     				continue
     			else :
     				chunk_df = pandas.DataFrame(chunk_arr) #
-    				#if ii ==0 : print (chunk_df.columns.values.tolist())
+    				if channel=="2l_2tau" :
+                                                        #df[df < pd.Timedelta(0)] = 0
+                                                        chunk_df["min_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].min(axis=1)#min(chunk_df['dr_lep1_tau1'],chunk_df['dr_lep1_tau2'],chunk_df['dr_lep2_tau1'],chunk_df['dr_lep2_tau2']).any()
+                                                        chunk_df["max_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].max(axis=1)
+                                                        chunk_df["avr_dr_lep_tau"]=(chunk_df['dr_lep1_tau1']+chunk_df['dr_lep1_tau2']+chunk_df['dr_lep2_tau1']+chunk_df['dr_lep2_tau2'])/4.
+                                                        chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
+                                                        chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
+                                                        chunk_df["avr_lep_eta"]=abs(chunk_df["lep2_eta"]-chunk_df["lep1_eta"])/2.
+                                                        chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
+                                                        chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
+                                                        chunk_df["avr_tau_eta"]=abs(chunk_df["tau2_eta"]-chunk_df["tau1_eta"])/2.
+                                                        chunk_df["leptonPairCharge"]=abs(chunk_df["leptonPairCharge"])
+                                                        chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
+                                                        #chunk_df["lep1_fake_prob"] = chunk_df["lep1_fake_prob"].where(chunk_df["lep1_fake_prob"] > 0, 1.0)
+                                                        #chunk_df["lep2_fake_prob"] = chunk_df["lep2_fake_prob"].where(chunk_df["lep2_fake_prob"] > 0, 1.0)
+                                                        #chunk_df["tau1_fake_prob"] = chunk_df["tau1_fake_prob"].where(chunk_df["tau1_fake_prob"] > 0, 1.0)
+                                                        #chunk_df["tau2_fake_prob"] = chunk_df["tau2_fake_prob"].where(chunk_df["tau2_fake_prob"] > 0, 1.0)
+                                                        chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"] #*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
     				chunk_df['key']=folderName
     				chunk_df["target"]=target
     				chunk_df['proces']=sampleName
     				chunk_df["totalWeight"] = chunk_df.evtWeight
-    				###########
+    				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
     				if channel=="2lss_1tau"  and len(criteria)>0:
-    					data=data.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
+    					dataloc=dataloc.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
     				else : #
     					#if 1>0 :
     					dataloc=dataloc.append(chunk_df, ignore_index=True)
@@ -350,7 +385,7 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
         dataloc=dataloc.ix[dataloc.genWeight.values <10]
     	nS = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.proces.values==sampleName)])
     	nB = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.proces.values==sampleName)])
-    	print sampleName,"length of sig, bkg: ", nS, nB
+    	print sampleName,"length of sig, bkg: ", nS, nB, dataloc.ix[(dataloc.target.values == 0) & (dataloc.key.values==folderName)]["totalWeight"].sum()*35, dataloc.ix[(dataloc.target.values == 1) & (dataloc.key.values==folderName)]["totalWeight"].sum()*35
     	if (channel=="1l_2tau" or channel=="2lss_1tau") and bdtType!="arun" :
     		nSthuth = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
     		nBtruth = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
@@ -444,14 +479,16 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     c4.Divide(1,2,0,0);
     c4.cd(1)
     ROOT.gPad.SetLogy()
+    ROOT.gPad.SetLogx()
     ROOT.gPad.SetBottomMargin(0.001)
     ROOT.gPad.SetTopMargin(0.065)
     ROOT.gPad.SetRightMargin(0.01)
     ROOT.gPad.SetLeftMargin(0.12)
     mc.Draw("HIST");
     mc.SetMaximum(15* mc.GetMaximum());
-    mc.SetMinimum(max(0.04* mc.GetMinimum(),0.000000000001));
+    mc.SetMinimum(max(0.04* mc.GetMinimum(),0.1));
     mc.GetYaxis().SetRangeUser(0.01,110);
+    mc.GetXaxis().SetRangeUser(0.0001,1.0);
     mc.GetHistogram().GetYaxis().SetTitle("Expected events/bin");
     mc.GetHistogram().GetXaxis().SetTitle("Bin in the bdt1#times bdt2 plane");
     mc.GetHistogram().GetXaxis().SetTitleSize(0.06);
@@ -474,6 +511,7 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     latex.DrawLatexNDC(.55,.8,label);
     #latex.DrawLatexNDC(.55,.9,BDTvar);
     c4.cd(2)
+    ROOT.gPad.SetLogx()
     ROOT.gStyle.SetHatchesSpacing(100)
     ROOT.gPad.SetLeftMargin(0.12)
     ROOT.gPad.SetBottomMargin(0.12)
@@ -521,6 +559,7 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     l2.Draw("same");
     h2.Draw("HIST,SAME")
     h4.Draw("HIST,SAME")
+
     c4.Modified();
     c4.Update();
     print ("s/B in last bin (tight)", h3.GetNbinsX(), h3.GetBinContent(h3.GetNbinsX()), h3.GetBinContent(h3.GetNbinsX()-1), h2.GetBinContent(h3.GetNbinsX()))
@@ -541,9 +580,9 @@ def finMaxMin(histSource) :
             [hSum.GetBinCenter(hSum.FindFirstBinAbove(0.0)),  hSum.GetBinCenter(hSum.FindLastBinAbove (0.0))]]
 
 def getQuantiles(histoP,ntarget,xmax) :
-    c = ROOT.TCanvas("c1","",600,600)
+    #c = ROOT.TCanvas("c1","",600,600)
     histoP.Scale(1./histoP.Integral());
-    histoP.GetCumulative().Draw();
+    histoP.GetCumulative() #.Draw();
     histoP.GetXaxis().SetRangeUser(0.,1.)
     histoP.GetYaxis().SetRangeUser(0.,1.)
     histoP.SetMinimum(0.0)
@@ -555,22 +594,68 @@ def getQuantiles(histoP,ntarget,xmax) :
     histoP.GetQuantiles(ntarget,yq,xq)
     line = [None for point in range(ntarget)]
     line2 = [None for point in range(ntarget)]
+    """
     for  jj in range(0,ntarget) :
 			line[jj] = ROOT.TLine(0,xq[jj],yq[jj],xq[jj]);
 			line[jj].SetLineColor(ROOT.kRed);
 			line[jj].Draw("same")
-			#
+			#  ./do_limits.py --channel "1l_2tau" --variables "noHTT" --BINtype "quantiles" &
 			line2[jj] = ROOT.TLine(yq[jj],0,yq[jj],xq[jj]);
 			line2[jj].SetLineColor(ROOT.kRed);
 			line2[jj].Draw("same")
 			print (xq[jj],yq[jj])
+    """
     #yq[ntarget]=xmax
-    c.Modified();
-    c.Update();
+    #c.Modified();
+    #c.Update();
     yqbin[0]=0.0
     for  ii in range(1,ntarget+1) : yqbin[ii]=yq[ii-1]
     yqbin[ntarget+1]=xmax
     return yqbin
+
+def getQuantilesWStat(histoP,nmin) :
+    histogramBinning=[]
+    xAxis = histogram.GetXaxis();
+    histogramBinning = histogramBinning + [xAxis.GetBinLowEdge(1)]
+    sumEvents = 0.;
+    numBins = xAxis.GetNbins();
+    for idxBin in range(1, numBins) :
+        print ("bin #" , idxBin , " (x=" , xAxis.GetBinLowEdge(idxBin) ,  xAxis.GetBinUpEdge(idxBin) , "):" , " binContent = ",  histogram.GetBinContent(idxBin) , " +/- " << histogram.GetBinError(idxBin) )
+        sumEvents = sumEvents + histogram.GetBinContent(idxBin);
+        if ( sumEvents >= minEvents ) :
+            histogramBinning.push_back(xAxis.GetBinUpEdge(idxBin));
+            sumEvents = 0.;
+    if ( abs(histogramBinning.back() - xAxis.GetBinUpEdge(numBins)) > 1.e-3 ) :
+        if histogramBinning.size() >= 2 : histogramBinning = [xAxis.GetBinUpEdge(numBins)];
+        else :  histogramBinning= histogramBinning+ [xAxis.GetBinUpEdge(numBins)];
+    #assert(histogramBinning.size() >= 2);
+    print "binning =  "
+    for  bin in histogramBinning : print ( bin)
+    return histogramBinning;
+
+    """
+    std::vector<double> compBinning(TH1* histogram, double minEvents) {
+    std::cout << "<compBinning>:" << std::endl;
+    std::vector<double> histogramBinning;
+    const TAxis* xAxis = histogram->GetXaxis();
+    histogramBinning.push_back(xAxis->GetBinLowEdge(1));
+    double sumEvents = 0.; int numBins = xAxis->GetNbins();
+    for ( int idxBin = 1; idxBin <= numBins; ++idxBin ) {
+        std::cout << "bin #" << idxBin << " (x=" << xAxis->GetBinLowEdge(idxBin) << ".." << xAxis->GetBinUpEdge(idxBin) << "):" << " binContent = " << histogram->GetBinContent(idxBin) << " +/- " << histogram->GetBinError(idxBin) << std::endl; sumEvents += histogram->GetBinContent(idxBin);
+        if ( sumEvents >= minEvents ) { histogramBinning.push_back(xAxis->GetBinUpEdge(idxBin)); sumEvents = 0.; }
+    }
+    if ( TMath::Abs(histogramBinning.back() - xAxis->GetBinUpEdge(numBins)) > 1.e-3 ) {
+        if ( histogramBinning.size() >= 2 ) histogramBinning.back() = xAxis->GetBinUpEdge(numBins);
+        else histogramBinning.push_back(xAxis->GetBinUpEdge(numBins));
+    }
+    assert(histogramBinning.size() >= 2);
+    std::cout << "binning = { ";
+    for ( std::vector<double>::const_iterator bin = histogramBinning.begin(); bin != histogramBinning.end(); ++bin ) {
+        if ( bin != histogramBinning.begin() ) std::cout << ", "; std::cout << (*bin); } std::cout << " }" << std::endl; return histogramBinning;
+        }
+    """
+
+
 
 def GetRatio(histSource,namepdf) :
     file = TFile(histSource,"READ");
@@ -610,8 +695,8 @@ def GetRatio(histSource,namepdf) :
        if h2.GetName() == "ttH_hww" or h2.GetName() == "ttH_hzz" or h2.GetName() ==  "ttH_htt" :
             if not hTTHi.Integral()>0 : hTTHi=h2.Clone()
             else : hTTHi.Add(h2.Clone())
-    doStackPlot(hTTi,hTTHi,hTTWi,hEWKi,hRaresi,namepdf,"2D Map")
-    print (namepdf+" created")
+    #doStackPlot(hTTi,hTTHi,hTTWi,hEWKi,hRaresi,namepdf,"2D Map")
+    #print (namepdf+" created")
     if  not hSum.GetSumw2N() : hSum.Sumw2()
     if hSum.GetBinContent(hSum.GetNbinsX()) >0 :
             ratiohSum=hSum.GetBinError(hSum.GetNbinsX())/hSum.GetBinContent(hSum.GetNbinsX())
@@ -689,7 +774,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
         if BINtype=="ranged" : name=histSource+"_"+str(nbins)+"bins_ranged.root"
         if BINtype=="quantiles" :
             name=histSource+"_"+str(nbins+1)+"bins_quantiles.root"
-            nbinsQuant=getQuantiles(hFakes,nbins,xmax)
+            nbinsQuant=getQuantiles(hSumAll,nbins,xmax) #(hFakes,nbins,xmax)
             xmaxLbin=xmaxLbin+[nbinsQuant[nbins-1]]
         fileOut  = TFile(name, "recreate");
         hTTi = TH1F()
@@ -703,7 +788,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
             nameHisto=histogramCopy.GetName()
             histogram.SetName(histogramCopy.GetName()+"_"+str(nn)+BINtype)
             histogramCopy.SetName(histogramCopy.GetName()+"Copy_"+str(nn)+BINtype)
-            #histogramCopy.SetBit(ROOT.TH1.kCanRebin)
+            #histogramCopy.SetBit(ROOT.TH1F.kCanRebin)
             #if histogramCopy.GetName() == "fakes_data" or histogramCopy.GetName() =="TTZ" or histogramCopy.GetName() =="TTW" or histogramCopy.GetName() =="TTWW" or histogramCopy.GetName() == "EWK" :
             #print ("not rebinned",histogramCopy.GetName(),histogramCopy.Integral())
             if BINtype=="none" :
@@ -713,14 +798,15 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
                 histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
             elif BINtype=="quantiles" :
                 histo=TH1F( nameHisto, nameHisto , nbins+1 , nbinsQuant)
-
+            histo.Sumw2()
             for place in range(0,histogramCopy.GetNbinsX() + 1) :
                 content =      histogramCopy.GetBinContent(place)
+                #if content < 0 : continue # print (content,place)
                 binErrorCopy = histogramCopy.GetBinError(place);
                 newbin =       histo.GetXaxis().FindBin(histogramCopy.GetXaxis().GetBinCenter(place))
                 binError =     histo.GetBinError(newbin);
                 contentNew =   histo.GetBinContent(newbin)
-                histo.AddBinContent(newbin, content)
+                histo.SetBinContent(newbin, content+contentNew)
                 histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
                 #if histogramCopy.GetBinCenter(place) > 0.174 and  content>0 and bdtType=="1B" and nbins==20 : print ("overflow bin", histogramCopy.GetBinCenter(place),content,nameHisto)
             #if not histo.GetSumw2N() : histo.Sumw2()
@@ -764,7 +850,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
         fileOut.Write()
         print (name+" created")
         if doplots and bdtType=="1B":
-            if nbins==20  :
+            if nbins==6 :
                 if BINtype=="none" : namepdf=histSource
                 if BINtype=="regular" : namepdf=histSource+"_"+str(nbins)+"bins"
                 if BINtype=="ranged" : namepdf=histSource+"_"+str(nbins)+"bins_ranged"
@@ -812,6 +898,7 @@ def ReadLimits(bdtType,nbin, BINtype,originalBinning,local,nstart,ntarget):
     for nn,nbins in enumerate(nbin) :
         # ttH_2lss_1taumvaOutput_2lss_MEM_1D_nbin_9.log
         if nstart==0 : shapeVariable=options.variables+'_'+bdtType+'_nbin_'+str(nbins)
+        elif nstart==1 : shapeVariable=options.variables+'_'+str(nbins)+'bins'
         else : shapeVariable=options.variables+'_from'+str(nstart)+'_to_'+str(nbins)
         if BINtype=="ranged" : shapeVariable=shapeVariable+"_ranged"
         if BINtype=="quantiles" : shapeVariable=shapeVariable+"_quantiles"

@@ -28,8 +28,8 @@ if channel == "2lss_1tau" :
     label='2018Jan13_VHbb_addMEM'
     bdtTypes=["tt","ttV","1B","2MEM","2HTT"]
 if channel == "1l_2tau" :
-    label="1l_2tau_2018Feb02_VHbb_VTightTau" #"1l_2tau_2018Feb02_VHbb_TightTau" # "1l_2tau_2018Jan30_VHbb_VVTightTau" #"1l_2tau_2018Jan30_VHbb" #(TightTauMVA) # "1l_2tau_2018Jan30_VHbb_VTightTau" #
-    bdtTypes=["1B","ttbar","ttV"]
+    label="1l_2tau_2018Feb08_VHbb_VTightTau" #"1l_2tau_2018Feb02_VHbb_TightTau" # "1l_2tau_2018Jan30_VHbb_VVTightTau" #"1l_2tau_2018Jan30_VHbb" #(TightTauMVA) # "1l_2tau_2018Jan30_VHbb_VTightTau" #
+    bdtTypes=["1B","ttbar","ttV"] #
 
 sources=[]
 bdtTypesToDo=[]
