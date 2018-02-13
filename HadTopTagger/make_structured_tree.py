@@ -31,41 +31,45 @@ from ROOT import TCut
 #pylcgdict.loadDictionary('SealROOTDict')
 #g=pylcgdict.Namespace("")
 
-datasets = " /hdfs/local/acaan/HadTopTagger/2017Aug31/"
-datasetsout = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_0_21/src/tthAnalysis/HiggsToTauTau/test/xgboost/HadTopTagger/structured/"
+datasets = " /hdfs/local/veelken/ttHAnalysis/2016/2017Aug31/histograms/hadTopTagger/"
+datasetsout = "structured/"
 
 print ("Date: ", time.asctime( time.localtime(time.time()) ))
 c_size = 1000
-keys = ['ttHToNonbb','TTToSemilepton','TTZToLLNuNu']
+keys = ['ttHToNonbb','TTToSemilepton','TTZToLLNuNu','TTWJetsToLNu']
 counter=0
 
 dotree=1
 
 
-if 1> 0 : # key in keys :
-        key='ttHToNonbb'
+if 1> 0 : # key in keys : TTWJetsToLNu histograms_harvested_stage1_hadTopTagger_TTWJetsToLNu_fastsim.root
+        key='TTToSemilepton'
         #for typeF in [1,2,3] :
-        typeF=2
+        typeF=1
         # get entries
         print ("Date: ", time.asctime( time.localtime(time.time()) ))
 	if key=='ttHToNonbb' or key=='TTToSemilepton' : 
 		f_name="histograms_harvested_stage1_hadTopTagger_"+str(key)+"_fastsim_p"+str(typeF)+".root" #  
 		if key=='ttHToNonbb' : t_name="analyze_hadTopTagger/evtntuple/signal/evtTree"
-		elif key=='TTToSemilepton' : t_name="analyze_hadTopTagger/evtntuple/TT/evtTree" 
-	elif key=='TTZToLLNuNu' and typeF==1 : 
-		f_name=datasets+"histograms_harvested_stage1_hadTopTagger_"+str(key)+"_onlyMatch.root"
+		else: t_name="analyze_hadTopTagger/evtntuple/TT/evtTree" 
+	elif key=='TTZToLLNuNu' : 
+		f_name="histograms_harvested_stage1_hadTopTagger_TTZToLLNuNu_fastsim.root"
 		t_name="analyze_hadTopTagger/evtntuple/TTZ/evtTree"
+	elif key=='TTWJetsToLNu' : 
+		f_name="histograms_harvested_stage1_hadTopTagger_TTWJetsToLNu_fastsim.root"
+		t_name="analyze_hadTopTagger/evtntuple/TTW/evtTree"
 	else :
 		print ("regexp failed") 
 		pass
 	print(f_name)
         #
-
+        tfile2 = ROOT.TFile.Open(datasetsout+"structured_"+f_name,"RECREATE")
+        tree=ROOT.TTree('TCVARS', 'TCVARS' )
+		
 	tfile = ROOT.TFile(datasets+f_name)
 	tree0 = tfile.Get(t_name)
         #if dotree==1 :
-        tfile2 = ROOT.TFile.Open(datasetsout+"structured_"+f_name,"RECREATE")
-        tree=ROOT.TTree('TCVARS', 'TCVARS' )
+
         #CSVb = ROOT.std.vector( float )() # array.array( 'f', 4000*[ -1000.0 ] )
         bWj1Wj2_isGenMatched = ROOT.std.vector( int )()
         b_isGenMatched = ROOT.std.vector( int )()
@@ -144,7 +148,7 @@ if 1> 0 : # key in keys :
         #elif typeF==2 : 
         allcombo=np.empty((int(tree0.GetMaximum('evt')+1),\
                                         int(tree0.GetMaximum('run')+1),int(tree0.GetMaximum('lumi')+1)))
-        n_entries0= 1000 #tree0.GetEntries()
+        n_entries0= tree0.GetEntries()
         tree0.GetEntry(0)
         print (tree0.evt)
 

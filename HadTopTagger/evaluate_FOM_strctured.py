@@ -50,12 +50,12 @@ print ("Date: ", time.asctime( time.localtime(time.time()) ))
 ##################################################################
 ### pickle 
 # HadTopTagger/HadTopTagger_XGB_allVar_lessBKG_CSV_screening.pkl
-loaded_model = pickle.load(open('HadTopTagger/HadTopTagger_XGB_allVar_lessBKG_CSV_screening.pkl', 'rb'))
+loaded_model = pickle.load(open('HadTopTagger_baseline_1000trees_allBKG/HadTopTagger_XGB_allVar_allBKG_CSV_screening.pkl', 'rb'))
 target="bWj1Wj2_isGenMatched"
 
 tfile = ROOT.TFile("/hdfs/local/acaan/HadTopTagger/2017Aug31/structured_histograms_harvested_stage1_hadTopTagger_ttHToNonbb_fastsim_p1.root")
 tree0 = tfile.Get("TCVARS")
-n_entries0=32895 # tree0.GetEntries()
+n_entries0=100000 # tree0.GetEntries()
 counttrue=0
 for ev in trange(0,n_entries0): #, desc="{} ({})".format(key, n_entries0)) :
 	tree0.GetEntry(ev) 

@@ -57,7 +57,7 @@ def trainVars():
 ### pickle 
 if evaluateBDT==True :
 	# HadTopTagger/HadTopTagger_XGB_allVar_lessBKG_CSV_screening.pkl
-	loaded_model = pickle.load(open('HadTopTagger/HadTopTagger_XGB_allVar_lessBKG_CSV_screening.pkl', 'rb'))
+	loaded_model = pickle.load(open('HadTopTagger_baseline_1000trees_allBKG//HadTopTagger_XGB_allVar_allBKG_CSV_screening.pkl', 'rb'))
 	target="bWj1Wj2_isGenMatched"
 
 print ("Date: ", time.asctime( time.localtime(time.time()) ))
@@ -170,7 +170,7 @@ if 1> 0 : # key in keys :
         #"""
     	#tree = ROOT.TTree()
 	print ("Date: ", time.asctime( time.localtime(time.time()) ))
-	if evaluateBDT==True : n_entries0=32000 
+	if evaluateBDT==True : n_entries0=100000 
 	else : n_entries0=tree0.GetEntries()
         signal=0
         bkg=0
