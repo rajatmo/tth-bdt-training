@@ -1,8 +1,8 @@
 import sys , time
 #run: python sklearn_Xgboost_HadTopTagger_ttH.py --process 'all' --evaluateFOM --HypOpt --doXML &
 import os
-os.environ['PYTHONUSERBASE'] = '/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-scikit-learn/0.17.1-ikhhed'
-os.environ['PYTHONPATH'] = '/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-scikit-learn/0.17.1-ikhhed/lib/python2.7/site-packages:'+os.environ['PYTHONPATH']
+#os.environ['PYTHONUSERBASE'] = '/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-scikit-learn/0.17.1-ikhhed'
+#os.environ['PYTHONPATH'] = '/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-scikit-learn/0.17.1-ikhhed/lib/python2.7/site-packages:'+os.environ['PYTHONPATH']
 import sklearn
 from sklearn import datasets
 from sklearn.ensemble import GradientBoostingClassifier
@@ -13,12 +13,8 @@ import pandas
 import math
 
 #from mlglue.tree import tree_to_tmva, BDTxgboost, BDTsklearn
-#import sklearn_to_tmva
-import xgboost2tmva
-#import skTMVA
 import matplotlib
 matplotlib.use('agg')
-#matplotlib.use('PS')   # generate postscript output by default
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
 import numpy as np
@@ -26,18 +22,9 @@ import numpy as np
 import pickle
 
 from sklearn.externals import joblib
-
-
-#sys.path.insert(0, "/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-root_numpy/4.6.0-ghmdbj/lib/python2.7/site-packages/root_numpy")
 import root_numpy
 from root_numpy import root2array, rec2array, array2root, tree2array
 print('The root_numpy version is {}.'.format(root_numpy.__version__))
-
-#import imp as imp
-#imp.load_source('tree2array','/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-root_numpy/4.6.0-ghmdbj/lib/python2.7/site-packages/root_numpy/__init__.py')
-
-#import xgboost as xgb
-#import catboost as catboost #import CatBoostRegressor
 
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
@@ -47,11 +34,9 @@ import ROOT
 import glob
 
 
-#sys.path.insert(0, "/home/acaan/classifiers/xgboost/python-package")
 import xgboost as xgb
 print('The xgb version is {}.'.format(xgb.__version__))
 
-# run: python sklearn_Xgboost_csv_evtLevel_ttH.py --channel '1l_2tau' --variables "noHadTopTaggerVar" --bdtType "evtLevelTTV_TTH"  >/dev/null 2>&1
 # if we have many trees
 # https://stackoverflow.com/questions/38238139/python-prevent-ioerror-errno-5-input-output-error-when-running-without-stdo
 
@@ -86,173 +71,38 @@ out = proc.stdout.read()
 def trainVars(all):
 	if all==True :
 		return [ # ['CSV_b', 'qg_Wj2', 'pT_bWj1Wj2', 'm_Wj1Wj2', 'nllKinFit', 'pT_b_o_kinFit_pT_b', 'pT_Wj2']
-				#'statusKinFit',
-				#'qg_b',
 				'CSV_b',
 				'qg_Wj2',
-				#'qg_Wj1',
-				#'m_bWj1Wj2',
 				'pT_bWj1Wj2',
-				#'pT_b',
 				'pT_Wj2',
 				'm_Wj1Wj2',
-				#'dR_Wj1Wj2',
-				#'pT_Wj1Wj2',
-				#'pT_Wj1',
-				#'max_dR_div_expRjet',
-				#'m_bWj2',
-				#'m_bWj1',
-				#'m_Wj1Wj2_div_m_bWj1Wj2',
-				#'logPKinFit',
-				#'logPErrKinFit',
-				#'dR_bWj2',
-				#'dR_bWj1',
-				#'dR_bW',
 				'nllKinFit',
-				#'alphaKinFit',
-				#'pT_b',
-				#'eta_b',
-				#'phi_b',
-				#'mass_b',
-				#'kinFit_pT_b',
 				'pT_b_o_kinFit_pT_b'#,
-				#'pT_Wj1_o_kinFit_pT_Wj1',
-				#'kinFit_eta_b',
-				#'kinFit_phi_b',
-				#'kinFit_mass_b',
-				#'pT_Wj1',
-				#'eta_Wj1',
-				#'phi_Wj1',
-				#'mass_Wj1',
-				#'kinFit_pT_Wj1',
-				#'kinFit_eta_Wj1',
-				#'kinFit_phi_Wj1',
-				#'kinFit_mass_Wj1',
-				#'pT_Wj2',
-				#'pT_Wj2_o_kinFit_pT_Wj2',
-				#'eta_Wj2',
-				#'phi_Wj2',
-				#'mass_Wj2',
-				#'kinFit_pT_Wj2',
-				#'kinFit_eta_Wj2',
-				#'kinFit_phi_Wj2',
-				#'kinFit_mass_Wj2',
-				#"cosTheta_leadWj_restTop",
-				#"cosTheta_Kin_leadWj_restTop",
-				#"cosTheta_subleadWj_restTop",
-				#"cosTheta_Kin_subleadWj_restTop",
-				#"cosThetaW_rest",
-				#"cosThetaKinW_rest",
-				#"cosThetaW_lab" ,
-				#"cosThetaKinW_lab",
-				#"cosThetab_rest",
-				#"cosThetaKinb_rest",
-				#"cosThetab_lab",
-				#"cosThetaKinb_lab",
-				#"Dphi_Wj1_Wj2_lab",
-				#"Dphi_KinWj1_KinWj2_lab",
-				#"Dphi_Wb_rest",
-				#"Dphi_KinWb_rest",
-				#'ncombo',
-				#"cosTheta_leadEWj_restTop"#,
-				#"cosTheta_subleadEWj_restTop",
-				#"cosThetaWj1_restW"#,
-				#"cosThetaKinWj_restW"
 		]
 	if all==False :
 				# ['CSV_b', 'qg_Wj2', 'qg_Wj1', 'm_bWj1Wj2', 'pT_bWj1Wj2', 'm_Wj1Wj2', 'pT_Wj2']
 				return [
-				#'statusKinFit',
-				#'qg_b',
 				'CSV_b',
 				'qg_Wj2',
-				#'qg_Wj1',
 				'm_bWj1Wj2',
 				'pT_bWj1Wj2',
-				#'pT_b',
 				'pT_Wj2',
 				'm_Wj1Wj2',
-				#'dR_Wj1Wj2',
-				#'pT_Wj1Wj2',
-				#'pT_Wj1',
-				#'max_dR_div_expRjet',
-				#'m_bWj2',
-				#'m_bWj1',
-				#'m_Wj1Wj2_div_m_bWj1Wj2',
-				#'logPKinFit',
-				#'logPErrKinFit',
-				#'dR_bWj2',
-				#'dR_bWj1',
-				#'dR_bW',
-				#'nllKinFit',
-				#'alphaKinFit',
-				#'pT_b',
-				#'eta_b',
-				#'phi_b',
-				#'mass_b',
-				#'kinFit_pT_b',
-				#'pT_b_o_kinFit_pT_b',
-				#'pT_Wj1_o_kinFit_pT_Wj1',
-				#'kinFit_eta_b',
-				#'kinFit_phi_b',
-				#'kinFit_mass_b',
-				#'pT_Wj1',
-				#'eta_Wj1',
-				#'phi_Wj1',
-				#'mass_Wj1',
-				#'kinFit_pT_Wj1',
-				#'kinFit_eta_Wj1',
-				#'kinFit_phi_Wj1',
-				#'kinFit_mass_Wj1',
 				'pT_Wj2',
-				#'pT_Wj2_o_kinFit_pT_Wj2',
-				#'eta_Wj2',
-				#'phi_Wj2',
-				#'mass_Wj2',
-				#'kinFit_pT_Wj2',
-				#'kinFit_eta_Wj2',
-				#'kinFit_phi_Wj2',
-				#'kinFit_mass_Wj2',
-				#"cosTheta_leadWj_restTop",
-				#"cosTheta_Kin_leadWj_restTop",
-				#"cosTheta_subleadWj_restTop",
-				#"cosTheta_Kin_subleadWj_restTop",
 				'ncombo',
 				"cosThetaW_rest",
-				#"cosThetaKinW_rest",
-				#"cosThetaW_lab" ,
-				#"cosThetaKinW_lab",
-				#"cosThetab_rest",
-				#"cosThetaKinb_rest",
-				#"cosThetab_lab",
-				#"cosThetaKinb_lab",
-				#"Dphi_Wj1_Wj2_lab",
-				#"Dphi_KinWj1_KinWj2_lab",
-				#"Dphi_Wb_rest",
-				#"Dphi_KinWb_rest",
 				"cosTheta_leadEWj_restTop",
-				#"cosTheta_subleadEWj_restTop",
-				"cosThetaWj1_restW"#,
-				#"cosThetaKinWj_restW"
+				"cosThetaWj1_restW"
 				]
 
 def evaluateFOM(clf,keys,features,tag,train,test,nBdeplet,nB,nS,f_score_dicts):
 	for process in keys :
-		#datatestCSV =pandas.read_csv('structured/'+process+'_CSVprior_from_10000sig_1.csv')
 		datatest=pandas.read_csv('structured/'+process+'_Structured_from_20000sig_1.csv')
-		#
-		"""
-		datatestCSV['pT_b_o_kinFit_pT_b']=datatestCSV['pT_b']/datatestCSV['kinFit_pT_b']
-		datatestCSV['pT_Wj2_o_kinFit_pT_Wj2']=datatestCSV['pT_Wj2']/datatestCSV['kinFit_pT_Wj2']
-		datatestCSV['pT_Wj1_o_kinFit_pT_Wj1']=datatestCSV['pT_Wj1']/datatestCSV['kinFit_pT_Wj1']
-		"""
-		#
 		datatest['pT_b_o_kinFit_pT_b']=datatest['pT_b']/datatest['kinFit_pT_b']
 		datatest['pT_Wj2_o_kinFit_pT_Wj2']=datatest['pT_Wj2']/datatest['kinFit_pT_Wj2']
 		datatest['pT_Wj1_o_kinFit_pT_Wj1']=datatest['pT_Wj1']/datatest['kinFit_pT_Wj1']
 		datatest['cosTheta_leadEWj_restTop'] = datatest['cosTheta_leadEWj_restTop'].abs()
 		# make angles abs
-		#countCSVtruth=0
 		countTruth=0
 		countEvt=0
 		#print ("events raw: ",int(datatest['eventRaw'].min()),int(datatest['eventRaw'].max()))
@@ -260,11 +110,6 @@ def evaluateFOM(clf,keys,features,tag,train,test,nBdeplet,nB,nS,f_score_dicts):
 			row=datatest.loc[datatest['eventRaw'].values == ii]
 			if len(row)>0 :
 				countEvt=countEvt+1
-				"""
-				probaCSV = clf.predict_proba(rowCSV[features].values)
-				maxCSV= np.argmax(probaCSV[:,1] )
-				if rowCSV["bWj1Wj2_isGenMatched"].iloc[maxCSV] == 1 : countCSVtruth=countCSVtruth+1
-				"""
 				row=datatest.loc[datatest['eventRaw'].values == ii]
 				proba = clf.predict_proba(row[features].values)
 				max= np.argmax(proba[:,1] )
@@ -338,13 +183,11 @@ print "length of sig, bkg: ", nS, nB
 print ("weigths", data.loc[data[target]==0]["totalWeight"].sum() , data.loc[data[target]==1]["totalWeight"].sum() )
 #################################################################################
 print ("Throw away BKG: ", time.asctime( time.localtime(time.time()) ))
-#"""
 removeN=9.5*len(data.loc[data[target] == 0] )/10
 drop_indices = np.random.choice(data.loc[data[target] == 0].index, int(removeN), replace=False)
 data.loc[data[target] == 0] = data.loc[data[target] == 0].drop(drop_indices)
 print ("weigths after throw away BKG", data.loc[data[target]==0]["totalWeight"].sum() , data.loc[data[target]==1]["totalWeight"].sum() )
 nBdeplet=data.loc[data[target]==0]["totalWeight"].sum()
-#"""
 ########################################################################################
 ## drop events with NaN weights = not needded now, but precaution
 data.dropna(subset=[target],inplace = True) # data
@@ -357,44 +200,26 @@ for tar in [0,1] : data.loc[data[target]==tar, ["totalWeight"]] *= 100000./float
 weights="totalWeight"
 #############################################################
 ## make angles absolute
-angles=[#"cosTheta_leadWj_restTop",
-				#"cosTheta_subleadWj_restTop",
-				#"cosTheta_Kin_leadWj_restTop",
-				#"cosTheta_Kin_subleadWj_restTop",
-				"cosThetaW_rest",
-				#"cosThetaKinW_rest",
-				#"cosThetaW_lab",
-				#"cosThetaKinW_lab",
-				#"cosThetab_rest",
-				#"cosThetaKinb_rest",
-				#"cosThetab_lab",
-				#"cosThetaKinb_lab",
-				"cosTheta_leadEWj_restTop",
-				"cosTheta_subleadEWj_restTop",
-				#"Dphi_Wj1_Wj2_lab",
-				#"Dphi_KinWj1_KinWj2_lab",
-				#"Dphi_Wb_rest",
-				#"Dphi_KinWb_rest",
-				#"Dphi_Wb_lab",
-				#"Dphi_KinWb_lab",
-				"cosThetaWj1_restW"#,
-				#"cosThetaKinWj_restW"
-				]
+angles=[
+	"cosThetaW_rest",
+	"cosTheta_leadEWj_restTop",
+	"cosTheta_subleadEWj_restTop",
+	"cosThetaWj1_restW"
+	]
 for angle in angles : data[angle] = data[angle].abs()
 print "length of sig, bkg without NaN: ", nS, nB
 #################################################################################
-if 1>0 : # options.HypOpt==False :
+if options.HypOpt==False :
 	print ("Plot histograms ", time.asctime( time.localtime(time.time()) ))
 	hist_params = {'normed': False, 'bins': 18, 'alpha': 0.4}
 	plt.figure(figsize=(20, 10))
-	maxVar=[None] * len(trainVars(False)) #+["cosTheta_subleadEWj_restTop"] # these will enter in the xml writting
-	minVar=[None] * len(trainVars(False)) #+["cosTheta_subleadEWj_restTop"]
-	for n, feature in enumerate(trainVars(True)): # +["cosTheta_subleadEWj_restTop"]):
+	maxVar=[None] * len(trainVars(False))
+	minVar=[None] * len(trainVars(False))
+	for n, feature in enumerate(trainVars(True)):
 		# add sub plot on our figure
 		plt.subplot(2,4, n+1)
 		# define range for histograms by cutting 1% of data from both ends
 		min_value, max_value = np.percentile(data[feature], [1, 99])
-		# this is to pass to xml reader
 		maxVar[n]=max_value
 		minVar[n]=min_value
 		if 'qg_' in feature :
@@ -422,12 +247,10 @@ if 1>0 : # options.HypOpt==False :
 		else :
 			datad=data.loc[data[target].values == 0]
 			label="BKG"
-		datacorr = datad[trainVars(False)] #.loc[:,trainVars(False)] #dataHToNobbCSV[[trainVars(True)]]
+		datacorr = datad[trainVars(False)]
 		correlations = datacorr.corr()
 		fig = plt.figure(figsize=(10, 10))
 		ax = fig.add_subplot(111)
-		#ax.xticks(rotation=90)
-		#ax.plot()
 		cax = ax.matshow(correlations, vmin=-1, vmax=1)
 		ticks = np.arange(0,len(trainVars(False)),1)
 		plt.rc('axes', labelsize=8)
@@ -437,16 +260,14 @@ if 1>0 : # options.HypOpt==False :
 		ax.set_yticklabels(trainVars(False))
 		fig.colorbar(cax)
 		fig.tight_layout()
-		#plt.subplots_adjust(left=0.9, right=0.9, top=0.9, bottom=0.1)
 		plt.savefig("{}/{}_{}_{}_corr_{}.png".format(channel,process,bdtType,str(len(trainVars(False))),label))
 		plt.savefig("{}/{}_{}_{}_corr_{}.pdf".format(channel,process,bdtType,str(len(trainVars(False))),label))
 		ax.clear()
 #########################################################################################
-#datas=data[trainVars(withKinFit)+[target,"totalWeight"]]
 traindataset, valdataset  = train_test_split(data[trainVars(withKinFit)+[target,"totalWeight"]], test_size=0.3, random_state=7)
 print (traindataset.columns.values.tolist())
 ## Training parameters
-hypOptOnsite=False ### this takes too much time to be done in series, your call to chose to wait
+hypOptOnsite=False ### this takes too much time to be done in series, run True only if you know what you are doing
 if hypOptOnsite==True :
     print ("HypOptOnSite ", time.asctime( time.localtime(time.time()) ))
     param_grid = {
@@ -500,11 +321,7 @@ fprt, tprt, thresholds = roc_curve(valdataset[target], proba[:,1] )
 test_auct = auc(fprt, tprt, reorder = True)
 print("XGBoost test set auc - {}".format(test_auct))
 ################################################################################
-## save output
 if doXML==True :
-	# save the model in file 'xgb.model.dump'
-	#model = cls.booster().get_dump(fmap='', with_stats=False) #.get_dump() #pickle.dumps(cls)
-	#xgboost2tmva.convert_model(model, trainVars(False), bdtpath+"_testcET.xml")
 	bdtpath=channel+"/"+process+"_"+channel+"_XGB_"+trainvar+"_"+bdtType+"_nvar"+str(len(trainVars(withKinFit)))
 	print ("Output pkl ", time.asctime( time.localtime(time.time()) ))
 	if withKinFit :
@@ -514,38 +331,13 @@ if doXML==True :
 		pickle.dump(cls, open(bdtpath+".pkl", 'wb'))
 		print ("saved "+bdtpath+".pkl")
 	print ("starting xml conversion")
-	#
-	"""
-	bdt = BDTxgboost(cls, trainVars(False), ["cls0", "cls1"])
-	bdt.to_tmva(bdtpath+".xml")
-	print ("saved "+bdtpath+".xml")
-	## test result
-	bdt.setup_tmva(bdtpath+".xml")
-	dev = 0.0
-	for irow in range(self.data_x.shape[0]):
-		predA = bdt.eval_tmva(self.data_x[irow, :])
-		predB = bdt.eval(self.data_x[irow, :])
-		local_dev = np.abs((predA - predB)/predA)
-		self.assertTrue(local_dev < 0.05)
-		dev += local_dev
-	self.assertTrue(dev < 0.01)
-	print dev
-	"""
 ###########################################################################
 if options.evaluateFOM==True :
 	print ("evaluateFOM with kinfit",withKinFit, time.asctime( time.localtime(time.time()) ))
-	###########################################################################
 	## feature importance plot
 	fig, ax = plt.subplots()
 	f_score_dicts =cls.booster().get_fscore()
 	f_score_dicts = {trainVars(withKinFit)[int(k[1:])] : v for k,v in f_score_dicts.items()}
-	"""
-	if doXML==True :
-		file = open(bdtpath+".dat","w")
-		file.write(str({trainVars(withKinFit)[int(k[1:])] : v for k,v in f_score_dicts.items()}))
-		file.close()
-		print "wrote "+bdtpath+".dat"
-	#"""
 	if options.HypOpt==False :
 		feat_imp = pandas.Series(f_score_dicts).sort_values(ascending=True)
 		feat_imp.plot(kind='barh', title='Feature Importances')
@@ -556,14 +348,13 @@ if options.evaluateFOM==True :
 		else :
 			fig.savefig("{}/{}_{}_{}_XGB_importance.png".format(channel,process,bdtType,trainvar))
 			fig.savefig("{}/{}_{}_{}_XGB_importance.pdf".format(channel,process,bdtType,trainvar))
+	# the bellow takes time: you may want to comment if you are setting up
 	evaluateFOM(cls,keys,trainVars(withKinFit),"WithKinfit"+str(withKinFit), train_auc , test_auct,nBdeplet,nB,nS,f_score_dicts)
 ########################################################################
 if options.HypOpt==False :
 	print ("Start plotting repport: ", time.asctime( time.localtime(time.time()) ))
 	fig, ax = plt.subplots()
 	## ROC curve
-	#ax.plot(fprf, tprf, lw=1, label='XGB train (area = %0.3f)'%(train_aucf))
-	#ax.plot(fprtf, tprtf, lw=1, label='XGB test (area = %0.3f)'%(test_auctf))
 	ax.plot(fpr, tpr, lw=1, label='XGB train + angles (area = %0.3f)'%(train_auc))
 	ax.plot(fprt, tprt, lw=1, label='XGB test + angles (area = %0.3f)'%(test_auct))
 	ax.set_ylim([0.0,1.0])
@@ -574,23 +365,3 @@ if options.HypOpt==False :
 	fig.savefig("{}/{}_{}_{}_roc.png".format(channel,process,bdtType,trainvar))
 	fig.savefig("{}/{}_{}_{}_roc.pdf".format(channel,process,bdtType,trainvar))
 	###########################################################################
-	# do plot after analysis filters
-	# https://stackoverflow.com/questions/34157811/filter-a-pandas-dataframe-using-values-from-a-dict
-	# /hdfs/local/acaan/ttHAnalysis/2016/2017Nov30-BDT/output_rle/1l_2tau/forBDTtraining_OS/ttHToNonbb_fastsim_p1/rle_1l_2tau_ttHToNonbb_fastsim_p1_forBDTtraining_OS_central_1.txt
-
-
-	"""
-	#print (list(valdataset))
-	hist_params = {'normed': True, 'bins': 20 , 'histtype':'step'}
-	plt.clf()
-	y_pred = cls.predict_proba(valdataset.ix[valdataset[target].values == 0, trainVars(False)].values)[:, 1] #
-	y_predS = cls.predict_proba(valdataset.ix[valdataset[target].values == 1, trainVars(False)].values)[:, 1] #
-	plt.figure('XGB',figsize=(6, 6))
-	values, bins, _ = plt.hist(y_pred , label="TT (XGB)", **hist_params)
-	values, bins, _ = plt.hist(y_predS , label="signal", **hist_params )
-	#plt.xscale('log')
-	#plt.yscale('log')
-	plt.legend(loc='best')
-	plt.savefig(channel+'/'+process+'_'+bdtType+'_'+trainvar+'_XGBclassifier.pdf')
-	plt.savefig(channel+'/'+process+'_'+bdtType+'_'+trainvar+'_XGBclassifier.png')
-	"""
