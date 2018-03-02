@@ -24,6 +24,7 @@ parser.add_option("--mcw", type="int", dest="mcw", help="hyp", default=1)
 nbins= options.start # 15
 nbinsout= options.target #5
 BDTvar=options.variables #"oldVar"
+BDTtype=options.BDTtype
 
 #channel="2lss_1tau"
 channel=options.channel #"1l_2tau"
@@ -38,36 +39,61 @@ if channel=='1l_2tau':
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 
 if channel=="2l_2tau": # see Feb10
-	channelInTree='2l_2tau_sumOS_Loose'
-	#channelInTree='2l_2tau_sumOS_Tight'
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_BDT_LLepVVLTau/histograms/2l_2tau/forBDTtraining_sumOS/' #
-	criteria=[]
+	#channelInTree='2l_2tau_sumOS_Loose'
+	channelInTree='2l_2tau_sumOS_Tight'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_TLepVLTau/histograms/2l_2tau/forBDTtraining_sumOS/' #
+	criteria=[] #
 	testtruth="None"
-	# /hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_BDT_LLepVVLTau/
 	channelInTreeTight='2l_2tau_sumOS_Tight'
-	#channelInTreeTight='2l_2tau_sumOS_Loose'
-	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_BDT_TLepTTau/histograms/2l_2tau/forBDTtraining_sumOS/'
-	channelInTreeFS='2l_2tau_sumOS_Tight'
-	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_VHbb_trees_TLepTTau//histograms/2l_2tau/Tight_sumOS/'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_TLepMTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+	if "_M" in BDTtype :
+		channelInTreeFS='2l_2tau_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepMTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+		FullsimWP="TightLep_MediumTau"
+	if "_T" in BDTtype :
+		channelInTreeFS='2l_2tau_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepTTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+		FullsimWP="TightLep_TightTau"
+	if "_VT" in BDTtype :
+		channelInTreeFS='2l_2tau_sumOS_Tight' # ???? processing again
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepTTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+		FullsimWP="TightLep_VTightTau"
+	channelInTreeFS2='2l_2tau_sumOS_Loose'
+	inputPathTightFS2='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepVVLTau/histograms/2l_2tau/forBDTtraining_sumOS/'
 
 if channel=='2lss_1tau':
 	if options.relaxedLepID==True :
-		channelInTree='2lss_1tau_lepSS_sumOS_Loose'
-		#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR/histograms/2lss_1tau/forBDTtraining_SS_OS/' # with charge tag, 2017Dec13-BDT-noMEM-LooseLepMedTau-TagT-fakeR
-		#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/20172017Dec30-VHbb-wMEM-LooseLepMedTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-		inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec30-VHbb-wMEM-LooseLepMedTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-		criteria=['lep1_isTight', 'lep2_isTight','tau_isTight',"failsTightChargeCut"]
-		# 2017Dec-BDT-withMEM-LooseLepMedTau == with oldTrain
-		#
+		if channel=='2lss_1tau':
+			#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
+			channelInTree='2lss_1tau_lepSS_sumOS_Loose'
+			inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb27_BDT_LLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+			FastsimWP= "LooseLep_TightTau"
+			#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
+			#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb27_BDT_TLepVVLTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+			criteria=[]
+			testtruth="bWj1Wj2_isGenMatchedWithKinFit"
+			channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
+			#channelInTreeTight='2lss_1tau_lepSS_sumOS_Loose'
+			inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_BDT_TLepTTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+			if "_M" in BDTtype :
+				channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+				inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+			if "_T" in BDTtype :
+				channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+				inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepTTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+			else :
+				channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+				inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+				FullsimWP= "TightLep_MediumTau"
 	else :
 		channelInTree='2lss_1tau_lepSS_sumOS_Tight'
 		inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-	#else :
-	channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
-	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/' #  2017Dec08-BDT-noMEM-tighLep
-	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/Tight_SS_OS'
-	#'/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_tightL_mediumTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2018Jan_BDT_fromVHbb_toTrees_fullsimData
-	# /hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/
+		#else :
+		channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
+		inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/' #  2017Dec08-BDT-noMEM-tighLep
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/Tight_SS_OS'
+		#'/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_tightL_mediumTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2018Jan_BDT_fromVHbb_toTrees_fullsimData
+		# /hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/
 
 	#channelInTree='2lss_1tau_lepSS_sumOS_Fakeable_wFakeRateWeights'
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-fakableLepLooseTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-fakableLepMedTau
@@ -95,6 +121,7 @@ import math , array
 import numpy as np
 import seaborn as sns
 from rep.estimators import TMVAClassifier
+from sklearn import preprocessing
 
 import pickle
 
@@ -148,24 +175,49 @@ def trainVarsTT(trainvar):
 
         if trainvar=="noHTT" and channel=="2lss_1tau" :
 			return [
-		'avg_dr_jet', 'dr_lep1_tau', 'dr_lep2_tau',
-		'dr_leps',
-		'lep1_conePt', 'lep2_conePt',
-		'mT_lep1',
-		'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'max_lep_eta',
-		'mbb',
-		'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
-		'nJet25_Recl',
-		'ptmiss', 'tau_pt',
-		]
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			#'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis1',
+			'mTauTauVis2',
+			#'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			]
 
         if trainvar=="HTT" and channel=="2lss_1tau" :
 			return [
-			'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet',
-			'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt',
-			'nJet25_Recl', 'avg_dr_jet'
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			#'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			#'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			#'nJet',
+			'ptmiss',
+			'tau_pt',
+			'mvaOutput_hadTopTaggerWithKinFit',
+			'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
 			]
 
 
@@ -208,11 +260,28 @@ def trainVarsTT(trainvar):
 
         if trainvar=="HTTMEM" and channel=="2lss_1tau" :
 			return [
-			'dr_lep1_tau',"memOutput_LR", 'dr_lep2_tau', 'dr_leps',
-			'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet',
-			'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt',
-			'nJet25_Recl', 'avg_dr_jet'
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			#'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			"memOutput_LR",
+			'mvaOutput_hadTopTaggerWithKinFit',
+			#'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
 			]
 
         if trainvar=="oldVar"  and channel=="1l_2tau" :return [
@@ -296,15 +365,17 @@ def trainVarsTT(trainvar):
 		]
 
         if trainvar=="noHTT" and channel=="2l_2tau" :return [
-			"mTauTauVis", "cosThetaS_hadTau",
-			'tau1_pt','tau2_pt',
+			"mTauTauVis",
+			"cosThetaS_hadTau",
+			'tau1_pt',
+			'tau2_pt',
+			"tau2_eta",
 			"mindr_lep1_jet",
 			"mT_lep1",
-			"mindr_tau1_jet",
-			"mindr_tau2_jet",
-			"avr_dr_lep_tau",
+			"mindr_tau_jet",
+			"max_dr_lep_tau",
 			"is_OS",
-			"nBJetLoose",
+			"nBJetLoose"
 			]
 
 def trainVarsTTV(trainvar):
@@ -335,6 +406,25 @@ def trainVarsTTV(trainvar):
 		'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt'
 		]
 
+        if trainvar=="noHTT" and channel=="2lss_1tau" :
+			return [
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis1',
+			'mTauTauVis2',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'ptmiss',
+			'max_lep_eta',
+			'tau_pt'
+			]
+
         if trainvar=="oldTrainCSV"  and channel=="2lss_1tau" :return [
 		"mindr_lep1_jet","mindr_lep2_jet", "avg_dr_jet", "TMath::Max(TMath::Abs(lep1_eta),TMath::Abs(lep2_eta))",
 		"lep1_conePt", "lep2_conePt", "mT_lep1", "dr_leps", "mTauTauVis1", "mTauTauVis2"
@@ -352,11 +442,28 @@ def trainVarsTTV(trainvar):
 
         if trainvar=="HTTMEM" and channel=="2lss_1tau"  :
 			return [
-			'avg_dr_jet', 'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'lep1_conePt', 'lep2_conePt', 'mT_lep1', 'mT_lep2',
-			'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
-			'ptmiss', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'mvaOutput_Hjj_tagger',"memOutput_LR"
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			#'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			"memOutput_LR",
+			'mvaOutput_hadTopTaggerWithKinFit',
+			#'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
 			]
 
         if trainvar=="oldVar"  and channel=="1l_2tau" :return [
@@ -437,18 +544,20 @@ def trainVarsTTV(trainvar):
 		]
 
         if trainvar=="noHTT" and channel=="2l_2tau"  :return [
-			'mTauTauVis',
-			'tau1_pt',
-			'lep1_conePt',
-			'mindr_lep1_jet',
-			'mT_lep1',
-			'lep2_conePt',
-			'mindr_tau1_jet',
-			'dr_taus',
-			'dr_lep1_tau1',
-			"avr_dr_lep_tau",
+			"mTauTauVis",
+			"cosThetaS_hadTau",
+			"lep1_conePt",
+			"lep2_conePt",
+			"mT_lep1",
+			"mT_lep2",
+			"dr_taus",
+			"min_dr_lep_jet",
+			"mindr_tau1_jet",
+			"avg_dr_jet",
+			"min_dr_lep_tau",
+			"max_dr_lep_tau",
 			"is_OS",
-			'nJet'
+			"nJet",
 			]
 
 ####################################################################################################
@@ -463,7 +572,7 @@ doCSVfile=False
 doInFS=False
 if channel=="2l_2tau" : data=load_data_2l2t()
 if channel=="2lss_1tau" or channel=="1l_2tau"  or channel=="2l_2tau" :
-	if options.variables!="oldTrainCSV" or doCSVfile : #options.variables!="oldTrainCSV"
+	if options.variables!="oldTrainCSV" : #options.variables!="oldTrainCSV"
 		if options.relaxedLepID==True : data=load_data(inputPath,channelInTree,Variables_all,[],testtruth,"all")
 		else : data=load_data(inputPathTight,channelInTreeTight,Variables_all,[],testtruth,"all") #
 		dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeTight,Variables_all,[],testtruth,"all")
@@ -476,10 +585,70 @@ if channel=="2lss_1tau" or channel=="1l_2tau"  or channel=="2l_2tau" :
 			nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
 			nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
 			print folderName,"length of sig, bkg: ", nS, nB
+
+# balance backgrounds
+if channel=="2l_2tau" :
+	fastsimTT=4.72
+	fastsimTTV=6.02
+	if "_M" in BDTtype:
+		TTdatacard=16.82
+		TTVdatacard=4.42
+		TTfullsim=0.64
+		TTVfullsim=1.4
+	if "_T" in BDTtype:
+		TTdatacard=6.27
+		TTVdatacard=1.12
+		TTfullsim=0.22
+		TTVfullsim=1.13
+	if "_VT" in BDTtype:
+		TTdatacard=0.56
+		TTVdatacard=0.83
+		#TTfullsim=0.073 -- not sure what happens with VT sample
+		#TTVfullsim=0.83
+		TTfullsim=0.22
+		TTVfullsim=1.13
+if channel=="2lss_1tau" :
+	fastsimTT=25.8134+30.9026
+	fastsimTTV=25.2822+17.1425
+	if "_M" in BDTtype:
+		TTdatacard=9.82
+		TTVdatacard=7.75+10.49
+		TTfullsim=1.53
+		TTVfullsim=7.56+9.39
+	if "_T" in BDTtype:
+		TTdatacard=7.52
+		TTVdatacard=5.95+9.19
+		TTfullsim=1.21
+		TTVfullsim=5.81+8.30
+if channel=="1l_2tau" :
+	fastsimTT=490.128+774.698
+	fastsimTTV=23.5482+5.0938
+	if "_T" in BDTtype:
+		TTdatacard=192.06
+		TTVdatacard=0.52+6.11
+		TTfullsim=223.00
+		TTVfullsim=1.46+7.03
+	if "_VT" in BDTtype:
+		TTdatacard=91.10
+		TTVdatacard=0.39+4.68
+		TTfullsim=223.00
+		TTVfullsim=1.46+7.03
+else :
+	TTdatacard=1.0
+	TTVdatacard=1.0
+	TTfullsim=1.0
+	TTVfullsim=1.0
+	fastsimTT=1.0
+	fastsimTTV=1.0
+data.loc[(data['key']=='TTTo2L2Nu') | (data['key']=='TTToSemilepton'), [weights]]*=TTdatacard/fastsimTT
+data.loc[(data['key']=='TTWJetsToLNu') | (data['key']=='TTZToLLNuNu'), [weights]]*=TTVdatacard/fastsimTTV
+dataTightFS.loc[(dataTightFS['proces']=='TT'), [weights]]*=TTdatacard/TTfullsim
+dataTightFS.loc[(dataTightFS['proces']=='TTW') | (dataTightFS['proces']=='TTZ'), [weights]]*=TTVdatacard/TTVfullsim
 #########################################################################################
 ## Load the BDTs - do 2D plot
 if channel=="2lss_1tau" :
-	basepkl="/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_opt1"
+	basepkl="/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_0_21/src/tthAnalysis/HiggsToTauTau/data/2lss_1tau_opt2"
+	#basepkl="2lss_1tau"
 	if BDTvar=="oldVar" : ttV_file=basepkl+"/2lss_1tau_XGB_oldVar_evtLevelTTV_TTH_7Var.pkl"
 	if BDTvar=="oldVarA" : ttV_file=basepkl+"/2lss_1tau_XGB_oldVarA_evtLevelTTV_TTH_10Var.pkl"
 	#if BDTvar=="HTT_LepID" : ttV_file=basepkl+"/2lss_1tau_XGB_HTT_evtLevelTTV_TTH_17Var.pkl"
@@ -488,16 +657,17 @@ if channel=="2lss_1tau" :
 	if BDTvar=="HTT" : ttV_file=basepkl+"/2lss_1tau_XGB_noHTT_evtLevelTTV_TTH_15Var.pkl"
 	if BDTvar=="noHTT" : ttV_file=basepkl+"/2lss_1tau_XGB_noHTT_evtLevelTTV_TTH_15Var.pkl"
 	if BDTvar=="HTTMEM" : ttV_file=basepkl+"/2lss_1tau_XGB_HTTMEM_evtLevelTTV_TTH_19Var.pkl"
-	# 2lss_1tau/      2lss_1tau/
-	#if BDTvar=="oldTrain" : ttV_file="" # ROOT.TMVA.Tools.Instance()
 
 	if BDTvar=="oldVar" : tt_file=basepkl+"/2lss_1tau_XGB_oldVar_evtLevelTT_TTH_7Var.pkl"
 	if BDTvar=="oldVarA" : tt_file=basepkl+"/2lss_1tau_XGB_oldVarA_evtLevelTT_TTH_8Var.pkl"
 	if BDTvar=="HTT_LepID" : tt_file=basepkl+"/2lss_1tau_XGB_HTT_LepID_evtLevelTT_TTH_6Var.pkl"
 	if BDTvar=="HTT" : tt_file=basepkl+"/2lss_1tau_XGB_HTT_evtLevelTT_TTH_17Var.pkl"
-	if BDTvar=="noHTT" : tt_file=basepkl+"/2lss_1tau_XGB_noHTT_evtLevelTT_TTH_18Var.pkl"
-	if BDTvar=="HTTMEM" : tt_file=basepkl+"/2lss_1tau_XGB_HTTMEM_evtLevelTT_TTH_18Var.pkl"
+	if BDTvar=="noHTT" : tt_file=basepkl+"/2lss_1tau_XGB_noHTT_evtLevelTT_TTH_16Var.pkl"
+	if BDTvar=="HTTMEM" : tt_file=basepkl+"/2lss_1tau_XGB_HTTMEM_evtLevelTT_TTH_19Var.pkl"
 	#if BDTvar=="oldTrain" : tt_file=basepkl+"/2lss_1tau_XGB_noHTT_evtLevelTT_TTH_18Var.pkl"
+
+	SUM_T=basepkl+"/2lss_1tau_XGB_noHTT_evtLevelSUM_TTH_T_18Var.pkl"
+	SUM_M=basepkl+"/2lss_1tau_XGB_noHTT_evtLevelSUM_TTH_M_18Var.pkl"
 
 if channel=="1l_2tau":
 	basepkl="/home/acaan/CMSSW_9_4_0_pre1/src/tth-bdt-training-test/EvtLevel/1l_2tau"
@@ -511,7 +681,8 @@ if channel=="1l_2tau":
 
 if channel=="2l_2tau":
 	basepkl="/home/acaan/CMSSW_9_4_0_pre1/src/tth-bdt-training-test/EvtLevel/2l_2tau"
-	if BDTvar=="noHTT" : ttV_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTTV_TTH_12Var.pkl"
+	if BDTvar=="noHTT" : ttV_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTTV_TTH_14Var.pkl"
+	#"/2l_2tau_XGB_noHTT_evtLevelTTV_TTH_12Var.pkl"
 	if BDTvar=="noHTT" : tt_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTT_TTH_11Var.pkl" #
 
 if doInFS :
@@ -541,11 +712,12 @@ else :
 	print dataTTV[["oldTrainTMVA_tt","oldTrainTMVA_ttV"]]
 
 bdtmax=1.0
-if "oldTrain" in BDTvar or channel=="2l_2tau": bdtmin=-1.
+if "oldTrain" in BDTvar : bdtmin=-1.
 else : bdtmin=0.
 factor=1.-bdtmin #2. | 1.
 
 
+scaler = preprocessing.MinMaxScaler()
 if BDTvar=="oldTrainCSV" and channel=="2lss_1tau" :
 	ttBDT="oldTrainTMVA_tt"
 	ttVBDT="oldTrainTMVA_ttV"
@@ -631,11 +803,10 @@ else :
 	## ROC curve
 	ax.plot(fpr, tpr, lw=1, label='TT-BDT in TT-sample MT-FastSim (area = %0.3f)'%(train_auc))
 	ax.plot(fprat, tprat, lw=1, label='TT-BDT in TT-sample Fullsim (area = %0.3f)'%(test_aucat))
-
-	ax.plot(fprttV, tprttV, lw=1, label='TT-BDT in TTV-sample MT-FastSim (area = %0.3f)'%(test_aucttV))
-	ax.plot(fpra, tpra, lw=1, label='TT-BDT in TT+TTV MT-FastSim (area = %0.3f)'%(test_auca))
-	ax.plot(fprtight, tprtight, lw=1, label='TT-BDT in TT+TTV Tight-FastSim (area = %0.3f)'%(test_auctight))
-	ax.plot(fprtightF, tprtightF, lw=1, label='TT-BDT in all Fullsim (area = %0.3f)'%(test_auctightF))
+	ax.plot(fprttV, tprttV, lw=1, label='TT-BDT in TTV-sample FastSim (area = %0.3f)'%(test_aucttV))
+	ax.plot(fpra, tpra, lw=1, label='TT-BDT in TT+TTV FastSim (area = %0.3f)'%(test_auca))
+	ax.plot(fprtight, tprtight, lw=1, label='TT-BDT in all Fullsim (area = %0.3f)'%(test_auctight))
+	ax.plot(fprtightF, tprtightF, lw=1, label='TT-BDT in TT+TTV Fullsim (area = %0.3f)'%(test_auctightF))
 	ax.set_ylim([0.0,1.0])
 	ax.set_xlim([0.0,1.0])
 	ax.set_xlabel('False Positive Rate')
@@ -671,11 +842,11 @@ else :
 	print ("ROC TTV BDT in all FS",BDTvar,test_auctightF)
 	##################################################
 	fig, ax = plt.subplots(figsize=(6, 6))
-	ax.plot(fpr, tpr, lw=1, label='TTV-BDT in TT-sample MT-FastSim (area = %0.3f)'%(test_aucttV))
-	ax.plot(fprttV, tprttV, lw=1, label='TTV-BDT in TTV-sample MT-FastSim (area = %0.3f)'%(test_aucttV))
+	ax.plot(fpr, tpr, lw=1, label='TTV-BDT in TT-sample FastSim (area = %0.3f)'%(test_aucttV))
+	ax.plot(fprttV, tprttV, lw=1, label='TTV-BDT in TTV-sample FastSim (area = %0.3f)'%(test_aucttV))
 	ax.plot(fprtight, tprtight, lw=1, label='TTV-BDT in TTV-Fulsim (area = %0.3f)'%(test_auctight))
 	ax.plot(fpra, tpra, lw=1, label='TTV-BDT in TT+TTV MT-FastSim (area = %0.3f)'%(test_auca))
-	ax.plot(fprat, tprat, lw=1, label='TTV-BDT in TT+TTV Tight-FastSim (area = %0.3f)'%(test_aucat))
+	ax.plot(fprat, tprat, lw=1, label='TTV-BDT in all Fullsim (area = %0.3f)'%(test_aucat))
 	ax.plot(fprtightF, tprtightF, lw=1, label='TTV-BDT in TT+TTV-Fullsim (area = %0.3f)'%(test_auctightFttV))
 	ax.set_ylim([0.0,1.0])
 	ax.set_xlim([0.0,1.0])
@@ -716,9 +887,6 @@ histttH, xbins, ybins, im  = plt.hist2d(ttH_datainTT,ttH_datainTTV,
 					bins=nbins,
 					cmap=reverse_colourmap(cm.hot)
 					)
-#plt.subplot(1, 3, 2+1)
-#histttH, xbins, ybins, im = sns.kdeplot(ttH_datainTT,ttH_datainTTV, shade=True)
-
 plt.xlabel('BDT for tt')
 plt.ylabel('BDT for ttV')
 plt.axis((bdtmin,1.,bdtmin,1.))
@@ -732,7 +900,7 @@ plt.figure(figsize=(20, 3))
 fig, ax = plt.subplots(figsize=(18, 6))
 
 plt.subplot(1, 3, 0+1)
-plt.hist(tt_datainTT, weights=dataTT["totalWeight"].values.astype(np.float64),
+plt.hist( normalize(tt_datainTT), weights=dataTT["totalWeight"].values.astype(np.float64),
 									bins=nbins,normed=True,alpha=0.4,label='TT bdt')
 plt.hist(tt_datainTTV, weights=dataTT["totalWeight"].values.astype(np.float64),
 									bins=nbins,normed=True,alpha=0.4,label='TTV bdt')
@@ -1100,7 +1268,6 @@ if options.doBDT == False :
 			hBKG1D=h2.Clone()
 			h3=hTTH.Clone()
 			h4=hTT.Clone()
-			#h3=Divide(h3,h2)
 			#"""
 			#h3=hTT.Clone()
 			if not h2.GetSumw2N() : h2.Sumw2()
@@ -1214,17 +1381,14 @@ if options.doBDT == False :
 		#"""
 		c5.cd(2)
 		ROOT.gPad.SetLogy()
-		#c5.SetLogy(1)
 		ROOT.gPad.SetTopMargin(0.001)
 		ROOT.gPad.SetRightMargin(0.01)
-		#ROOT.gPad.SetLabelSize(.1, "XY")
 		if not hTT.GetSumw2N() : hTT.Sumw2()
 		#if not hTTW.GetSumw2N() : hTTW.Sumw2()
 		h2=hTT.Clone()
 		h2.Add(hTTW)
 		hBKG1D=h2.Clone()
 		h3=hTTH.Clone()
-		#h3=Divide(h3,h2)
 		#"""
 		#h3=hTT.Clone()
 		if not h2.GetSumw2N() : h2.Sumw2()
@@ -1255,13 +1419,6 @@ if options.doBDT == False :
 		h3.GetYaxis().SetLabelSize(.06)
 		h3.GetXaxis().SetTitleSize(0.05);
 		h3.GetXaxis().SetLabelSize(.06)
-		#l2 = ROOT.TLegend(0.12,0.8,0.32,0.98);
-		#l2.AddEntry(h3  , "S/B" , "l");
-		#l2.AddEntry(h2  , "ttV + tt err/content", "l");
-		#l2.Draw("same");
-		#h2.Draw("HIST,SAME")
-		#c5.SetLogy(1)
-		#"""
 		c5.Modified();
 		c5.Update();
 		print ("s/B in last (anti-last) bin",
@@ -1281,8 +1438,7 @@ if options.doBDT == True :
 	nmaxplot=2
 	## do BDT from tt and ttV_file
 	print "training joint-BDT"
-	BDTtype=options.BDTtype
-	if BDTtype=="1B" : trainVars=["BDTtt","BDTttV"]
+	if "1B" in BDTtype : trainVars=["BDTtt","BDTttV"]
 	if BDTtype=="2MEM" : trainVars=["BDTtt","BDTttV",'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt','memOutput_LR']
 	if BDTtype=="noMEM" : trainVars=["BDTtt","BDTttV",'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt','memOutput_LR']
 	if BDTtype=="2HTT" : trainVars=["BDTtt","BDTttV",'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt']
@@ -1290,18 +1446,34 @@ if options.doBDT == True :
 	data["BDTttV"] = clsTTV.predict_proba(data[trainVarsTTV(BDTvar)].values)[:, 1]
 	dataTightFS["BDTtt"] = clsTT.predict_proba(dataTightFS[trainVarsTT(BDTvar)].values)[:, 1]
 	dataTightFS["BDTttV"] = clsTTV.predict_proba(dataTightFS[trainVarsTTV(BDTvar)].values)[:, 1]
+	# range BDTs
+	#data_to_scale=data["BDTtt","BDTttV"].values
+	#scaled_data = scaler.fit_transform(data_to_scale)
+	#data = pandas.DataFrame(scaled_data, columns=["BDTtt","BDTttV"])
+	#dataTightFS = pandas.DataFrame(scaler.fit_transform(dataTightFS["BDTtt","BDTttV"]), columns=["BDTtt","BDTttV"])
+	data["BDTtt"]= (data["BDTtt"]-data["BDTtt"].min())/(data["BDTtt"].max()-data["BDTtt"].min())
+	data["BDTttV"]= (data["BDTttV"]-data["BDTttV"].min())/(data["BDTttV"].max()-data["BDTttV"].min())
+	#data=normalize(data)
+	#dataTightFS=normalize(dataTightFS)
 	# balance datasets
 	data.loc[data['target']==0, ['totalWeight']] *= 100000/data.loc[data['target']==0]["totalWeight"].sum()
 	data.loc[data['target']==1, ['totalWeight']] *= 100000/data.loc[data['target']==1]["totalWeight"].sum()
-	traindataset, valdataset  = train_test_split(data[trainVars+["target","totalWeight"]], test_size=0.2, random_state=7)
+	traindataset, valdataset  = train_test_split(data[trainVars+["target","totalWeight"]], test_size=0.2, random_state=7) #0.2
 	cls =  xgb.XGBClassifier(
-				n_estimators = options.ntrees,
-				max_depth = options.treeDeph,
-				min_child_weight = options.mcw, # min_samples_leaf
-				learning_rate = options.lr
+				#n_estimators = options.ntrees,
+				#max_depth = options.treeDeph,
+				#min_child_weight = options.mcw, # min_samples_leaf
+				#learning_rate = options.lr,
+				#objective= 'reg:linear',
 				#max_features = 'sqrt',
 				#min_samples_leaf = 100
+				#silent=False,
+				max_depth=2, learning_rate=0.1, n_estimators=200, silent=True, objective='binary:logistic', #booster='gbtree',
+				gamma=0, min_child_weight=1, max_delta_step=1, subsample=1, colsample_bytree=1, colsample_bylevel=1,
+				reg_alpha=0, reg_lambda=1, scale_pos_weight=1, base_score=0.5, #random_state=0
+				# 2lss1tau max_depth=2, learning_rate=0.1, n_estimators=100, silent=True, objective='binary:logistic', #booster='gbtree',
 				)
+	#print cls.params_
 	cls.fit(
 		traindataset[trainVars].values,
 		traindataset.target.astype(np.bool),
@@ -1311,6 +1483,8 @@ if options.doBDT == True :
 		#(valdataset[trainVars(False)].values,  valdataset.target.astype(np.bool), valdataset[weights].astype(np.float64))] ,
 		#verbose=True,eval_metric="auc"
 		)
+	#from sklearn.tree import DecisionTreeClassifier
+
 	pklpath=channel+"/"+channel+"_XGB_JointBDT_"+BDTvar+"_"+BDTtype
 	print ("Done  ",pklpath)
 	if options.doXML==True :
@@ -1346,34 +1520,24 @@ if options.doBDT == True :
 	print("XGBoost fulsim all auc - {}".format(test_auctfAJ))
 	f_score_dict =cls.booster().get_fscore()
 	f_score_dict = {trainVars[int(k[1:])] : v for k,v in f_score_dict.items()}
-	if BDTtype=="1B" :  print("importance", f_score_dict)
+	if "1B" in BDTtype:  print("importance", f_score_dict)
 	###########################################################################
 	#print (list(valdataset))
 	#plt.clf()
-	hist_params = {'normed': True, 'bins': 15 , 'histtype':'step', 'lw': 3}
+	hist_params = {'normed': True, 'bins': 10 , 'histtype':'step', 'lw': 3}
 	fig= plt.subplots(figsize=(5, 5))
-	# plt.subplot(221)
 	y_pred = cls.predict_proba(valdataset.ix[valdataset.target.values == 0, trainVars].values)[:, 1] #
 	y_predS = cls.predict_proba(valdataset.ix[valdataset.target.values == 1, trainVars].values)[:, 1] #
-	#plt.figure('XGB',figsize=(6, 6))
+	#plt.hist(normalize(y_pred) , label="TT + TTV", **hist_params)
+	#plt.hist(normalize(y_predS) , label="signal", **hist_params )
 	plt.hist(y_pred , label="TT + TTV", **hist_params)
 	plt.hist(y_predS , label="signal", **hist_params )
-	#plt.xscale('log')
-	#plt.yscale('log')
-	#locmin = matplotlib.ticker.LogLocator(base=10.0, subs=(0.1,0.2,0.4,0.6,0.8,1,2,4,6,8,10 ))
-	#ax.xaxis.set_minor_locator(locmin)
-	#ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-	#ax.yaxis.set_minor_locator(locmin)
-	#ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-	#ax.set_xlim([0.01,1.0])
-	#ax.set_ylim([0.01,40.0])
 	plt.legend(loc='upper left')
 	plt.show()
 	plt.savefig(channel+'/'+BDTvar+'_jointBDT_XGBclassifier.pdf')
 	plt.clf()
 	##################################################
 	fig= plt.subplots(figsize=(5, 5))
-	# plt.subplot(221)
 	## ROC curve
 	#ax.plot(fprf, tprf, lw=1, label='GB train (area = %0.3f)'%(train_aucf))
 	#ax.plot(fprtf, tprtf, lw=1, label='GB test (area = %0.3f)'%(test_auctf))
@@ -1406,7 +1570,6 @@ if options.doBDT == True :
 	plt.xlabel('False Positive Rate')
 	plt.ylabel('True Positive Rate')
 	plt.legend(loc="lower right")
-	#ax.grid()
 	plt.savefig(channel+'/'+BDTvar+'_jointBDT_'+BDTtype+'_roc_comparisons.pdf')
 	plt.clf()
 	###########################################################################

@@ -68,7 +68,6 @@ def load_dataGen(inputPath,channelInTree,variables,criteria,testtruth,folderName
     		target=0
     	inputTree = channelInTree+'/sel/evtntupleGen/'+sampleName+'/evtTree'
         # inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
-
     	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
             procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1_forBDTtraining*OS_central_*.root")
             procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2_forBDTtraining*OS_central_*.root")
@@ -124,104 +123,102 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     data = pandas.DataFrame(columns=my_cols_list)
     if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
     if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu']
-    if bdtType=="evtLevelSUM_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
+    if "evtLevelSUM_TTH" in bdtType : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
     if bdtType=="all" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
-    if bdtType=="arun" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu','TTTo2L2Nu','TTToSemilepton']
     for folderName in keys :
-    	print (folderName, channelInTree)
-    	if 'TTT' in folderName :
-    		sampleName='TT'
-    		target=0
-    	if folderName=='ttHToNonbb' :
-    		sampleName='signal'
-    		target=1
-    	if 'TTW' in folderName :
-    		sampleName='TTW'
-    		target=0
-    	if 'TTZ' in folderName :
-    		sampleName='TTZ'
-    		target=0
-    	#inputTree = channelInTree+'/sel/evtntupleGen/'+sampleName+'/evtTree'
+        print (folderName, channelInTree)
+        if 'TTT' in folderName :
+        	sampleName='TT'
+        	target=0
+        if folderName=='ttHToNonbb' :
+        	sampleName='signal'
+        	target=1
+        if 'TTW' in folderName :
+        	sampleName='TTW'
+        	target=0
+        if 'TTZ' in folderName :
+        	sampleName='TTZ'
+        	target=0
         inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
-        #ttHToNonbb_fastsim_p3_disabled_disabled_forBDTtraining_OS_central_2.root
-    	if ('TTT' in folderName) or folderName=='ttHToNonbb' :
-    		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"_fastsim_p1*_forBDTtraining*OS_central_*.root")
-    		procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"_fastsim_p2*_forBDTtraining*OS_central_*.root")
-    		procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"_fastsim_p3*_forBDTtraining*OS_central_*.root")
-    		list=procP1+procP2+procP3
-    	else :
-    		procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"_fastsim*_forBDTtraining*OS_central_*.root")
-    		list=procP1
-
-    	#print ("Date: ", time.asctime( time.localtime(time.time()) ))
-    	for ii in range(0, len(list)) : #
-            #print (list[ii],inputTree)
+        if ('TTT' in folderName) or folderName=='ttHToNonbb' :
+        	procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"*.root")
+        	procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"*.root")
+        	procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"*.root")
+        	list=procP1+procP2+procP3
+        else :
+        	procP1=glob.glob(inputPath+"/"+folderName+"_fastsim/"+folderName+"*.root")
+        	list=procP1
+        for ii in range(0, len(list)) :
             try: tfile = ROOT.TFile(list[ii])
-            except :
-            	#print "Doesn't exist"
-            	#print ('file ', list[ii],' corrupt')
-            	continue
+            except : continue
             try: tree = tfile.Get(inputTree)
-            except :
-            	#print "Doesn't exist"
-            	#print ('file ', list[ii],' corrupt')
-            	continue
+            except : continue
             if tree is not None :
-            	try:
-            		chunk_arr = tree2array(tree) #,  start=start, stop = stop)
-            	except :
-            		#print "Doesn't exist"
-            		#print ('file ', list[ii],' corrupt')
-            		continue
-            	else :
-            		chunk_df = pandas.DataFrame(chunk_arr) #
-            		#if ii ==0 : print (chunk_df.columns.values.tolist())
-            		chunk_df['key']=folderName
-            		chunk_df['target']=target
-            		if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
-            		if channel=="2lss_1tau" :
-            			chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']
-            		if channel=="3l_1tau" : chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']*chunk_df['lep3_frWeight']
-            		if channel=="2l_2tau" :
-                            #df[df < pd.Timedelta(0)] = 0
-                            chunk_df["min_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].min(axis=1)#min(chunk_df['dr_lep1_tau1'],chunk_df['dr_lep1_tau2'],chunk_df['dr_lep2_tau1'],chunk_df['dr_lep2_tau2']).any()
-                            chunk_df["max_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].max(axis=1)
-                            chunk_df["avr_dr_lep_tau"]=(chunk_df['dr_lep1_tau1']+chunk_df['dr_lep1_tau2']+chunk_df['dr_lep2_tau1']+chunk_df['dr_lep2_tau2'])/4.
-                            chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
-                            chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
-                            chunk_df["avr_lep_eta"]=abs(chunk_df["lep2_eta"]+chunk_df["lep1_eta"])/2.
-                            chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
-                            chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
-                            chunk_df["avr_tau_eta"]=abs(chunk_df["tau2_eta"]+chunk_df["tau1_eta"])/2.
-                            chunk_df["leptonPairCharge"]=abs(chunk_df["leptonPairCharge"])
-                            chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
-                            chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
-            		if channel=="2lss_1tau"  and len(criteria)>0:
-            			data=data.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
-            		else : data=data.append(chunk_df, ignore_index=True)
+                try: chunk_arr = tree2array(tree) #,  start=start, stop = stop)
+                except : continue
+                else :
+                    chunk_df = pandas.DataFrame(chunk_arr)
+                    chunk_df['proces']=sampleName
+                    chunk_df['key']=folderName
+                    chunk_df['target']=target
+                    if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
+                    if channel=="2lss_1tau" :
+                        #WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"] #*chunk_df["tau_fake_prob"]
+                        #WtoMultiply=chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]
+                        chunk_df["max_eta_Lep"]=chunk_df[['tau_eta', 'lep1_eta', 'lep2_eta']].max(axis=1) #WtoMultiply
+                        #chunk_df.ix[(chunk_df["mbb"].values < 0)]=0*chunk_df.ix[(chunk_df["mbb"].values < 0)]
+                    if channel=="3l_1tau" :
+                        chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
+                        chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
+                        chunk_df["lep3_eta"]=abs(chunk_df["lep3_eta"])
+                        chunk_df["avr_lep_eta"]=(abs(chunk_df["lep2_eta"])+abs(chunk_df["lep1_eta"])+abs(chunk_df["lep3_eta"]))/2.
+                        chunk_df["tau_eta"]=abs(chunk_df["tau_eta"])
+                        WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["lep3_fake_prob"] #*chunk_df["tau_fake_prob"]
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
+                    if channel=="2l_2tau" :
+                        chunk_df["min_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].min(axis=1)
+                        chunk_df["max_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].max(axis=1)
+                        chunk_df["min_dr_lep_jet"]=chunk_df[["mindr_lep1_jet", "mindr_lep2_jet"]].min(axis=1)
+                        chunk_df["mindr_tau_jet"]=chunk_df[["mindr_tau1_jet","mindr_tau2_jet"]].min(axis=1)
+                        chunk_df["avr_dr_lep_tau"]=(chunk_df['dr_lep1_tau1']+chunk_df['dr_lep1_tau2']+chunk_df['dr_lep2_tau1']+chunk_df['dr_lep2_tau2'])/4.
+                        chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
+                        chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
+                        chunk_df["avr_lep_eta"]=(abs(chunk_df["lep2_eta"])+abs(chunk_df["lep1_eta"]))/2.
+                        chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
+                        chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
+                        chunk_df["avr_tau_eta"]=(abs(chunk_df["tau2_eta"])+abs(chunk_df["tau1_eta"]))/2.
+                        chunk_df["leptonPairCharge"]=abs(chunk_df["leptonPairCharge"])
+                        chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
+                        #WtoMultiply=chunk_df["weight_fakeRate"]
+                        WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
+                        #WtoMultiply=chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
+                    # append to dataframe
+                    data=data.append(chunk_df, ignore_index=True)
             else : print ("file "+list[ii]+"was empty")
             tfile.Close()
         if len(data) == 0 : continue
-        nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName)])
-        nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName)])
-        print folderName,"length of sig, bkg: ", nS, nB , data.ix[(data.target.values == 0) & (data.key.values==folderName)]["totalWeight"].sum(), data.ix[(data.target.values == 1) & (data.key.values==folderName)]["totalWeight"].sum()
+        nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName) ])
+        nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName) ])
+        print folderName,"length of sig, bkg: ", nS, nB , data.ix[ (data.key.values==folderName)]["totalWeight"].sum(), data.ix[(data.key.values==folderName)]["totalWeight"].sum()
         if channel=="2l_2tau" :
-            print "OS | SS ", len(data.ix[(data["leptonPairCharge"].values == 0) & (data.key.values==folderName)]), len(data.ix[(data["leptonPairCharge"].values == 2) & (data.key.values==folderName)])
-        if channel=="1l_2tau" :
-            print "pos | neg (weight) ",folderName , len(data.ix[(data["genWeight"].values > 0) & (data.key.values==folderName)]), len(data.ix[(data["genWeight"].values < 0) & (data.key.values==folderName)])
-            print "pos | neg (evtweight) ",folderName , len(data.ix[(data["evtWeight"].values > 0) & (data.key.values==folderName)]), len(data.ix[(data["evtWeight"].values < 0) & (data.key.values==folderName)])
+            print "tau1 all | lep  ",sampleName , len(data.ix[(data["tau1_fake_prob"].values != 1) & (data.proces.values==sampleName)]), len(data.ix[(data["tau1_fake_test"].values != 1) & (data.proces.values==sampleName)])
+            print "tau2 all | lep  ",sampleName , len(data.ix[(data["tau2_fake_prob"].values != 1) & (data.proces.values==sampleName)]), len(data.ix[(data["tau2_fake_test"].values != 1) & (data.proces.values==sampleName)])
+            print "tau1&2 all | lep  ",sampleName ,len(data.ix[(data["tau1_fake_prob"].values != 1) & (data["tau2_fake_prob"].values != 1) & (data.proces.values==sampleName)]), len(data.ix[(data["tau1_fake_test"].values != 1) & (data['tau2_fake_test'].values != 1) & (data.proces.values==sampleName)])
+            datatest=data["evtWeight"]*data["lep1_fake_prob"]*data["lep2_fake_prob"]*data["tau1_fake_test"]*data["tau2_fake_test"]
+            print "sum of weights with/ without lepton in FR ",sampleName , datatest.ix[ (data.proces.values==sampleName)].sum(),data.ix[ (data.proces.values==sampleName)]["totalWeight"].sum()
         if (channel=="1l_2tau" or channel=="2lss_1tau") :
-        	nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
-        	nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
-        	nSthuthKin = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
-        	nBtruthKin = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
-        	nShadthuth = len(data.ix[(data.target.values == 0) & (data.hadtruth.values==1) & (data.key.values==folderName)])
-        	nBhadtruth = len(data.ix[(data.target.values == 1) & (data.hadtruth.values==1) & (data.key.values==folderName)])
-        	print "truth:              ", nSthuth, nBtruth
-        	print "truth Kin:          ", nSthuthKin, nBtruthKin
-        	print "hadtruth:           ", nShadthuth, nBhadtruth
-    if folderName=='ttHToNonbb' : print (data.columns.values.tolist())
-
+            nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
+            nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
+            nSthuthKin = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
+            nBtruthKin = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
+            nShadthuth = len(data.ix[(data.target.values == 0) & (data.hadtruth.values==1) & (data.key.values==folderName)])
+            nBhadtruth = len(data.ix[(data.target.values == 1) & (data.hadtruth.values==1) & (data.key.values==folderName)])
+            print "truth:              ", nSthuth, nBtruth
+            print "truth Kin:          ", nSthuthKin, nBtruthKin
+            print "hadtruth:           ", nShadthuth, nBhadtruth
+    print (data.columns.values.tolist())
     n = len(data)
     nS = len(data.ix[data.target.values == 0])
     nB = len(data.ix[data.target.values == 1])
@@ -269,7 +266,7 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     #'ST_t-channel_top_4f_inclusiveDecays', # + tH
     #'THQ',
     #'THW'
-    ] # +6 fastsim
+    ]
     samplesTTW=['TTWJetsToLNu_ext1','TTWJetsToLNu_ext2']
     samplesTTZ=['TTZToLL_M10_ext2', 'TTZToLL_M10_ext1', 'TTZToLL_M-1to10']
     samplesEWK=['DYJetsToLL_M-10to50',
@@ -296,114 +293,185 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     'WpWpJJ_EWK-QCD']
     dataloc = pandas.DataFrame(columns=my_cols_list)
     for sampleName in sampleNames :
-    	print (sampleName, channelInTree)
-    	if sampleName=='TT' : #'TTT' in folderName :
-    		folderNames=samplesTT
-    		target=0
-    	if sampleName=='signal' :
-    		folderNames=['ttHJetToNonbb_M125_amcatnlo']
-    		target=1
-    	if sampleName=='TTW':
-    		folderNames=samplesTTW
-    		target=0
+        print (sampleName, channelInTree)
+        if sampleName=='TT' :
+        	folderNames=samplesTT
+        	target=0
+        if sampleName=='signal' :
+        	folderNames=['ttHJetToNonbb_M125_amcatnlo']
+        	target=1
+        if sampleName=='TTW':
+        	folderNames=samplesTTW
+        	target=0
         if sampleName=='TTZ' :
-    		folderNames=samplesTTZ
-    		target=0
-    	if sampleName=='EWK':
-    		folderNames=samplesEWK
-    		target=0
+        	folderNames=samplesTTZ
+        	target=0
+        if sampleName=='EWK':
+        	folderNames=samplesEWK
+        	target=0
         if sampleName=='Rares' :
-    		folderNames=samplesRares
-    		target=0
-    	inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
-        #print (folderNames)
+        	folderNames=samplesRares
+        	target=0
+        inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
         list=[]
-
         for folderName in folderNames :
-            #print inputPath+"/"+folderName+"/"+folderName+"*Tight_*.root"
-            # TGJets_forBDTtraining_lepSS_sumOS_central_1.root
-            #procP1=glob.glob(inputPath+"/"+folderName+"/"+folderName+"_forBDTtraining*OS_central_*.root")
-            #WWTo2L2Nu_DoubleScattering_Tight_lepSS_sumOS_central_1.root
-            # /hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb09_VHbb_tree_TLepVTTau/histograms/2l_2tau/Tight_sumOS/ttHJetToNonbb_M125_amcatnlo/ttHJetToNonbb_M125_amcatnlo_disabled_disabled_Tight_OS_central_1.root
-            procP1=glob.glob(inputPath+"/"+folderName+"/"+folderName+"*Tight_*.root")
+            procP1=glob.glob(inputPath+"/"+folderName+"/"+folderName+"*.root")
             list= list+procP1
-            #if sampleName=='TT' : print (folderName)
-    	#print (list)
-    	for ii in range(0, len(list)) : #
-    		#if sampleName=='TT' : print (list[ii])
-    		try: tfile = ROOT.TFile(list[ii])
-    		except :
-    			#print "Doesn't exist"
-    			#print ('file ', list[ii],' corrupt')
-    			continue
-    		try: tree = tfile.Get(inputTree)
-    		except :
-    			#print "Doesn't exist"
-    			#print ('file ', list[ii],' corrupt')
-    			continue
-    		if tree is not None :
-    			try:
-    				chunk_arr = tree2array(tree) #,  start=start, stop = stop)
-    			except :
-    				#print "Doesn't exist"
-    				#print ('file ', list[ii],' corrupt')
-    				continue
-    			else :
-    				chunk_df = pandas.DataFrame(chunk_arr) #
-    				if channel=="2l_2tau" :
-                                                        #df[df < pd.Timedelta(0)] = 0
-                                                        chunk_df["min_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].min(axis=1)#min(chunk_df['dr_lep1_tau1'],chunk_df['dr_lep1_tau2'],chunk_df['dr_lep2_tau1'],chunk_df['dr_lep2_tau2']).any()
-                                                        chunk_df["max_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].max(axis=1)
-                                                        chunk_df["avr_dr_lep_tau"]=(chunk_df['dr_lep1_tau1']+chunk_df['dr_lep1_tau2']+chunk_df['dr_lep2_tau1']+chunk_df['dr_lep2_tau2'])/4.
-                                                        chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
-                                                        chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
-                                                        chunk_df["avr_lep_eta"]=abs(chunk_df["lep2_eta"]-chunk_df["lep1_eta"])/2.
-                                                        chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
-                                                        chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
-                                                        chunk_df["avr_tau_eta"]=abs(chunk_df["tau2_eta"]-chunk_df["tau1_eta"])/2.
-                                                        chunk_df["leptonPairCharge"]=abs(chunk_df["leptonPairCharge"])
-                                                        chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
-                                                        #chunk_df["lep1_fake_prob"] = chunk_df["lep1_fake_prob"].where(chunk_df["lep1_fake_prob"] > 0, 1.0)
-                                                        #chunk_df["lep2_fake_prob"] = chunk_df["lep2_fake_prob"].where(chunk_df["lep2_fake_prob"] > 0, 1.0)
-                                                        #chunk_df["tau1_fake_prob"] = chunk_df["tau1_fake_prob"].where(chunk_df["tau1_fake_prob"] > 0, 1.0)
-                                                        #chunk_df["tau2_fake_prob"] = chunk_df["tau2_fake_prob"].where(chunk_df["tau2_fake_prob"] > 0, 1.0)
-                                                        chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"] #*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
-    				chunk_df['key']=folderName
-    				chunk_df["target"]=target
-    				chunk_df['proces']=sampleName
-    				chunk_df["totalWeight"] = chunk_df.evtWeight
-    				if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
-    				if channel=="2lss_1tau"  and len(criteria)>0:
-    					dataloc=dataloc.append(chunk_df.ix[chunk_df.failsTightChargeCut.values == 0], ignore_index=True)
-    				else : #
-    					#if 1>0 :
-    					dataloc=dataloc.append(chunk_df, ignore_index=True)
-    		else : print ("file "+list[ii]+"was empty")
-    		tfile.Close()
-    	if len(dataloc) == 0 : continue
-        dataloc=dataloc.ix[dataloc.evtWeight.values <1]
-        dataloc=dataloc.ix[dataloc.genWeight.values <10]
-    	nS = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.proces.values==sampleName)])
-    	nB = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.proces.values==sampleName)])
-    	print sampleName,"length of sig, bkg: ", nS, nB, dataloc.ix[(dataloc.target.values == 0) & (dataloc.key.values==folderName)]["totalWeight"].sum()*35, dataloc.ix[(dataloc.target.values == 1) & (dataloc.key.values==folderName)]["totalWeight"].sum()*35
-    	if (channel=="1l_2tau" or channel=="2lss_1tau") and bdtType!="arun" :
-    		nSthuth = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
-    		nBtruth = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
-    		nSthuthKin = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (dataloc.proces.values==sampleName)])
-    		nBtruthKin = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (dataloc.proces.values==sampleName)])
-    		nShadthuth = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.hadtruth.values==1) & (dataloc.proces.values==sampleName)])
-    		nBhadtruth = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.hadtruth.values==1) & (dataloc.proces.values==sampleName)])
-    		print "truth:              ", nSthuth, nBtruth
-    		print "truth Kin:          ", nSthuthKin, nBtruthKin
-    		print "hadtruth:           ", nShadthuth, nBhadtruth
+        for ii in range(0, len(list)) :
+            try: tfile = ROOT.TFile(list[ii])
+            except : continue
+            try: tree = tfile.Get(inputTree)
+            except : continue
+            if tree is not None :
+                try: chunk_arr = tree2array(tree) #,  start=start, stop = stop)
+                except : continue
+                else :
+                    chunk_df = pandas.DataFrame(chunk_arr)
+                    if channel == "3l_1tau" :
+                        chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
+                        chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
+                        chunk_df["lep3_eta"]=abs(chunk_df["lep3_eta"])
+                        chunk_df["avr_lep_eta"]=(abs(chunk_df["lep2_eta"])+abs(chunk_df["lep1_eta"])+abs(chunk_df["lep3_eta"]))/2.
+                        chunk_df["tau_eta"]=abs(chunk_df["tau_eta"])
+                        chunk_df.ix[(chunk_df["mbb_loose"].values < 0)]=0
+                        chunk_df.ix[(chunk_df["mbb"].values < 0)]=0
+                        WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["lep3_fake_prob"] #*chunk_df["tau_fake_prob"]
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
+                    if channel=="2l_2tau" :
+                        chunk_df["min_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].min(axis=1)
+                        chunk_df["min_dr_lep_jet"]=chunk_df[["mindr_lep1_jet", "mindr_lep2_jet"]].min(axis=1)
+                        chunk_df["max_dr_lep_tau"]=chunk_df[["dr_lep1_tau1", "dr_lep1_tau2", "dr_lep2_tau1", "dr_lep2_tau2"]].max(axis=1)
+                        chunk_df["avr_dr_lep_tau"]=(chunk_df['dr_lep1_tau1']+chunk_df['dr_lep1_tau2']+chunk_df['dr_lep2_tau1']+chunk_df['dr_lep2_tau2'])/4.
+                        chunk_df["mindr_tau_jet"]=chunk_df[["mindr_tau1_jet","mindr_tau2_jet"]].min(axis=1)
+                        chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
+                        chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
+                        chunk_df["avr_lep_eta"]=(abs(chunk_df["lep2_eta"])+abs(chunk_df["lep1_eta"]))/2.
+                        chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
+                        chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
+                        chunk_df["avr_tau_eta"]=(abs(chunk_df["tau2_eta"])+abs(chunk_df["tau1_eta"]))/2.
+                        chunk_df["leptonPairCharge"]=abs(chunk_df["leptonPairCharge"])
+                        chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
+                        #WtoMultiply=chunk_df["weight_fakeRate"]
+                        WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
+                        #WtoMultiply=chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
+                    if channel=="2lss_1tau" :
+                        #WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"] #*chunk_df["tau_fake_prob"]
+                        #chunk_df.ix[(chunk_df["mbb"].values < 0)]=0*chunk_df.ix[(chunk_df["mbb"].values < 0)]
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"] #WtoMultiply
+                        chunk_df["max_eta_Lep"]=chunk_df[['tau_eta', 'lep1_eta', 'lep2_eta']].max(axis=1)
+                    chunk_df['key']=folderName
+                    chunk_df["target"]=target
+                    chunk_df['proces']=sampleName
+                    if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
+                    dataloc=dataloc.append(chunk_df, ignore_index=True)
+            else : print ("file "+list[ii]+"was empty")
+            tfile.Close()
+        if len(dataloc) == 0 : continue
+        #dataloc=dataloc.ix[dataloc.evtWeight.values <0.08]
+        #dataloc=dataloc.ix[dataloc.genWeight.values <10]
+        nS = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.proces.values==sampleName)])
+        nB = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.proces.values==sampleName)])
+        print sampleName,"length of sig, bkg: ", nS, nB, dataloc.ix[(dataloc.proces.values==sampleName)]["totalWeight"].sum(), dataloc.ix[(dataloc.proces.values==sampleName)]["totalWeight"].sum()
+        if channel=="2l_2tau" :
+            #print "pos | neg (weight) ",sampleName , len(dataloc.ix[(dataloc["genWeight"].values > 0) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["genWeight"].values < 0) & (dataloc.proces.values==sampleName)])
+            #print "pos | neg (evtweight) ",sampleName , len(dataloc.ix[(dataloc["evtWeight"].values > 0) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["evtWeight"].values < 0) & (dataloc.proces.values==sampleName)])
+            print "tau1 all | lep  ",sampleName , len(dataloc.ix[(dataloc["tau1_fake_prob"].values != 1) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["tau1_fake_test"].values != 1) & (dataloc.proces.values==sampleName)])
+            print "tau2 all | lep  ",sampleName , len(dataloc.ix[(dataloc["tau2_fake_prob"].values != 1) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["tau2_fake_test"].values != 1) & (dataloc.proces.values==sampleName)])
+            print "tau1&2 all | lep  ",sampleName ,len(dataloc.ix[(dataloc["tau1_fake_prob"].values != 1) & (dataloc["tau2_fake_prob"].values != 1) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["tau1_fake_test"].values != 1) & (dataloc['tau2_fake_test'].values != 1) & (dataloc.proces.values==sampleName)])
+            datatest=dataloc["evtWeight"]*dataloc["lep1_fake_prob"]*dataloc["lep2_fake_prob"]*dataloc["tau1_fake_test"]*dataloc["tau2_fake_test"]
+            print "sum of weights with/ without lepton in FR ",sampleName , datatest.ix[ (dataloc.proces.values==sampleName)].sum(),dataloc.ix[ (dataloc.proces.values==sampleName)]["totalWeight"].sum()
+
+        if (channel=="1l_2tau" or channel=="2lss_1tau") :
+            nSthuth = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
+            nBtruth = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
+            nSthuthKin = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (dataloc.proces.values==sampleName)])
+            nBtruthKin = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (dataloc.proces.values==sampleName)])
+            nShadthuth = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.hadtruth.values==1) & (dataloc.proces.values==sampleName)])
+            nBhadtruth = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.hadtruth.values==1) & (dataloc.proces.values==sampleName)])
+            print "truth:              ", nSthuth, nBtruth
+            print "truth Kin:          ", nSthuthKin, nBtruthKin
+            print "hadtruth:           ", nShadthuth, nBhadtruth
     if 'ttHToNonbb' in folderName : print (dataloc.columns.values.tolist())
     n = len(dataloc)
     nS = len(dataloc.ix[dataloc.target.values == 0])
     nB = len(dataloc.ix[dataloc.target.values == 1])
     print sampleName," length of sig, bkg: ", nS, nB
-    #print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
     return dataloc
 
+def normalize(arr):
+    return (arr-arr.min())/(arr.max()-arr.min())
+    #result = df.copy()
+    #for feature_name in df.columns:
+    #    max_value = df[feature_name].max()
+    #    min_value = df[feature_name].min()
+    #    result[feature_name] = (df[feature_name] - min_value) / (max_value - min_value)
+    #return result
+
+def make_plots(
+    featuresToPlot,nbin,
+    data1,label1,color1,
+    data2,label2,color2,
+    plotname,
+    printmin,
+    plotResiduals
+    ) :
+    hist_params = {'normed': True, 'histtype': 'bar', 'fill': True , 'lw':3, 'alpha':0.3}
+    sizeArray=int(math.sqrt(len(featuresToPlot))) if math.sqrt(len(featuresToPlot)) % int(math.sqrt(len(featuresToPlot))) == 0 else int(math.sqrt(len(featuresToPlot)))+1
+    drawStatErr=True
+    residuals=[]
+    plt.figure(figsize=(4*sizeArray, 4*sizeArray))
+    for n, feature in enumerate(featuresToPlot):
+        # add sub plot on our figure
+        plt.subplot(sizeArray, sizeArray, n+1)
+        # define range for histograms by cutting 1% of data from both ends
+        min_value, max_value = np.percentile(data1[feature], [0.0, 99])
+        min_value2, max_value2 = np.percentile(data2[feature], [0.0, 99])
+        if printmin : print (min_value, max_value,feature)
+        values1, bins, _ = plt.hist(data1[feature].values, weights= data1[weights].values.astype(np.float64) ,
+                                   range=(min(min_value,min_value2), max(max_value,max_value2)),
+                                   bins=nbin, edgecolor=color1, color=color1,
+                                   label=label1, **hist_params )
+        if drawStatErr:
+            normed = sum(data1[feature].values)
+            mid = 0.5*(bins[1:] + bins[:-1])
+            err=np.sqrt(values1*normed)/normed # denominator is because plot is normalized
+            plt.errorbar(mid, values1, yerr=err, fmt='none', color= color1, ecolor= color1, edgecolor=color1, lw=2)
+        values2, bins, _ = plt.hist(data2[feature].values, weights= data2[weights].values.astype(np.float64) ,
+                                   range=(min(min_value,min_value2), max(max_value,max_value2)),
+                                   bins=nbin, edgecolor=color2, color=color2,
+                                   label=label2, **hist_params)
+        if drawStatErr:
+            normed = sum(data2[feature].values)
+            mid = 0.5*(bins[1:] + bins[:-1])
+            err=np.sqrt(values2*normed)/normed # denominator is because plot is normalized
+            plt.errorbar(mid, values2, yerr=err, fmt='none', color= color2, ecolor= color2, edgecolor=color2, lw=2)
+        #areaSig = sum(np.diff(bins)*values)
+        #print areaBKG, " ",areaBKG2 ," ",areaSig
+        if plotResiduals : residuals=residuals+[(plot1[0]-plot2[0])/(plot1[0])]
+        plt.ylim(ymin=0.00001)
+        if n == len(featuresToPlot)-1 : plt.legend(loc='best')
+        plt.xlabel(feature)
+        #plt.xscale('log')
+        #plt.yscale('log')
+    plt.ylim(ymin=0)
+    plt.savefig(plotname)
+    plt.clf()
+    if plotResiduals :
+        residuals=np.nan_to_num(residuals)
+        for n, feature  in enumerate(trainVars(True)):
+            (mu, sigma) = norm.fit(residualsSignal[n])
+            plt.subplot(8, 8, n+1)
+            residualsSignal[n]=np.nan_to_num(residualsSignal[n])
+            n, bins, patches = plt.hist(residualsSignal[n], label='Residuals '+label1+'/'+label2)
+            # add a 'best fit' line
+            y = mlab.normpdf( bins, mu, sigma)
+            l = plt.plot(bins, y, 'r--', linewidth=2)
+            plt.ylim(ymin=0)
+            plt.title(feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma))
+            print feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma)
+        plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_Signal_fullsim_residuals.pdf")
+        plt.clf()
 
 def load_data_xml (dataIn) :
     data=dataIn
@@ -511,7 +579,7 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     latex.DrawLatexNDC(.55,.8,label);
     #latex.DrawLatexNDC(.55,.9,BDTvar);
     c4.cd(2)
-    ROOT.gPad.SetLogx()
+    #ROOT.gPad.SetLogx()
     ROOT.gStyle.SetHatchesSpacing(100)
     ROOT.gPad.SetLeftMargin(0.12)
     ROOT.gPad.SetBottomMargin(0.12)
@@ -535,7 +603,7 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     		ratio3=h3.GetBinContent(binn)/hBKG1D.GetBinContent(binn)
     		h3.SetBinContent(binn,ratio3)
     	if h4.GetBinContent(binn) > 0 : h4.SetBinContent(binn,h4.GetBinError(binn)/h4.GetBinContent(binn))
-    	print (binn,ratio,ratio3)
+    	print (binn,hTT.GetBinContent(binn),ratio,ratio3)
     h2.SetLineWidth(3)
     h2.SetLineColor(2)
     h2.SetFillStyle(3690)
@@ -581,36 +649,28 @@ def finMaxMin(histSource) :
 
 def getQuantiles(histoP,ntarget,xmax) :
     #c = ROOT.TCanvas("c1","",600,600)
+    #histoP.Rebin(4)
     histoP.Scale(1./histoP.Integral());
-    histoP.GetCumulative() #.Draw();
+    histoP.GetCumulative()#.Draw();
+    #histoP.Draw();
     histoP.GetXaxis().SetRangeUser(0.,1.)
     histoP.GetYaxis().SetRangeUser(0.,1.)
     histoP.SetMinimum(0.0)
     xq= array.array('d', [0.] * (ntarget+1))
     yq= array.array('d', [0.] * (ntarget+1))
-    yqbin= array.array('d', [0.] * (ntarget+2))
+    yqbin= array.array('d', [0.] * (ntarget+1)) # +2 if firsrt is not zero
     for  ii in range(0,ntarget) : xq[ii]=(float(ii)/(ntarget))
     xq[ntarget]=0.999999999
     histoP.GetQuantiles(ntarget,yq,xq)
     line = [None for point in range(ntarget)]
     line2 = [None for point in range(ntarget)]
-    """
-    for  jj in range(0,ntarget) :
-			line[jj] = ROOT.TLine(0,xq[jj],yq[jj],xq[jj]);
-			line[jj].SetLineColor(ROOT.kRed);
-			line[jj].Draw("same")
-			#  ./do_limits.py --channel "1l_2tau" --variables "noHTT" --BINtype "quantiles" &
-			line2[jj] = ROOT.TLine(yq[jj],0,yq[jj],xq[jj]);
-			line2[jj].SetLineColor(ROOT.kRed);
-			line2[jj].Draw("same")
-			print (xq[jj],yq[jj])
-    """
     #yq[ntarget]=xmax
     #c.Modified();
     #c.Update();
-    yqbin[0]=0.0
-    for  ii in range(1,ntarget+1) : yqbin[ii]=yq[ii-1]
-    yqbin[ntarget+1]=xmax
+    #yqbin[0]=0.0
+    for  ii in range(1,ntarget+1) : yqbin[ii]=yq[ii]
+    yqbin[ntarget]=xmax # +1 if first is not 0
+    print yqbin
     return yqbin
 
 def getQuantilesWStat(histoP,nmin) :
@@ -758,24 +818,24 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
            if  not h2.GetSumw2N() : h2.Sumw2()
            if  not hSum.GetSumw2N() : hSum.Sumw2()
            histograms.append(h2.Clone()) # [nkey]=h2.Clone()  #=histograms+[h2]
-           if keyO.GetName() == "fakes_data" or keyO.GetName() =="TTZ" or keyO.GetName() =="TTW" or keyO.GetName() =="TTWW" or keyO.GetName() == "EWK" :
-               hSumDumb = obj # h2_rebin #
-               if not hSum.Integral()>0 : hSum=hSumDumb.Clone()
-               else : hSum.Add(hSumDumb)
-               if keyO.GetName() == "fakes_data" : hFakes=hSumDumb.Clone()
+           #if keyO.GetName() == "fakes_data" or keyO.GetName() =="TTZ" or keyO.GetName() =="TTW" or keyO.GetName() =="TTWW" or keyO.GetName() == "EWK" :
+            #   hSumDumb = obj # h2_rebin #
+            #   if not hSum.Integral()>0 : hSum=hSumDumb.Clone()
+            #   else : hSum.Add(hSumDumb)
+           if keyO.GetName() == "fakes_data" : hFakes=obj.Clone()
            if keyO.GetName() == "fakes_data" or keyO.GetName() =="TTZ" or keyO.GetName() =="TTW" or keyO.GetName() =="TTWW" or keyO.GetName() == "EWK" or keyO.GetName() == "tH" or keyO.GetName() == "Rares" :
                hSumDumb2 = obj # h2_rebin #
                if not hSumAll.Integral()>0 : hSumAll=hSumDumb2.Clone()
-               else : hSumAll.Add(hSumDumb)
+               else : hSumAll.Add(hSumDumb2)
         #################################################
         ### rebin and  write the histograms
         if BINtype=="none" : name=histSource+"_"+str(nbins)+"bins_none.root"
-        if BINtype=="regular" : name=histSource+"_"+str(nbins)+"bins.root"
+        if BINtype=="regular" or options.BINtype == "mTauTauVis": name=histSource+"_"+str(nbins)+"bins.root"
         if BINtype=="ranged" : name=histSource+"_"+str(nbins)+"bins_ranged.root"
         if BINtype=="quantiles" :
-            name=histSource+"_"+str(nbins+1)+"bins_quantiles.root"
-            nbinsQuant=getQuantiles(hSumAll,nbins,xmax) #(hFakes,nbins,xmax)
-            xmaxLbin=xmaxLbin+[nbinsQuant[nbins-1]]
+            name=histSource+"_"+str(nbins)+"bins_quantiles.root"
+            nbinsQuant=getQuantiles(hFakes,nbins,xmax) # nbins+1 if first quantile is zero (hSumAll,nbins,xmax) #
+            xmaxLbin=xmaxLbin+[nbinsQuant[nbins-2]]
         fileOut  = TFile(name, "recreate");
         hTTi = TH1F()
         hTTHi = TH1F()
@@ -797,7 +857,9 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
             elif BINtype=="ranged" or BINtype=="regular" :
                 histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
             elif BINtype=="quantiles" :
-                histo=TH1F( nameHisto, nameHisto , nbins+1 , nbinsQuant)
+                histo=TH1F( nameHisto, nameHisto , nbins , nbinsQuant) # nbins+1 if first is zero
+            elif BINtype=="mTauTauVis" :
+                histo= TH1F( nameHisto, nameHisto , nbins , 0. , 200.)
             histo.Sumw2()
             for place in range(0,histogramCopy.GetNbinsX() + 1) :
                 content =      histogramCopy.GetBinContent(place)
@@ -849,21 +911,23 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
                 #if histo.GetName() =="TTWW" : print ("TTWW",histo.GetNbinsX())
         fileOut.Write()
         print (name+" created")
-        if doplots and bdtType=="1B":
-            if nbins==6 :
+        if doplots and bdtType=="1B_VT":
+            if nbins==4 : # nbins==6
                 if BINtype=="none" : namepdf=histSource
                 if BINtype=="regular" : namepdf=histSource+"_"+str(nbins)+"bins"
                 if BINtype=="ranged" : namepdf=histSource+"_"+str(nbins)+"bins_ranged"
                 if BINtype=="quantiles" :
-                    namepdf=histSource+"_"+str(nbins+1)+"bins_quantiles"
-                    label=str(nbins+1)+" bins "+BINtype+" "+variables+" "+bdtType
+                    namepdf=histSource+"_"+str(nbins)+"bins_quantiles"
+                    label=str(nbins)+" bins "+BINtype+" "+variables+"  "+bdtType ## nbins+1 if it starts with 0
                 else : label=str(nbins)+" bins "+BINtype+" "+variables+" "+bdtType
                 doStackPlot(hTTi,hTTHi,hTTWi,hEWKi,hRaresi,namepdf,label)
                 print (namepdf+" created")
+                #print nbinsQuant
         hSumCopy=hSum.Clone()
         hSumi = TH1F()
         if BINtype=="ranged" or BINtype=="regular" : hSumi = TH1F( "hSum", "hSum" , nbins , xmin , xmax)
         elif BINtype=="quantiles" : hSumi = TH1F( "hSum", "hSum" , nbins , nbinsQuant)
+        elif BINtype=="mTauTauVis" : hSumi = TH1F( "hSum", "hSum" , nbins , 0. , 200.)
         if not hSumi.GetSumw2N() : hSumi.Sumw2()
         for place in range(1,hSumCopy.GetNbinsX() + 2) :
             content=hSumCopy.GetBinContent(place)
@@ -889,7 +953,7 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
     print ("max",xmaxdef,xmax)
     return [errOcontTTLast,errOcontTTPLast,errOcontSUMLast,errOcontSUMPLast,lastQuant,xmaxQuant,xminQuant]
 
-def ReadLimits(bdtType,nbin, BINtype,originalBinning,local,nstart,ntarget):
+def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget):
     central=[]
     do1=[]
     do2=[]
@@ -897,7 +961,10 @@ def ReadLimits(bdtType,nbin, BINtype,originalBinning,local,nstart,ntarget):
     up2=[]
     for nn,nbins in enumerate(nbin) :
         # ttH_2lss_1taumvaOutput_2lss_MEM_1D_nbin_9.log
-        if nstart==0 : shapeVariable=options.variables+'_'+bdtType+'_nbin_'+str(nbins)
+        if nstart==0 :
+            if channel == "2l_2tau" :
+                shapeVariable=options.variables+'_'+bdtType+'_nbin_'+str(nbins)
+            else : shapeVariable=options.variables+'_'+bdtType+'_nbin_'+str(nbins)
         elif nstart==1 : shapeVariable=options.variables+'_'+str(nbins)+'bins'
         else : shapeVariable=options.variables+'_from'+str(nstart)+'_to_'+str(nbins)
         if BINtype=="ranged" : shapeVariable=shapeVariable+"_ranged"

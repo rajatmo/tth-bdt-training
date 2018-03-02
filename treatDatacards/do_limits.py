@@ -25,11 +25,14 @@ year="2016"
 channel=options.channel
 
 if channel == "2lss_1tau" :
-    label='2018Jan13_VHbb_addMEM'
-    bdtTypes=["tt","ttV","1B","2MEM","2HTT"]
+    label='2lss_1tau_2018Feb28_VHbb_TLepTTau_shape'
+    bdtTypes=["tt","ttV","SUM_T","SUM_M","1B_T","1B_M"] #,"1B"] #,"2MEM","2HTT"]
 if channel == "1l_2tau" :
-    label="1l_2tau_2018Feb08_VHbb_VTightTau" #"1l_2tau_2018Feb02_VHbb_TightTau" # "1l_2tau_2018Jan30_VHbb_VVTightTau" #"1l_2tau_2018Jan30_VHbb" #(TightTauMVA) # "1l_2tau_2018Jan30_VHbb_VTightTau" #
-    bdtTypes=["1B","ttbar","ttV"] #
+    label= "1l_2tau_2018Feb28_VHbb_TLepMTau_shape" #"1l_2tau_2018Feb08_VHbb_TightTau" # "1l_2tau_2018Feb02_VHbb_VTightTau" #  "1l_2tau_2018Jan30_VHbb_VVTightTau" # "1l_2tau_2018Jan30_VHbb" # "1l_2tau_2018Jan30_VHbb_VTightTau" #
+    bdtTypes=["ttbar","ttV","SUM_T","SUM_VT","1B_T","1B_VT"] #"1B"] #
+if channel == "2l_2tau" :
+    label= "2l_2tau_2018Feb20_VHbb_TLepMTau" #
+    bdtTypes= ["tt","ttV","SUM_M","SUM_T","SUM_VT","1B_M","1B_T","1B_VT"] #
 
 sources=[]
 bdtTypesToDo=[]
@@ -46,7 +49,7 @@ def run_cmd(command):
   return stdout
 
 nbinRegular=np.arange(1,20)
-nbinQuant= np.arange(1,20)
+nbinQuant= np.arange(1,25)
 counter=0
 if channel == "2lss_1tau" :
     source=local+"/prepareDatacards_"+channel+"_sumOS_"
@@ -68,7 +71,7 @@ if channel == "2lss_1tau" :
                 counter=counter+1
             else : print (source+"mvaOutput_2lss_"+options.variables+"_"+bdtType+".root","does not exist ")
     bdtTypesToDoFile=bdtTypesToDo
-if channel == "1l_2tau" :
+if channel == "1l_2tau" or channel == "2l_2tau":
     source=local+"/prepareDatacards_"+channel+"_"
     if options.variables=="oldTrain" :
         oldVar=["1l_2tau_ttbar_Old", "1l_2tau_ttbar_OldVar","ttbar_OldVar"] #["1l_2tau_ttbar"] #"1l_2tau_ttbar_Old", "1l_2tau_ttbar_OldVar", "ttbar_OldVar"]
@@ -83,7 +86,9 @@ if channel == "1l_2tau" :
             else : print ("does not exist ",source+"mvaOutput_"+nn+".root")
     elif "HTT" in options.variables :
         for bdtType in bdtTypes :
-            fileName=bdtType+"_"+options.variables
+            #if channel == "2l_2tau" :
+            fileName=options.variables+"_"+bdtType
+            #elif channel == "1l_2tau" : fileName=bdtType+"_"+options.variables
             my_file =  source+"mvaOutput_"+fileName+".root"
             if os.path.exists(my_file) :
                 sources = sources + [source+"mvaOutput_"+fileName]
@@ -92,6 +97,17 @@ if channel == "1l_2tau" :
                 print (sources[counter],"rebinning ")
                 counter=counter+1
             else : print (source+fileName+".root","does not exist ")
+    elif "mTauTauVis" in options.variables :
+        my_file = source+options.variables+".root"
+        if os.path.exists(my_file) :
+            proc=subprocess.Popen(["cp "+source+options.variables+".root " +local],shell=True,stdout=subprocess.PIPE)
+            out = proc.stdout.read()
+            sources = sources + [source+options.variables]
+            bdtTypesToDo = bdtTypesToDo +[options.variables]
+            bdtTypesToDoFile=bdtTypesToDoFile+[options.variables]
+            print (sources[counter],"rebinning ")
+            counter=counter+1
+        else : print (source+options.variables+".root","does not exist ")
     else : print ("options",channel,options.variables,"are not compatible")
 
 
@@ -104,7 +120,7 @@ print ("I will rebin",bdtTypesToDoFile,"(",len(sources),") BDT options")
 file = open("execute_plots"+options.channel+"_"+options.variables+".sh","w")
 file.write("#!/bin/bash\n")
 for ns,source in enumerate(sources) :
-    for nn,nbins in enumerate(nbinQuant) :
+    for nn,nbins in enumerate(binstoDo) :
         if options.BINtype=="regular" :
             name=source+'_'+str(nbins)+'bins.root'
             nameout=source+'_'+str(nbins)+'bins_dat.root'
