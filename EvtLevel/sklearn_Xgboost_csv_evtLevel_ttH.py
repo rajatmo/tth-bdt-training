@@ -71,6 +71,10 @@ parser.add_option("--mcw", type="int", dest="mcw", help="hyp", default=1)
 #""" bdtType=="evtLevelTTV_TTH"
 
 doPlots=options.doPlots
+bdtType=options.bdtType
+trainvar=options.variables
+hyppar=str(options.variables)+"_ntrees_"+str(options.ntrees)+"_deph_"+str(options.treeDeph)+"_mcw_"+str(options.mcw)+"_lr_0o0"+str(int(options.lr*100))
+
 #channel="2lss_1tau"
 channel=options.channel #"1l_2tau"
 if channel=='1l_2tau':
@@ -89,61 +93,89 @@ if channel=='1l_2tau':
 	FastsimTWP="TightLep_TightTau"
 
 if channel=='2lss_1tau':
+	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
 	channelInTree='2lss_1tau_lepSS_sumOS_Loose'
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec30-VHbb-wMEM-LooseLepMedTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-	criteria=['lep1_isTight', 'lep2_isTight','tau_isTight',"failsTightChargeCut"]
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb27_BDT_LLepTTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+	FastsimWP= "LooseLep_TightTau"
+	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
+	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb27_BDT_TLepVVLTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+	criteria=[] # loose is 27
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 	channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
-	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-	channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
-	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/Tight_SS_OS'
-	FullsimWP="LooseLep_MedTau"
-	FastsimWP="TightLep_TightTau"
-	FastsimTWP="TightLep_TightTau"
+	#channelInTreeTight='2lss_1tau_lepSS_sumOS_Loose'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_BDT_TLepTTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+	FastsimTWP="TightLep_MediumTau"
+	if bdtType=="evtLevelSUM_TTH_M" :
+		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+		FullsimWP= "TightLep_MediumTau"
+	if bdtType=="evtLevelSUM_TTH_T" :
+		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepTTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+		FullsimWP= "TightLep_TightTau"
+	else :
+		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+		FullsimWP= "TightLep_MediumTau"
 
+doFS2=False
 if channel=="2l_2tau": # see Feb10
-	channelInTree='2l_2tau_sumOS_Loose'
-	#channelInTree='2l_2tau_sumOS_Tight'
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb13_BDT_LLepVVLTau/histograms/2l_2tau/forBDTtraining_sumOS/' #
-	criteria=[] #
-	testtruth="None"
-	channelInTreeTight='2l_2tau_sumOS_Tight'
-	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_BDT_TLepTTau/histograms/2l_2tau/forBDTtraining_sumOS/'
-	channelInTreeFS='2l_2tau_sumOS_Tight'
-	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb10_VHbb_trees_TLepTTau//histograms/2l_2tau/Tight_sumOS/'
-	FullsimWP="TightLep_TightTau"
+	#channelInTree='2l_2tau_sumOS_Loose'
+	channelInTree='2l_2tau_sumOS_Tight'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_TLepVLTau/histograms/2l_2tau/forBDTtraining_sumOS/'
 	FastsimWP="TightLep_VVLooseTau"
-	FastsimTWP="TightLep_TightTau"
-
-if channel=="3l_1tau":
-	channelInTree='3l_1tau_OS_lepLoose_tauTight'
-	#channelInTree='3l_1tau_OS_lepTight_tauLoose'
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_mMEM_LLepVVLTau/histograms/3l_1tau/forBDTtraining_OS/'
 	criteria=[]
 	testtruth="None"
-	channelInTreeTight='3l_1tau_OS_lepLoose_tauTight'
-	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_mMEM_LLepLTau/histograms/3l_1tau/forBDTtraining_OS/'
+	channelInTreeTight='2l_2tau_sumOS_Tight'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_TLepMTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+	FastsimTWP="TightLep_MediumTau"
+	if bdtType=="evtLevelSUM_TTH_M" :
+		channelInTreeFS='2l_2tau_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepMTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+		FullsimWP="TightLep_MediumTau"
+	if bdtType=="evtLevelSUM_TTH_T" :
+		channelInTreeFS='2l_2tau_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepTTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+		FullsimWP="TightLep_TightTau"
+	if bdtType=="evtLevelSUM_TTH_VT" :
+		channelInTreeFS='2l_2tau_sumOS_Tight' # ???? processing again
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepTTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+		FullsimWP="TightLep_VTightTau"
+	else :
+		channelInTreeFS='2l_2tau_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepMTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+		FullsimWP="TightLep_MediumTau"
+	channelInTreeFS2='2l_2tau_sumOS_Loose'
+	inputPathTightFS2='/hdfs/local/acaan/ttHAnalysis/2016/2l_2tau_2018Feb18_BDT_VHbb_TLepVVLTau/histograms/2l_2tau/forBDTtraining_sumOS/'
+	FullsimWP2="TightLep_VVLooseTau"
+
+
+if channel=="3l_1tau":
+	#channelInTree='3l_1tau_OS_lepLoose_tauTight'
+	#channelInTree='3l_1tau_OS_lepTight_tauLoose'
+	#channelInTree='3l_1tau_OS_lepTight_tauTight'
+	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_TLepVVLTau/histograms/3l_1tau/forBDTtraining_OS/'
+	channelInTree='3l_1tau_OS_lepLoose_tauTight'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_LLepVLTau/histograms/3l_1tau/forBDTtraining_OS/'
+	criteria=[]
+	testtruth="None"
+	#channelInTreeTight='3l_1tau_OS_lepLoose_tauTight'
+	#channelInTreeTight='3l_1tau_OS_lepLoose_tauTight'
+	#channelInTreeTight='3l_1tau_OS_lepTight_tauLoose'
+	channelInTreeTight='3l_1tau_OS_lepTight_tauTight'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_TLepMTau/histograms/3l_1tau/forBDTtraining_OS/'
+	#channelInTreeFS='3l_1tau_OS_lepLoose_tauTight' #
+	#channelInTreeFS='3l_1tau_OS_lepLoose_tauLoose'
+	#channelInTreeFS='3l_1tau_OS_lepLoose_tauTight'
 	channelInTreeFS='3l_1tau_OS_lepTight_tauTight'
-	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_VHbb_trees_TLepMTau/histograms/3l_1tau/Tight_OS/'
-	FullsimWP="TightLep_TightTau"
-	FastsimWP="LooseLep_VVLooseTau"
-	FastsimTWP="TightLep_VLooseTau"
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_VHbb_trees_TLepMTau/histograms/3l_1tau/forBDTtraining_OS/'
+	FullsimWP="TightLep_MediumTau"
+	FastsimWP="TightLep_VVLooseTau"
+	FastsimTWP="TightLep_MediumTau"
 
-#/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_mMEM_LLepVVLTau:
-#/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_mMEM_LLepVLTau:
-#/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_noMEM_LLepLTau:
-#/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_noMEM_LLepMTau:
-##
-#/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_noMEM_TLepMTau:
-#/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_woMEM_TLepVLTau:
-#/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb13_BDT_woMEM_TLepVVLTau:
-# 3l_1tau_2018Feb13_VHbb_trees_noMEM_TLepMTau
-# 3l_1tau_2018Feb13_VHbb_trees_noMEM_TLepMTau
-# 3l_1tau_2018Feb13_VHbb_trees_TLepMTau
-
-bdtType=options.bdtType
-trainvar=options.variables
-hyppar=str(options.variables)+"_ntrees_"+str(options.ntrees)+"_deph_"+str(options.treeDeph)+"_mcw_"+str(options.mcw)+"_lr_0o0"+str(int(options.lr*100))
+print "reading "+inputPath
+print "reading tight "+inputPathTight
+print "reading FS "+inputPathTightFS
 
 import shutil,subprocess
 proc=subprocess.Popen(['mkdir '+options.channel],shell=True,stdout=subprocess.PIPE)
@@ -151,56 +183,127 @@ out = proc.stdout.read()
 
 def trainVars(all):
 
-        if trainvar=="allVar" and channel=="2lss_1tau"  :return [
-		'HadTop_eta', 'HadTop_pt', 'MT_met_lep1', 'avg_dr_jet',
+        if channel=="2lss_1tau" and all==True  :return [
+		#'HadTop_eta', 'HadTop_pt', 'MT_met_lep1', 'avg_dr_jet',
 		#'bWj1Wj2_isGenMatched', 'bWj1Wj2_isGenMatchedWithKinFit',
-		'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps', #'evtWeight',
-		'fitHTptoHTpt', 'fittedHadTop_eta', 'fittedHadTop_pt', #'genTopPt', 'genWeight', 'hadtruth',
-		'htmiss', 'lep1_conePt', 'lep1_eta', #'lep1_frWeight',
+		#'evtWeight',
+		#'fitHTptoHTpt', 'fittedHadTop_eta', 'fittedHadTop_pt', #'genTopPt', 'genWeight', 'hadtruth',
+		#'htmiss', 'lep1_conePt',  #'lep1_frWeight',
 		#'lep1_genLepPt',
-		'lep1_pt', 'lep2_pt',
-		'lep2_conePt', 'lep2_eta', #'lep2_frWeight', 'lep2_genLepPt',
-		'lep1_tth_mva','lep2_tth_mva',
+		'lep1_pt', 'lep2_pt', 'tau_pt',  'mTauTauVis1',
+		#'lep2_conePt',
+		'lep1_eta', 'lep2_eta', 'tau_eta', 'mTauTauVis2',#'lep2_frWeight', 'lep2_genLepPt',
+		'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps', 'ptmiss',
+		#'lep1_tth_mva','lep2_tth_mva',
 		#'log_memOutput_tt', 'log_memOutput_ttH', 'log_memOutput_ttZ', 'log_memOutput_ttZ_Zll',
 		#'lumiScale',
-		'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'max_lep_eta',
-		'mbb', 'ptbb', 'mbb_loose', 'ptbb_loose',
+		#'mT_lep1', 'mT_lep2', 'max_lep_eta',
+		#'mbb', 'ptbb', 'mbb_loose', 'ptbb_loose',
 		#'memOutput_LR', 'memOutput_errorFlag', 'memOutput_isValid', 'memOutput_ttZ_LR', 'memOutput_ttZ_Zll_LR', 'memOutput_tt_LR',
-		'mindr_lep1_jet',
-		'mindr_lep2_jet',
-		'mindr_tau_jet',
+		#'mindr_lep1_jet',
+		#'mindr_lep2_jet',
+		#'mindr_tau_jet',
 		#'mvaOutput_2lss_ttbar', 'mvaOutput_Hj_tagger', 'mvaOutput_Hjj_tagger',
 		#'mvaOutput_hadTopTagger', 'mvaOutput_hadTopTaggerWithKinFit',
-		'nJet25_Recl', 'ncombo', 'ptmiss', 'tau_eta', #'tau_frWeight', 'tau_genTauPt',
-		'tau_mva', 'tau_pt', 'unfittedHadTop_eta', 'unfittedHadTop_pt', #'lep1_isTight', 'lep2_isTight', 'tau_isTight'
-		'nBJetLoose', 'nBJetMedium', 'nJet', 'nLep'
+		#'nJet25_Recl', 'ncombo',  #'tau_frWeight', 'tau_genTauPt',
+		'tau_mva', #'unfittedHadTop_eta', 'unfittedHadTop_pt', #'lep1_isTight', 'lep2_isTight', 'tau_isTight'
+		#"mbb",
+		#'nBJetLoose',
+		'nBJetMedium', 'nJet', #'nLep',
+		"max_eta_Lep"
+		#"lep1_fake_prob","lep2_fake_prob"
 		]
 
         if trainvar=="noHTT" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
 			return [
-			'avg_dr_jet', 'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'lep1_conePt', 'lep2_conePt', 'mT_lep1', 'mT_lep2',
-			'mTauTauVis1', 'mTauTauVis2',
-			'max_lep_eta', 'mbb', 'mindr_lep1_jet',
-			'mindr_lep2_jet', 'mindr_tau_jet', 'nJet25_Recl', 'ptmiss', 'tau_pt'
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			#'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis1',
+			'mTauTauVis2',
+			#'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			]
+
+        if trainvar=="noHTT" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
+			return [
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			#'dr_lep2_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis1',
+			'mTauTauVis2',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'ptmiss',
+			'max_lep_eta',
+			#'mbb',
+			#'nJet',
+			'tau_pt'
+			]
+
+        if trainvar=="noHTT" and channel=="2lss_1tau" and "evtLevelSUM_TTH" in bdtType and all==False :
+			return [
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
 			]
 
         if trainvar=="HTT" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
 			return [
-			'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet',
-			'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt',
-			'nJet25_Recl', 'avg_dr_jet'
-			]
-
-        if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
-			return [
-			'dr_lep1_tau',"memOutput_LR", 'dr_lep2_tau', 'dr_leps',
-			'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet',
-			'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger', 'unfittedHadTop_pt',
-			'nJet25_Recl', 'avg_dr_jet'
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			#'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			#'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			#'nJet',
+			'ptmiss',
+			'tau_pt',
+			'mvaOutput_hadTopTaggerWithKinFit',
+			'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
+			#'nJet25_Recl', 'avg_dr_jet'
 			]
 
         if trainvar=="HTT_LepID" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
@@ -218,15 +321,6 @@ def trainVars(all):
 		"min(met_pt,400)",
 		"avg_dr_jet",
 		"MT_met_lep1"
-		######
-		#"nJet",
-		#"mindr_lep1_jet",
-		#"avg_dr_jet",
-		#"max_lep_eta",
-		#"lep2_conePt",
-		#"dr_leps",
-		#"tau_pt",
-		#"dr_lep1_tau"
 		]
 
         if trainvar=="oldVar"  and channel=="2lss_1tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
@@ -237,17 +331,6 @@ def trainVars(all):
 		"mindr_lep2_jet",
 		"lep1_conePt",
 		"lep2_conePt"
-		####
-		#"mindr_lep1_jet",
-		#"mindr_lep2_jet",
-		#"avg_dr_jet",
-		#'max_lep_eta',
-		#"lep1_conePt",
-		#"lep2_conePt",
-		#"mT_lep1",
-		#"dr_leps",
-		#"mTauTauVis1",
-		#"mTauTauVis2"
 		]
 
         if trainvar=="oldVarA"  and channel=="2lss_1tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
@@ -273,138 +356,282 @@ def trainVars(all):
 
         if trainvar=="HTT" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
 			return [
-			'avg_dr_jet', 'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'lep1_conePt', 'lep2_conePt', 'mT_lep1', 'mT_lep2',
-			'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
-			'ptmiss', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger'
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			#'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			'mvaOutput_hadTopTaggerWithKinFit',
+			#'mvaOutput_Hj_tagger',
+			#'unfittedHadTop_pt',
+			]
+
+        if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
+			return [
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			#'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			"memOutput_LR",
+			'mvaOutput_hadTopTaggerWithKinFit',
+			#'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
 			]
 
         if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
 			return [
-			'avg_dr_jet', 'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'lep1_conePt', 'lep2_conePt', 'mT_lep1', 'mT_lep2',
-			'mTauTauVis1', 'mTauTauVis2', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
-			'ptmiss', 'tau_pt',
-			'mvaOutput_hadTopTaggerWithKinFit', 'mvaOutput_Hj_tagger',"memOutput_LR"
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			#'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			"memOutput_LR",
+			'mvaOutput_hadTopTaggerWithKinFit',
+			#'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
 			]
 
-        if trainvar=="noHTT" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
+        if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelSUM_TTH_M" and all==False :
 			return [
-			'avg_dr_jet', 'dr_lep1_tau', 'dr_lep2_tau', 'dr_leps',
-			'lep1_conePt', 'lep2_conePt',
-			'mT_lep1', 'mT_lep2', 'mTauTauVis1', 'mTauTauVis2',
-			'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet', 'ptmiss', 'tau_pt'
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			#'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			"memOutput_LR",
+			'mvaOutput_hadTopTaggerWithKinFit',
+			'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
+			]
+
+        if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelSUM_TTH_T" and all==False :
+			return [
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			#'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			#'mTauTauVis1',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			"memOutput_LR",
+			'mvaOutput_hadTopTaggerWithKinFit',
+			'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
 			]
 
         if channel=="2l_2tau" and all==True : return [
-		"lep1_pt", "lep1_conePt", "lep1_eta", "lep1_tth_mva", "mindr_lep1_jet", "mT_lep1", "dr_lep1_tau1", "dr_lep1_tau2",
-		"lep2_pt", "lep2_conePt", "lep2_eta", "lep2_tth_mva", "mindr_lep2_jet", "mT_lep2", "dr_lep2_tau1", "dr_lep2_tau2",
-		"mindr_tau1_jet", "mindr_tau2_jet", "avg_dr_jet", "ptmiss",  "htmiss", "tau1_mva",  "tau1_eta",
-		"tau2_mva", "tau2_eta", "dr_taus",
-		"mTauTauVis", "cosThetaS_hadTau", "tau1_pt", "tau2_pt",  "dr_leps",
+		"lep1_pt", "lep1_eta",
+		#"lep1_conePt", "lep1_tth_mva", "mindr_lep1_jet", "mT_lep1", "dr_lep1_tau1", "dr_lep1_tau2",
+		"lep2_pt", "lep2_eta", "dr_leps",
+		#"lep2_conePt",  "lep2_tth_mva", "mindr_lep2_jet", "mT_lep2", "dr_lep2_tau1", "dr_lep2_tau2",
+		#"mindr_tau1_jet", "mindr_tau2_jet", "avg_dr_jet", "ptmiss",  "htmiss", "tau1_mva",
+		#"tau2_mva",
+		"tau1_pt",  "tau1_eta",
+		"tau2_pt", "tau2_eta",
+		"dr_taus", "mTauTauVis", "cosThetaS_hadTau",
 		#"lumiScale",
 		#"lep1_genLepPt", "lep2_genLepPt",
-		"tau1_genTauPt", "tau2_genTauPt",
+		#"tau1_genTauPt", "tau2_genTauPt",
 		#"pT_LT1_m",  "pT_LT2_m",  "mass_LT1_m",  "mass_LT2_m",
 		#"pT_LT1",  "pT_LT2",  "mass_LT1",  "mass_LT2",
-		"is_OS",
-		"min_dr_lep_tau","max_dr_lep_tau","avr_dr_lep_tau",
+		#"is_OS",
+		#"min_dr_lep_tau","max_dr_lep_tau","avr_dr_lep_tau",
 		'avr_lep_eta','avr_tau_eta',
 		#"leptonPairCharge", "hadTauPairCharge",
 		#"hadTau1Charge","hadTau2Charge",
 		"nJet", "nBJetLoose",
-		"lep1_fake_prob", "lep2_fake_prob", "tau1_fake_prob", "tau2_fake_prob",
-		"genWeight", "evtWeight"
+		#"lep1_fake_prob", "lep2_fake_prob", "tau1_fake_prob", "tau2_fake_prob",
+		#"genWeight", "evtWeight",
+		#"tau1_fake_test", "tau2_fake_test","weight_fakeRate" ,"weights_dataToMC"
 		]
 
         if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
-			'mTauTauVis', #'cosThetaS_hadTau',
-			'tau1_pt',
-			#'tau2_pt',
-			#'tau1_eta','tau2_eta',
-			'lep1_conePt', #'lep1_eta',
-			'mindr_lep1_jet',
-			'mT_lep1',
-			'lep2_conePt',
-			#'lep2_eta',
-			#'avr_lep_eta',
-			#'mindr_lep2_jet',
-			#'mT_lep2',
-			'mindr_tau1_jet',
-			#'mindr_tau2_jet',
-			#'avg_dr_jet',
-			#'ptmiss', #
-			#'avr_tau_eta',
-			'dr_taus',
-			'dr_lep1_tau1', #'dr_lep1_tau2', 'dr_lep2_tau1',
-			#'dr_lep2_tau2',
-			#"min_dr_lep_tau",
-			#"max_dr_lep_tau",
-			"avr_dr_lep_tau",
+			"mTauTauVis", "cosThetaS_hadTau",
+			#'tau1_pt','tau2_pt',
+			#"tau1_eta", "tau2_eta",
+			"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
+			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
+			"mT_lep1", "mT_lep2",
+			"dr_taus", #"dr_leps",
+			#"mindr_lep1_jet",
+			#"mindr_lep2_jet",
+			"min_dr_lep_jet",
+			"mindr_tau1_jet",
+			#"mindr_tau2_jet",
+			"avg_dr_jet",
+			#"avr_dr_lep_tau",
+			"min_dr_lep_tau","max_dr_lep_tau",
+			#"ptmiss",  #"htmiss",
 			"is_OS",
-			#'pT_LT1_m', 'mass_LT1_m', 'mass_LT2_m', #'is_OS',
-			'nJet'
+			"nJet",
+			#"mbb_loose" #,"mbb_medium"
+			#"nBJetLoose",
 			]
 
         if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
-			#"lep1_pt",
 			"mTauTauVis", "cosThetaS_hadTau",
-			'tau1_pt','tau2_pt',
-			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
-			"mindr_lep1_jet",
-			"mT_lep1",
-			#"lep2_pt",
-			#"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
-			#"mindr_lep2_jet",
-			#"mT_lep2",
-			"mindr_tau1_jet",
-			"mindr_tau2_jet",
-			#"avg_dr_jet",
-			#"ptmiss",  #"htmiss",
-			#"tau2_mva", "tau1_mva",
+			'tau1_pt',
+			'tau2_pt',
 			#"tau1_eta",
-			#"tau2_eta",
+			"tau2_eta",
+			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
+			#"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
+			"mindr_lep1_jet",
+			"mT_lep1", #"mT_lep2",
+			#"mindr_lep2_jet",
+			#"mindr_tau1_jet",
+			#"mindr_tau2_jet",
+			"mindr_tau_jet",
+			#"avg_dr_jet",
+			#"avr_dr_lep_tau",
+			#"ptmiss",  #"htmiss",
 			#"dr_taus",
 			#"dr_leps",
-			#'dr_lep1_tau1', 'dr_lep1_tau2', 'dr_lep2_tau1', 'dr_lep2_tau2',
-			#"min_dr_lep_tau","max_dr_lep_tau",
-			"avr_dr_lep_tau",
-			#"pT_LT1_m",  "pT_LT2_m",  "mass_LT1_m",  "mass_LT2_m",
-			#"pT_LT1",  "pT_LT2",  "mass_LT1",  "mass_LT2",
+			#"min_dr_lep_tau",
+			"max_dr_lep_tau",
 			"is_OS",
-			#"leptonPairCharge", "hadTauPairCharge",
 			#"nJet",
 			"nBJetLoose",
+			#"mbb_loose" #,"mbb_medium"
 			]
 
-        if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelSUM_TTH" and all==False :return [
-			'mTauTauVis', #'cosThetaS_hadTau',
+        if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelSUM_TTH_M" and all==False :
+			return [
+			"mTauTauVis", "cosThetaS_hadTau",
 			'tau1_pt','tau2_pt',
-			#'tau1_eta', #'tau2_eta',
-			#'lep1_conePt', #'lep1_eta',
-			'mindr_lep1_jet',
-			'mT_lep1',
-			#'lep2_conePt',
-			#'lep2_eta',
-			#'avr_lep_eta',
-			'mindr_lep2_jet',
-			#'mT_lep2',
-			'mindr_tau1_jet',
-			'mindr_tau2_jet',
-			'avg_dr_jet',
-			'ptmiss', #
-			'avr_tau_eta',
-			'dr_taus',
-			'dr_lep1_tau1', #'dr_lep1_tau2', 'dr_lep2_tau1',
-			#'dr_lep2_tau2',
+			#"tau1_eta", #"tau2_eta",
+			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
+			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
+			"mindr_lep1_jet",
+			"mT_lep1", #"mT_lep2",
+			#"mindr_lep2_jet",
+			#"mindr_tau1_jet",
+			#"mindr_tau2_jet",
+			"mindr_tau_jet",
+			"avg_dr_jet",
+			"avr_dr_lep_tau",
+			#"ptmiss",  #"htmiss",
+			"dr_taus", #"dr_leps",
 			#"min_dr_lep_tau",
 			#"max_dr_lep_tau",
-			"avr_dr_lep_tau",
 			"is_OS",
-			#"nBJetLoose",
-			#'pT_LT1_m', 'mass_LT1_m', 'mass_LT2_m', #'is_OS',
-			#'nJet'
+			#"nJet",
+			"nBJetLoose",
+			"mbb_loose"
+			]
+
+        if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelSUM_TTH_T" and all==False :
+			return [
+			"mTauTauVis", "cosThetaS_hadTau",
+			'tau1_pt','tau2_pt',
+			#"tau1_eta", #"tau2_eta",
+			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
+			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
+			"mindr_lep1_jet",
+			"mT_lep1", #"mT_lep2",
+			#"mindr_lep2_jet",
+			#"mindr_tau1_jet",
+			#"mindr_tau2_jet",
+			"mindr_tau_jet",
+			"avg_dr_jet",
+			"avr_dr_lep_tau",
+			#"ptmiss",  #"htmiss",
+			"dr_taus", #"dr_leps",
+			#"min_dr_lep_tau",
+			#"max_dr_lep_tau",
+			"is_OS",
+			#"nJet",
+			"nBJetLoose",
+			"mbb_loose"
+			]
+
+        if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelSUM_TTH_VT" and all==False :
+			return [
+			"mTauTauVis", "cosThetaS_hadTau",
+			'tau1_pt','tau2_pt',
+			#"tau1_eta", #"tau2_eta",
+			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
+			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
+			"mindr_lep1_jet",
+			"mT_lep1", #"mT_lep2",
+			#"mindr_lep2_jet",
+			#"mindr_tau1_jet",
+			#"mindr_tau2_jet",
+			"mindr_tau_jet",
+			"avg_dr_jet",
+			"avr_dr_lep_tau",
+			#"ptmiss",  #"htmiss",
+			"dr_taus", #"dr_leps",
+			#"min_dr_lep_tau",
+			#"max_dr_lep_tau",
+			"is_OS",
+			#"nJet",
+			"nBJetLoose",
+			"mbb_loose"
 			]
 
         if channel=="1l_2tau" and all==True :return [
@@ -716,7 +943,7 @@ def trainVars(all):
 						#'mvaOutput_Hjj_tagger',
 		]
 
-	if trainvar=="HTT" and channel=="1l_2tau"  and bdtType=="evtLevelSUM_TTH" and all==False :return [
+	if trainvar=="HTT" and channel=="1l_2tau"  and 'evtLevelSUM_TTH' in bdtType and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
 						#'htmiss',
@@ -748,7 +975,7 @@ def trainVars(all):
 						#'mvaOutput_Hjj_tagger',
 	]
 
-	if trainvar=="noHTT" and channel=="1l_2tau"  and bdtType=="evtLevelSUM_TTH" and all==False :return [
+	if trainvar=="noHTT" and channel=="1l_2tau" and 'evtLevelSUM_TTH' in bdtType and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
 						#'htmiss',
@@ -776,72 +1003,196 @@ def trainVars(all):
 	]
 
         if channel=="3l_1tau" and all==True : return [
-		"lep1_pt", "lep1_conePt", "lep1_eta", "lep1_tth_mva", "mindr_lep1_jet", "mT_lep1", "dr_lep1_tau",
-		"lep2_pt", "lep2_conePt", "lep2_eta", "lep2_tth_mva", "mindr_lep2_jet", "mT_lep2", "dr_lep2_tau",
-		"lep3_pt", "lep3_conePt", "lep3_eta", "lep3_tth_mva", "mindr_lep3_jet", "mT_lep3", "dr_lep3_tau",
-		"mindr_tau_jet", "avg_dr_jet", "ptmiss",  "htmiss", "tau_mva", "tau_pt", "tau_eta", "dr_leps",
+		"lep1_pt", "lep1_eta", #"lep1_conePt", "lep1_tth_mva", "mindr_lep1_jet", "mT_lep1", "dr_lep1_tau",
+		"lep2_pt", "lep2_eta", #"lep2_conePt", "lep2_tth_mva", "mindr_lep2_jet", "mT_lep2", "dr_lep2_tau",
+		"lep3_pt", "lep3_eta", #"lep3_conePt", "lep3_tth_mva", "mindr_lep3_jet", "mT_lep3", "dr_lep3_tau",
+		#"mindr_tau_jet", "avg_dr_jet", "ptmiss",  "htmiss", "tau_mva",
+		"tau_pt", "tau_eta", "dr_leps","max_lep_eta",
 		"mTauTauVis1", "mTauTauVis2",
+		"avr_lep_eta",  #"dr_leps",
+		#"lumiScale", "genWeight", "evtWeight",
 		#"lep1_genLepPt", "lep2_genLepPt", "lep3_genLepPt", "tau_genTauPt",
-		"lep1_fake_prob", "lep2_fake_prob", "lep3_fake_prob", "tau_fake_prob",
-		"lep1_frWeight", "lep2_frWeight",  "lep3_frWeight",  "tau_frWeight",
+		#"lep1_fake_prob", "lep2_fake_prob", "lep3_fake_prob", "tau_fake_prob",
+		#"tau_fake_prob_test", "weight_fakeRate",
+		#"lep1_frWeight", "lep2_frWeight",  "lep3_frWeight",  "tau_frWeight",
 		#"mvaOutput_3l_ttV", "mvaOutput_3l_ttbar", "mvaDiscr_3l",
 		"mbb_loose","mbb_medium",
-		"dr_tau_los1", "dr_tau_los2",  "dr_tau_lss", "dr_lss", "dr_los1", "dr_los2",
-		"nJet", "nBJetLoose", "nBJetMedium", #"lep1_isTight", "lep2_isTight", "lep3_isTight", "tau_isTight",
-		"lumiScale", "genWeight", "evtWeight"
+		#"dr_tau_los1", "dr_tau_los2",  "dr_tau_lss",
+		"dr_lss", "dr_los1", "dr_los2"
 		]
 
         if trainvar=="noHTT" and channel=="3l_1tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
-			"lep1_pt", "lep1_conePt", "lep1_eta", "lep1_tth_mva", "mindr_lep1_jet", "mT_lep1", "dr_lep1_tau",
-			"lep2_pt", "lep2_conePt", "lep2_eta", "lep2_tth_mva", "mindr_lep2_jet", "mT_lep2", "dr_lep2_tau",
-			"lep3_pt", "lep3_conePt", "lep3_eta", "lep3_tth_mva", "mindr_lep3_jet", "mT_lep3", "dr_lep3_tau",
-			"mindr_tau_jet", "avg_dr_jet", "ptmiss",  "htmiss", "tau_mva", "tau_pt", "tau_eta", "dr_leps",
+			#"lep1_pt",
+			"lep1_conePt", "lep2_conePt", #"lep1_eta",  "lep2_eta", #"lep1_tth_mva",
+			"mindr_lep1_jet",  #"dr_lep1_tau",
+			#"lep2_pt", "lep2_tth_mva",
+			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
+			#"lep3_pt",
+			#"lep3_conePt",
+			#"lep3_eta", #"lep3_tth_mva",
+			#"mindr_lep3_jet", #"mT_lep3", #"dr_lep3_tau",
+			#"mindr_tau_jet",
+			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
+			"tau_pt", #"tau_eta",
+			"dr_leps",
 			"mTauTauVis1", "mTauTauVis2",
-			"mbb_loose","mbb_medium",
-			"dr_tau_los1", "dr_tau_los2",  "dr_tau_lss", "dr_lss", "dr_los1", "dr_los2",
-			"nJet", "nBJetLoose", "nBJetMedium",
+			#"mbb_loose", #"mbb_medium", #"dr_tau_los1", "dr_tau_los2",
+			#"dr_tau_lss", #"dr_lss",
+			#"dr_los1", "dr_los2",
+			#"nJet", #"nBJetLoose", #"nBJetMedium",
 			]
 
         if trainvar=="noHTT" and channel=="3l_1tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
-			"lep1_pt", "lep1_conePt", "lep1_eta", "lep1_tth_mva", "mindr_lep1_jet", "mT_lep1", "dr_lep1_tau",
-			"lep2_pt", "lep2_conePt", "lep2_eta", "lep2_tth_mva", "mindr_lep2_jet", "mT_lep2", "dr_lep2_tau",
-			"lep3_pt", "lep3_conePt", "lep3_eta", "lep3_tth_mva", "mindr_lep3_jet", "mT_lep3", "dr_lep3_tau",
-			"mindr_tau_jet", "avg_dr_jet", "ptmiss",  "htmiss", "tau_mva", "tau_pt", "tau_eta", "dr_leps",
+			#"lep1_conePt", #"lep2_conePt", #"lep1_eta",  "lep2_eta", #"lep1_tth_mva",
+			"mindr_lep1_jet",  #"dr_lep1_tau",
+			#"lep2_pt", "lep2_tth_mva",
+			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
+			#"lep3_pt",
+			"lep3_conePt",
+			#"lep3_eta", #"lep3_tth_mva",
+			"mindr_lep3_jet", #"mT_lep3", #"dr_lep3_tau",
+			"mindr_tau_jet",
+			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
+			"tau_pt", #"tau_eta",
+			"dr_leps",
 			"mTauTauVis1", "mTauTauVis2",
-			"mbb_loose","mbb_medium",
-			"dr_tau_los1", "dr_tau_los2",  "dr_tau_lss", "dr_lss", "dr_los1", "dr_los2",
-			"nJet", "nBJetLoose", "nBJetMedium"
+			"mbb_loose", #"mbb_medium", #"dr_tau_los1", "dr_tau_los2",
+			#"dr_tau_lss", #"dr_lss",
+			#"dr_los1", "dr_los2",
+			#"nJet", "nBJetLoose", #"nBJetMedium",
 			]
+
+        if trainvar=="noHTT" and channel=="3l_1tau"  and "evtLevelSUM_TTH" in bdtType and all==False :return [
+			"lep1_conePt", "lep2_conePt", #"lep1_eta",  "lep2_eta", #"lep1_tth_mva",
+			"mindr_lep1_jet",  #"dr_lep1_tau",
+			#"lep2_pt", "lep2_tth_mva",
+			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
+			#"lep3_pt",
+			"lep3_conePt",
+			#"lep3_eta", #"lep3_tth_mva",
+			"mindr_lep3_jet", #"mT_lep3", #"dr_lep3_tau",
+			"mindr_tau_jet",
+			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
+			"tau_pt", #"tau_eta",
+			"dr_leps",
+			"mTauTauVis1", "mTauTauVis2",
+			"mbb_loose", #"mbb_medium", #"dr_tau_los1", "dr_tau_los2",
+			#"dr_tau_lss", #"dr_lss",
+			#"dr_los1", "dr_los2",
+			#"nJet", "nBJetLoose", #"nBJetMedium",
+			]
+
 ####################################################################################################
 ## Load data
-data=load_data(inputPath,channelInTree,trainVars(True),[],testtruth,bdtType)
-dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(True),[],testtruth,bdtType)
-doFS=False
+data=load_data(inputPath,channelInTree,trainVars(False),[],testtruth,bdtType)
+dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(False),[],testtruth,bdtType)
+doFS=True
 if doFS : dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeFS,trainVars(True),[],testtruth,"all")
+if doFS2 : dataTightFS2=load_data_fullsim(inputPathTightFS2,channelInTreeFS2,trainVars(True),[],testtruth,"all")
+weights="totalWeight"
+target='target'
 
 if channel=="1l_2tau" or channel=="2lss_1tau":
 	nSthuth = len(data.ix[(data.target.values == 0) & (data[testtruth].values==1)])
 	nBtruth = len(data.ix[(data.target.values == 1) & (data[testtruth].values==1)])
 	print "truth:              ", nSthuth, nBtruth
-	print ("truth", data.loc[(data[testtruth]==0) & (data[testtruth]==1)]["totalWeight"].sum() , data.loc[(data['target']==1) & (data[testtruth]==1)]["totalWeight"].sum() )
+	print ("truth", data.loc[(data[testtruth]==0) & (data[testtruth]==1)][weights].sum() , data.loc[(data[target]==1) & (data[testtruth]==1)][weights].sum() )
 #################################################################################
 ## Balance datasets
 #https://stackoverflow.com/questions/34803670/pandas-conditional-multiplication
 
-print ("norm", data.loc[data['target']==0]["totalWeight"].sum(),data.loc[data['target']==1]["totalWeight"].sum())
-#for tar in [0,1] :
+print ("norm", data.loc[data[target]==0][weights].sum(),data.loc[data[target]==1][weights].sum())
 ### TT-sample is usually much more than fakes
-#data.loc[(data['key']=='TTTo2L2Nu') | (data['key']=='TTToSemilepton'), ['totalWeight']] *= 1./2
-data.loc[data['target']==0, ['totalWeight']] *= 100000/data.loc[data['target']==0]["totalWeight"].sum()
-data.loc[data['target']==1, ['totalWeight']] *= 100000/data.loc[data['target']==1]["totalWeight"].sum()
+if channel=="2l_2tau" and 'evtLevelSUM_TTH' in bdtType :
+	fastsimTT=4.72
+	fastsimTTtight=1.45
+	fastsimTTV=6.02
+	fastsimTTVtight=4.42
+	# balance backgrounds
+	if bdtType=="evtLevelSUM_TTH_M" :
+		TTdatacard=16.82
+		TTVdatacard=4.42
+		TTfullsim=0.64
+		TTVfullsim=1.4
+	if bdtType=="evtLevelSUM_TTH_T" :
+		TTdatacard=6.27
+		TTVdatacard=1.12
+		TTfullsim=0.22
+		TTVfullsim=1.13
+	if bdtType=="evtLevelSUM_TTH_VT" :
+		TTdatacard=0.56
+		TTVdatacard=0.83
+		#TTfullsim=0.073 -- not sure what happens with VT sample
+		#TTVfullsim=0.83
+		TTfullsim=0.22
+		TTVfullsim=1.13
+if channel=="2lss_1tau" and 'evtLevelSUM_TTH' in bdtType  :
+	# VTightTau
+	fastsimTT=22.14+20.22
+	fastsimTTtight=1.06791+1.17204
+	fastsimTTV=21.73+13.27
+	fastsimTTVtight=17.2712+18.3258
+	if bdtType=="evtLevelSUM_TTH_M" :
+		TTdatacard=9.82
+		TTVdatacard=7.75+10.49
+		TTfullsim=1.53
+		TTVfullsim=7.56+9.39
+	if bdtType=="evtLevelSUM_TTH_T" :
+		TTdatacard=7.52
+		TTVdatacard=5.95+9.19
+		TTfullsim=1.21
+		TTVfullsim=5.81+8.30
+if channel=="1l_2tau" and 'evtLevelSUM_TTH' in bdtType :
+	fastsimTT=490.128+774.698
+	fastsimTTV=23.5482+5.0938
+	fastsimTTtight=490.128+774.698
+	fastsimTTVtight=23.5482+5.0938
+	if "_T" in bdtType:
+		TTdatacard=192.06
+		TTVdatacard=0.52+6.11
+		TTfullsim=223.00
+		TTVfullsim=1.46+7.03
+	if "_VT" in bdtType:
+		TTdatacard=91.10
+		TTVdatacard=0.39+4.68
+		TTfullsim=223.00
+		TTVfullsim=1.46+7.03
+if channel=="3l_1tau" and 'evtLevelSUM_TTH' in bdtType :
+	fastsimTT=15.99+0.11
+	fastsimTTtight=0.04
+	fastsimTTV=21.23+6.24
+	fastsimTTVtight=6.0
+	# balance backgrounds
+	if bdtType=="evtLevelSUM_TTH_M" :
+		TTdatacard=3.78+0.24
+		TTVdatacard=4.42
+		TTfullsim=1.07
+		TTVfullsim=1.0
+else :
+	TTdatacard=1.0
+	TTVdatacard=1.0
+	TTfullsim=1.0
+	TTVfullsim=1.0
+	fastsimTT=1.0
+	fastsimTTtight=1.0
+	fastsimTTV=1.0
+	fastsimTTVtight=1.0
+data.loc[(data['key']=='TTTo2L2Nu') | (data['key']=='TTToSemilepton'), [weights]]*=TTdatacard/fastsimTT
+data.loc[(data['key']=='TTWJetsToLNu') | (data['key']=='TTZToLLNuNu'), [weights]]*=TTVdatacard/fastsimTTV
+dataTight.loc[(dataTight['key']=='TTTo2L2Nu') | (dataTight['key']=='TTToSemilepton'), [weights]]*=TTdatacard/fastsimTTtight
+dataTight.loc[(dataTight['key']=='TTWJetsToLNu') | (dataTight['key']=='TTZToLLNuNu'), [weights]]*=TTVdatacard/fastsimTTVtight
+if doFS :
+	dataTightFS.loc[(dataTightFS['proces']=='TT'), [weights]]*=TTdatacard/TTfullsim
+	dataTightFS.loc[(dataTightFS['proces']=='TTW') | (dataTightFS['proces']=='TTZ'), [weights]]*=TTVdatacard/TTVfullsim
+data.loc[data[target]==0, [weights]] *= 100000/data.loc[data[target]==0][weights].sum()
+data.loc[data[target]==1, [weights]] *= 100000/data.loc[data[target]==1][weights].sum()
 print data.columns.values.tolist()
 
-weights="totalWeight"
 # drop events with NaN weights - for safety
 #data.replace(to_replace=np.inf, value=np.NaN, inplace=True)
 #data.replace(to_replace=np.inf, value=np.zeros, inplace=True)
 #data = data.apply(lambda x: pandas.to_numeric(x,errors='ignore'))
-data.dropna(subset=["totalWeight"],inplace = True) # data
+data.dropna(subset=[weights],inplace = True) # data
 data.fillna(0)
 
 nS = len(data.loc[data.target.values == 0])
@@ -850,284 +1201,133 @@ print "length of sig, bkg without NaN: ", nS, nB
 
 #################################################################################
 ### Plot histograms of training variables
-hist_params = {'normed': True, 'bins': 15, 'alpha': 0.4}
-plt.figure(figsize=(60, 60))
-if bdtType=='evtLevelSUM_TTH' : labelBKG = "tt+ttV"
+nbins=8
+colorFast='g'
+colorFastT='b'
+colorFull='r'
+hist_params = {'normed': True, 'histtype': 'bar', 'fill': False , 'lw':5}
+#plt.figure(figsize=(60, 60))
+if 'evtLevelSUM_TTH' in bdtType : labelBKG = "tt+ttV"
 if bdtType=='evtLevelTT_TTH' : labelBKG = "tt"
 if bdtType=='evtLevelTTV_TTH' : labelBKG = "ttV"
-for n, feature in enumerate(trainVars(True)):
-    # add sub plot on our figure
-	plt.subplot(8, 8, n+1)
-    # define range for histograms by cutting 1% of data from both ends
-	min_value, max_value = np.percentile(data[feature], [0.0, 99])
-	print (min_value, max_value,feature)
-	if "Charge" in feature :
-		min_value=-2.5
-		max_value=2.5
-	values, bins, _ = plt.hist(data.ix[data.target.values == 0, feature].values ,
-							   weights= data.ix[data.target.values == 0, weights].values.astype(np.float64) ,
-                               range=(min_value, max_value),
-							   label=labelBKG, **hist_params )
-	values, bins, _ = plt.hist(data.ix[data.target.values == 1, feature].values,
-							   weights= data.ix[data.target.values == 1, weights].values.astype(np.float64) ,
-                               range=(min_value, max_value), label='Signal', **hist_params)
-	areaSig = sum(np.diff(bins)*values)
-	#print areaBKG, " ",areaBKG2 ," ",areaSig
-	plt.ylim(ymin=0.00001)
-	if n == 0 : plt.legend(loc='best')
-	plt.title(feature)
-	#plt.xscale('log')
-	#plt.yscale('log')
-plt.ylim(ymin=0)
-plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT.pdf")
-plt.clf()
-#################################################################################
+printmin=True
+plotResiduals=False
+plotAll=False
+BDTvariables=trainVars(plotAll)
+make_plots(BDTvariables,nbins,
+    data.ix[data.target.values == 0],labelBKG, colorFast,
+    data.ix[data.target.values == 1],'Signal', colorFastT,
+    channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT_fastsim"+FastsimWP+".pdf",
+    printmin,
+	plotResiduals
+    )
 
 ### Plot aditional histograms
-nbins=40
-if 0>1 : #channel=="1l_2tau" :
-	hist_params = {'normed': True, 'alpha': 0.4}
-	plt.figure(figsize=(15, 15))
-	n=8
-
-	for n, feature  in enumerate([
-	  #"mvaOutput_1l_2tau_ttbar_HTTWithKinFit_MVAonly",
-	  #"mvaOutput_1l_2tau_ttbar_HTTWithKinFit",
-	  #"mvaOutput_1l_2tau_ttbar",
-	  #"mvaOutput_1l_2tau_ttbar_Old",
-	  #"mvaOutput_1l_2tau_ttbar_HTTLepID",
-	  #"mvaOutput_1l_2tau_ttbar_OldVar",
-	  #"mvaOutput_1l_2tau_ttbar_OldVarHTT",
-	'mvaOutput_hadTopTaggerWithKinFit',
+if 1<0 : # channel=="1l_2tau" :
+	BDTvariables=['mvaOutput_hadTopTaggerWithKinFit',
 	"mvaOutput_Hj_tagger", #"memOutput_LR",
-	'mvaOutput_Hjj_tagger',
-	#"mvaOutput_2lss_1tau_ttbar",
-	#"mvaOutput_2lss_1tau_ttV",
-	#"memOutput_tt_LR",  "memOutput_ttZ_LR", "memOutput_ttZ_Zll_LR",
-	#"oldVar_from20_to_12", "oldVar_from20_to_7"#,
-	#'mvaOutput_hadTopTagger',
-	#'mvaOutput_2lss_ttbar', 'mvaOutput_Hj_tagger', 'mvaOutput_Hjj_tagger',
-	#'lep1_isTight', 'lep2_isTight','tau_isTight',
-	#"failsTightChargeCut",
-	#'mvaDiscr_2lss', 'mvaOutput_2lss_ttV',
-	#'ncombo'
-	]):
-	    # add sub plot on our figure
-		plt.subplot(3, 3, n+1)
-	    # define range for histograms by cutting 1% of data from both ends
-		#if n==3 : nbins=20
-		#elif n==7 or n==8 : nbins=100
-		#else : nbins=10
-		min_value, max_value = np.percentile(data[feature], [1, 99])
-		print (min_value, max_value,feature)
-		values, bins, _ = plt.hist(data.ix[data.target.values == 0, feature].values.astype(np.float64) ,
-								   weights= data.ix[data.target.values == 0, weights].values.astype(np.float64) ,
-	                               range=(min_value, max_value),
-								   label="TT",
-								   bins=nbins,
-								   **hist_params )
-		values, bins, _ = plt.hist(data.ix[data.target.values == 1, feature].values.astype(np.float64),
-								   weights= data.ix[data.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(min_value, max_value),
-								   label='Signal',
-								   bins=nbins,
-								   **hist_params)
-		areaSig = sum(np.diff(bins)*values)
-		plt.ylim(ymin=0.0001)
-		#print areaBKG, " ",areaBKG2 ," ",areaSig
-		if n == 0 : plt.legend(loc='best')
-		plt.title(feature)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_BDT.pdf")
-	plt.clf()
-##################################################################
+	'mvaOutput_Hjj_tagger']
+	make_plots(BDTvariables,nbins,
+    data.ix[data.target.values == 0],labelBKG, colorFast,
+    data.ix[data.target.values == 1],'Signal', colorFastT,
+    channel+"/"+bdtType+"_"+trainvar+"_BDTVariables_fastsim"+FastsimWP+".pdf",
+    printmin
+    )
 
-nbins=20
 if doFS and doPlots :
-	##############################################################
-	hist_params = {'normed': True, 'alpha': 0.4}
-	plt.figure(figsize=(40, 40))
-	n=8
-	residualsSignal=[]
-	for n, feature  in enumerate(trainVars(True)):
-		plt.subplot(8, 8, n+1)
-		min_value, max_value = np.percentile(data[feature], [1, 99])
-		print (min_value, max_value,feature)
-		plot1= plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64)),
-								   weights= dataTightFS.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(min_value, max_value), #cumulative=True,
-								   label='Fullsim '+FullsimWP,
-								   bins=nbins,
-								   **hist_params)
-		plot2 = plt.hist(abs(data.ix[data.target.values == 1, feature].values.astype(np.float64)) ,
-								   weights= data.ix[data.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(min_value, max_value), #cumulative=True,
-								   label="Fastsim "+FastsimWP,
-								   bins=nbins,
-								   **hist_params )
-		residualsSignal=residualsSignal+[(plot1[0]-plot2[0])/(plot1[0])]
-		plt.ylim(ymin=0.00001)
-		if n == 0 : plt.legend(loc='best')
-		plt.title(feature)
-		#plt.xscale('log')
-		#plt.yscale('log')
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fastsim_fullsim.pdf")
-	plt.clf()
-	#print ("residualsSignal",residualsSignal)
-	residualsSignal=np.nan_to_num(residualsSignal)
-	"""
-	for n, feature  in enumerate(trainVars(True)):
-		(mu, sigma) = norm.fit(residualsSignal[n])
-		plt.subplot(8, 8, n+1)
-		residualsSignal[n]=np.nan_to_num(residualsSignal[n])
-		n, bins, patches = plt.hist(residualsSignal[n], label='Residuals Full('+FullsimWP+')/Fastsim('+FastsimWP+')  Signal')
-		# add a 'best fit' line
-		y = mlab.normpdf( bins, mu, sigma)
-		l = plt.plot(bins, y, 'r--', linewidth=2)
-		plt.ylim(ymin=0)
-		plt.title(feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma))
-		print feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_Signal_fullsim_residuals.pdf")
-	plt.clf()
-	"""
-	##################################################################
-	residualsBKG=[]
-	for n, feature  in enumerate(trainVars(True)):
-		plt.subplot(8, 8, n+1)
-		min_value, max_value = np.percentile(dataTightFS[feature], [1, 99])
-		min_value2, max_value2 = np.percentile(data[feature], [1, 99])
-		print (min_value, max_value,feature)
-		plot1 = plt.hist(abs(dataTightFS.ix[dataTightFS.target.values == 0, feature].values.astype(np.float64)),
-								   weights= dataTightFS.ix[dataTightFS.target.values == 0, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)), #cumulative=True,
-								   label='Fullsim '+FullsimWP,
-								   bins=nbins,
-								   **hist_params)
-		plot2 = plt.hist(abs(data.ix[data.target.values == 0, feature].values.astype(np.float64)) ,
-								   weights= data.ix[data.target.values == 0, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)),
-								   label="Fastsim "+FastsimWP,
-								   bins=nbins,
-								   **hist_params )
-		residualsBKG=residualsBKG+[(plot1[0]-plot2[0])/(plot1[0])]
-		plt.ylim(ymin=0.00000000000000000001)
-		if n == 0 : plt.legend(loc='best')
-		plt.title(feature)
-		#plt.xscale('log')
-		#plt.yscale('log')
-	plt.ylim(ymin=0)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim_fullsim.pdf")
-	plt.clf()
-	"""
-	residualsBKG=np.nan_to_num(residualsBKG)
-	for n, feature  in enumerate(trainVars(True)):
-		(mu, sigma) = norm.fit(residualsBKG[n])
-		plt.subplot(8, 8, n+1)
-		n, bins, patches = plt.hist(residualsBKG[n], label='Residuals Full('+FullsimWP+')/Fastsim('+FastsimWP+') BKG')
-		# add a 'best fit' line
-		y = mlab.normpdf( bins, mu, sigma)
-		l = plt.plot(bins, y, 'r--', linewidth=2)
-		plt.ylim(ymin=0)
-		plt.title(feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma))
-		print feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fullsim"+FullsimWP+"_residuals.pdf")
-	plt.clf()
-	"""
+	plotResiduals=False
+	make_plots(BDTvariables,nbins,
+	    data.ix[data.target.values == 1],              "Fast "+FastsimWP, colorFast,
+	    dataTightFS.ix[dataTightFS.target.values == 1],'Full '+FullsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fastsim"+FastsimWP+"_fullsim"+FullsimWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
 
-	hist_params = {'normed': True, 'alpha': 0.4}
-	plt.figure(figsize=(40, 40))
-	for n, feature  in enumerate(trainVars(True)):
-		plt.subplot(8, 8, n+1)
-		min_value, max_value = np.percentile(data[feature], [1, 99])
-		min_value2, max_value2 = np.percentile(data[feature], [1, 99])
-		print (min_value, max_value,feature)
-		plot1= plt.hist(dataTightFS.ix[dataTightFS.target.values == 1, feature].values.astype(np.float64),
-								   weights= dataTightFS.ix[dataTightFS.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)),
-								   label='Fullsim signal '+FullsimWP,
-								   bins=nbins,
-								   **hist_params)
-		plot2= plt.hist(dataTightFS.ix[dataTightFS.target.values == 0, feature].values.astype(np.float64),
-								   weights= dataTightFS.ix[dataTightFS.target.values == 0, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)),
-								   label='Fullsim BKG '+FullsimWP,
-								   bins=nbins,
-								   **hist_params)
-		plt.ylim(ymin=0.00001)
-		#plt.xscale('log')
-		#plt.yscale('log')
-		#if n == 0 :
-		#	print ("BKG",plot1[0],plot2[0],plot2[1])
-		#	print ("residuals",plot1[0]-plot2[0],plot2[1])
-		if n == 0 : plt.legend(loc='best')
-		plt.title(feature)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fullsim"+FullsimWP+".pdf")
-	plt.clf()
+	make_plots(BDTvariables,nbins,
+	    data.ix[data.target.values == 0],              "Fast "+labelBKG+" "+FastsimWP, colorFast,
+	    dataTightFS.ix[dataTightFS.target.values == 0],'Full '+labelBKG+" "+FullsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim"+FastsimWP+"_fullsim"+FullsimWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
 
+	make_plots(BDTvariables,nbins,
+	    dataTightFS.ix[dataTightFS.target.values == 1],"Fullsim signal", colorFast,
+	    dataTightFS.ix[dataTightFS.target.values == 0],"Fullsim "+labelBKG, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_fullsim"+FullsimWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
+
+	make_plots(BDTvariables,nbins,
+	    dataTight.ix[dataTight.target.values == 1],    "Fast "+FastsimTWP, colorFast,
+	    dataTightFS.ix[dataTightFS.target.values == 1],'Full '+FullsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fastsim"+FastsimTWP+"_fullsim"+FullsimWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
+
+	make_plots(BDTvariables,nbins,
+	    dataTight.ix[dataTight.target.values == 0],    "Fast "+labelBKG+" "+FastsimTWP, colorFast,
+	    dataTightFS.ix[dataTightFS.target.values == 0],'Full '+labelBKG+" "+FullsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim"+FastsimTWP+"_fullsim"+FullsimWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
+
+if doFS2 and doPlots :
+	make_plots(BDTvariables,nbins,
+	    dataTightFS2.ix[dataTightFS2.target.values == 1], 'Full '+FullsimWP2, colorFast,
+	    dataTightFS.ix[dataTightFS.target.values == 1],   'Full '+FullsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fullsim"+FullsimWP2+"_"+FullsimWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
+
+	make_plots(BDTvariables,nbins,
+	    dataTightFS2.ix[dataTightFS2.target.values == 0], 'Full '+labelBKG+" "+FullsimWP2, colorFast,
+	    dataTightFS.ix[dataTightFS.target.values == 0],   'Full '+labelBKG+" "+FullsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fullsim"+FullsimWP2+"_"+FullsimWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
+
+	make_plots(BDTvariables,nbins,
+	    dataTightFS2.ix[dataTightFS2.target.values == 1], 'Full '+FullsimWP2, colorFast,
+	    data.ix[data.target.values == 1],                 'Fast '+FastsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fastsim"+FastsimWP+"_fullsim"+FullsimWP2+".pdf",
+	    printmin,
+		plotResiduals
+	    )
+
+	make_plots(BDTvariables,nbins,
+	    dataTightFS2.ix[dataTightFS2.target.values == 0], 'Full '+labelBKG+" "+FullsimWP2, colorFast,
+	    data.ix[data.target.values == 0],                 'Fast '+labelBKG+" "+FastsimWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim"+FastsimWP+"_fullsim"+FullsimWP2+".pdf",
+	    printmin,
+		plotResiduals
+	    )
 
 if doPlots :
-	##################################################################
-	hist_params = {'normed': True, 'alpha': 0.4}
-	plt.figure(figsize=(40, 40))
-	for n, feature  in enumerate(trainVars(True)):
-	    # add sub plot on our figure
-		plt.subplot(8, 8, n+1)
-		min_value, max_value = np.percentile(dataTight[feature], [1, 99])
-		min_value2, max_value2 = np.percentile(data[feature], [1, 99])
-		print (min_value, max_value,feature)
-		plot1= plt.hist(dataTight.ix[dataTight.target.values == 0, feature].values.astype(np.float64),
-								   weights= dataTight.ix[dataTight.target.values == 0, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)),
-								   label='Fastsim '+FastsimTWP,
-								   bins=nbins,
-								   **hist_params)
-		plot2= plt.hist(data.ix[data.target.values == 0, feature].values.astype(np.float64) ,
-								   weights= data.ix[data.target.values == 0, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)),
-								   label="Fastsim "+FastsimWP,
-								   bins=nbins,
-								   **hist_params )
-		if n == 0 : plt.legend(loc='best')
-		plt.ylim(ymin=0.00001)
-		plt.title(feature)
-		#plt.xscale('log')
-		#plt.yscale('log')
-	plt.ylim(ymin=0)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim"+FastsimWP+"_"+FastsimTWP+".pdf")
-	plt.clf()
-	##################################################################
-	hist_params = {'normed': True, 'alpha': 0.4}
-	plt.figure(figsize=(40, 40))
-	for n, feature  in enumerate(trainVars(True)):
-	    # add sub plot on our figure
-		plt.subplot(8, 8, n+1)
-		min_value, max_value = np.percentile(data[feature], [1, 99])
-		min_value2, max_value2 = np.percentile(data[feature], [1, 99])
-		print (min_value, max_value,feature)
-		plot1= plt.hist(dataTight.ix[dataTight.target.values == 1, feature].values.astype(np.float64),
-								   weights= dataTight.ix[dataTight.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)),
-								   label='Fastsim '+FastsimTWP,
-								   bins=nbins,
-								   **hist_params)
-		plot2= plt.hist(data.ix[data.target.values == 1, feature].values.astype(np.float64) ,
-								   weights= data.ix[data.target.values == 1, weights].values.astype(np.float64) ,
-	                               range=(min(min_value,min_value2), max(max_value,max_value2)),
-								   label="Fastsim "+FastsimWP,
-								   bins=nbins,
-								   **hist_params )
-		if n == 0 : plt.legend(loc='best')
-		plt.ylim(ymin=0.00001)
-		plt.title(feature)
-		#plt.xscale('log')
-		#plt.yscale('log')
-	plt.ylim(ymin=0)
-	plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fastsim"+FastsimWP+"_"+FastsimTWP+".pdf")
-	plt.clf()
-	##################################################################
+	make_plots(BDTvariables,nbins,
+	    data.ix[data.target.values == 0],          "Fast "+labelBKG+" "+FastsimWP, colorFast,
+	    dataTight.ix[dataTight.target.values == 0],"Fast "+labelBKG+" "+FastsimTWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_BKG_fastsim"+FastsimWP+"_"+FastsimTWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
 
+	make_plots(BDTvariables,nbins,
+	    data.ix[data.target.values == 1],          "Fast "+FastsimWP, colorFast,
+	    dataTight.ix[dataTight.target.values == 1],"Fast "+FastsimTWP, colorFastT,
+	    channel+"/"+bdtType+"_"+trainvar+"_Variables_signal_fastsim"+FastsimWP+"_"+FastsimTWP+".pdf",
+	    printmin,
+		plotResiduals
+	    )
 
 ###################################################################
-if channel=="22lss_1tau" : njet="nJet25_Recl"
+if channel=="2lss_1tau" : njet="nJet25_Recl"
 else : njet="nJet"
 if 0>1 :
 	totestcorr=['mvaOutput_hadTopTaggerWithKinFit',
@@ -1138,10 +1338,10 @@ if 0>1 :
 	'Hjj_tagger',njet]
 	for ii in [1,2] :
 		if ii == 1 :
-			datad=data.loc[data['target'].values == 1]
+			datad=data.loc[data[target].values == 1]
 			label="signal"
 		else :
-			datad=data.loc[data['target'].values == 0]
+			datad=data.loc[data[target].values == 0]
 			label="BKG"
 		datacorr = datad[totestcorr] #.loc[:,trainVars(False)] #dataHToNobbCSV[[trainVars(True)]]
 		correlations = datacorr.corr()
@@ -1178,10 +1378,10 @@ if options.HypOpt==True :
 	early_stopping_rounds = 200 # Will train until validation_0-auc hasn't improved in 100 rounds.
 	cv=3
 	cls = xgb.XGBClassifier()
-	fit_params = { "eval_set" : [(valdataset[trainVars(False)].values,valdataset["target"])],
+	fit_params = { "eval_set" : [(valdataset[trainVars(False)].values,valdataset[target])],
                            "eval_metric" : "auc",
                            "early_stopping_rounds" : early_stopping_rounds,
-						   'sample_weight': valdataset["totalWeight"].values }
+						   'sample_weight': valdataset[weights].values }
 	gs = GridSearchCV(cls, param_grid, scoring, fit_params, cv = cv, verbose = 0)
 	gs.fit(traindataset[trainVars(False)].values,
 	traindataset.target.astype(np.bool)
@@ -1208,9 +1408,12 @@ cls = xgb.XGBClassifier(
 			n_estimators = options.ntrees,
 			max_depth = options.treeDeph,
 			min_child_weight = options.mcw, # min_samples_leaf
-			learning_rate = options.lr
+			learning_rate = options.lr,
 			#max_features = 'sqrt',
 			#min_samples_leaf = 100
+			#objective='binary:logistic', #booster='gbtree',
+			#gamma=0, #min_child_weight=1,
+			#max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1, reg_alpha=0, reg_lambda=1, scale_pos_weight=1, base_score=0.5, #random_state=0
 			)
 cls.fit(
 	traindataset[trainVars(False)].values,
@@ -1225,35 +1428,35 @@ print trainVars(False)
 print traindataset[trainVars(False)].columns.values.tolist()
 print ("XGBoost trained")
 proba = cls.predict_proba(traindataset[trainVars(False)].values )
-fpr, tpr, thresholds = roc_curve(traindataset["target"], proba[:,1],
+fpr, tpr, thresholds = roc_curve(traindataset[target], proba[:,1],
 	sample_weight=(traindataset[weights].astype(np.float64)) )
 train_auc = auc(fpr, tpr, reorder = True)
 print("XGBoost train set auc - {}".format(train_auc))
 proba = cls.predict_proba(valdataset[trainVars(False)].values )
-fprt, tprt, thresholds = roc_curve(valdataset["target"], proba[:,1], sample_weight=(valdataset[weights].astype(np.float64))  )
+fprt, tprt, thresholds = roc_curve(valdataset[target], proba[:,1], sample_weight=(valdataset[weights].astype(np.float64))  )
 test_auct = auc(fprt, tprt, reorder = True)
 print("XGBoost test set auc - {}".format(test_auct))
 #print list(traindataset[trainVars(False)])
 #print list(dataTight[trainVars(False)])
 #print list(dataTightFS[trainVars(False)])
-#print dataTight["target"]
+#print dataTight[target]
 proba = cls.predict_proba(dataTight[trainVars(False)].values )
-fprtight, tprtight, thresholds = roc_curve(dataTight["target"], proba[:,1], sample_weight=(dataTight[weights].astype(np.float64))  )
+fprtight, tprtight, thresholds = roc_curve(dataTight[target], proba[:,1], sample_weight=(dataTight[weights].astype(np.float64))  )
 test_auctight = auc(fprtight, tprtight, reorder = True)
 print("XGBoost test set auc - tight lep ID - {}".format(test_auctight))
 if doFS :
 	proba = cls.predict_proba(dataTightFS[trainVars(False)].values)
-	fprtightF, tprtightF, thresholds = roc_curve(dataTightFS["target"], proba[:,1], sample_weight=(dataTightFS[weights].astype(np.float64)) )
+	fprtightF, tprtightF, thresholds = roc_curve(dataTightFS[target], proba[:,1], sample_weight=(dataTightFS[weights].astype(np.float64)) )
 	test_auctightF = auc(fprtightF, tprtightF, reorder = True)
 	print("XGBoost test set auc - fullsim all - {}".format(test_auctightF))
-	if bdtType=="evtLevelSUM_TTH" :
+	if "evtLevelSUM_TTH" in bdtType :
 		tightTT=dataTightFS.ix[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW') | (dataTightFS.proces.values=='TT') | (dataTightFS.proces.values=='signal')]
 	if bdtType=="evtLevelTT_TTH" :
 		tightTT=dataTightFS.ix[(dataTightFS.proces.values=='TT') | (dataTightFS.proces.values=='signal')]
 	if bdtType=="evtLevelTTV_TTH" :
 		tightTT=dataTightFS.ix[(dataTightFS.proces.values=='TTZ') | (dataTightFS.proces.values=='TTW') | (dataTightFS.proces.values=='signal')]
 	proba = cls.predict_proba(tightTT[trainVars(False)].values)
-	fprtightFI, tprtightFI, thresholds = roc_curve(tightTT["target"].values, proba[:,1], sample_weight=(tightTT[weights].astype(np.float64)))
+	fprtightFI, tprtightFI, thresholds = roc_curve(tightTT[target].values, proba[:,1], sample_weight=(tightTT[weights].astype(np.float64)))
 	test_auctightFI = auc(fprtightFI, tprtightFI, reorder = True)
 	print("XGBoost test set auc - fullsim individual - {}".format(test_auctightFI))
 
@@ -1278,7 +1481,7 @@ fig, ax = plt.subplots(figsize=(6, 6))
 ax.plot(fpr, tpr, lw=1, label='XGB train (area = %0.3f)'%(train_auc))
 ax.plot(fprt, tprt, lw=1, label='XGB test (area = %0.3f)'%(test_auct))
 #ax.plot(fprc, tprc, lw=1, label='CB train (area = %0.3f)'%(train_aucc))
-ax.plot(fprtight, tprtight, lw=1, label='XGB test - tight ID (area = %0.3f)'%(test_auctight))
+#ax.plot(fprtight, tprtight, lw=1, label='XGB test - tight ID (area = %0.3f)'%(test_auctight))
 if doFS : ax.plot(fprtightFI, tprtightFI, lw=1, label='XGB test - Fullsim (area = %0.3f)'%(test_auctightFI))
 #ax.plot(fprtightF, tprtightF, lw=1, label='XGB test - Fullsim All (area = %0.3f)'%(test_auctightF))
 ax.set_ylim([0.0,1.0])
@@ -1341,10 +1544,10 @@ plt.savefig(channel+'/'+bdtType+'_'+trainvar+'_GBclassifier.pdf')
 if options.HypOpt==False :
 	for ii in [1,2] :
 		if ii == 1 :
-			datad=traindataset.loc[traindataset['target'].values == 1]
+			datad=traindataset.loc[traindataset[target].values == 1]
 			label="signal"
 		else :
-			datad=traindataset.loc[traindataset['target'].values == 0]
+			datad=traindataset.loc[traindataset[target].values == 0]
 			label="BKG"
 		datacorr = datad[trainVars(False)] #.loc[:,trainVars(False)] #dataHToNobbCSV[[trainVars(True)]]
 		correlations = datacorr.corr()
@@ -1367,10 +1570,10 @@ if options.HypOpt==False :
 	if 0>1 :
 		for ii in [1,2] :
 			if ii == 1 :
-				datad=dataTightFS.loc[dataTightFS['target'].values == 1]
+				datad=dataTightFS.loc[dataTightFS[target].values == 1]
 				label="signal"
 			else :
-				datad=dataTightFS.loc[dataTightFS['target'].values == 0]
+				datad=dataTightFS.loc[dataTightFS[target].values == 0]
 				label="BKG"
 			datacorr = datad[trainVars(False)] #.loc[:,trainVars(False)] #dataHToNobbCSV[[trainVars(True)]]
 			correlations = datacorr.corr()

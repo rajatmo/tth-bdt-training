@@ -172,6 +172,7 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
                         chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
                         chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
                         chunk_df["lep3_eta"]=abs(chunk_df["lep3_eta"])
+                        chunk_df["max_lep_eta"]=chunk_df[["lep1_eta","lep2_eta","lep3_eta"]].max(axis=1)
                         chunk_df["avr_lep_eta"]=(abs(chunk_df["lep2_eta"])+abs(chunk_df["lep1_eta"])+abs(chunk_df["lep3_eta"]))/2.
                         chunk_df["tau_eta"]=abs(chunk_df["tau_eta"])
                         WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["lep3_fake_prob"] #*chunk_df["tau_fake_prob"]
@@ -333,8 +334,9 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
                         chunk_df["lep3_eta"]=abs(chunk_df["lep3_eta"])
                         chunk_df["avr_lep_eta"]=(abs(chunk_df["lep2_eta"])+abs(chunk_df["lep1_eta"])+abs(chunk_df["lep3_eta"]))/2.
                         chunk_df["tau_eta"]=abs(chunk_df["tau_eta"])
-                        chunk_df.ix[(chunk_df["mbb_loose"].values < 0)]=0
-                        chunk_df.ix[(chunk_df["mbb"].values < 0)]=0
+                        #chunk_df.ix[(chunk_df["mbb_loose"].values < 0)]=0
+                        #chunk_df.ix[(chunk_df["mbb_medium"].values < 0)]=0
+                        chunk_df["max_lep_eta"]=chunk_df[["lep1_eta","lep2_eta","lep3_eta"]].max(axis=1)
                         WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["lep3_fake_prob"] #*chunk_df["tau_fake_prob"]
                         chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
                     if channel=="2l_2tau" :
