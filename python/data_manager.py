@@ -117,9 +117,7 @@ def load_dataGen(inputPath,channelInTree,variables,criteria,testtruth,folderName
 
 def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     print variables
-    my_cols_list=variables+['key','target',"totalWeight"] #+criteria #,'tau_frWeight','lep1_frWeight','lep1_frWeight' trainVars(False)
-    # if channel=='2lss_1tau' : my_cols_list=my_cols_list+['tau_frWeight','lep1_frWeight','lep2_frWeight']
-    # those last are only for channels where selection is relaxed (2lss_1tau) === solve later
+    my_cols_list=variables+['key','target',"totalWeight"]
     data = pandas.DataFrame(columns=my_cols_list)
     if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToSemilepton']
     if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTZToLLNuNu','TTWJetsToLNu']
@@ -158,16 +156,17 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
                 except : continue
                 else :
                     chunk_df = pandas.DataFrame(chunk_arr)
+                    #print (len(chunk_df))
+                    #print (chunk_df.columns.tolist())
                     chunk_df['proces']=sampleName
                     chunk_df['key']=folderName
                     chunk_df['target']=target
                     if channel=="1l_2tau" : chunk_df["totalWeight"] = chunk_df.evtWeight*chunk_df["prob_fake_lepton"]*chunk_df["tau_fake_prob_lead"]*chunk_df["tau_fake_prob_sublead"]
                     if channel=="2lss_1tau" :
-                        #WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"] #*chunk_df["tau_fake_prob"]
-                        #WtoMultiply=chunk_df['tau_frWeight']*chunk_df['lep1_frWeight']*chunk_df['lep2_frWeight']
                         chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]
-                        chunk_df["max_eta_Lep"]=chunk_df[['tau_eta', 'lep1_eta', 'lep2_eta']].max(axis=1) #WtoMultiply
-                        #chunk_df.ix[(chunk_df["mbb"].values < 0)]=0*chunk_df.ix[(chunk_df["mbb"].values < 0)]
+                        chunk_df["max_eta_Lep"]=chunk_df[['tau_eta', 'lep1_eta', 'lep2_eta']].max(axis=1)
+                    if channel=="2los_1tau" :
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau_fake_prob"]
                     if channel=="3l_1tau" :
                         chunk_df["lep1_eta"]=abs(chunk_df["lep1_eta"])
                         chunk_df["lep2_eta"]=abs(chunk_df["lep2_eta"])
@@ -191,11 +190,8 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
                         chunk_df["avr_tau_eta"]=(abs(chunk_df["tau2_eta"])+abs(chunk_df["tau1_eta"]))/2.
                         chunk_df["leptonPairCharge"]=abs(chunk_df["leptonPairCharge"])
                         chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
-                        #WtoMultiply=chunk_df["weight_fakeRate"]
                         WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
-                        #WtoMultiply=chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
                         chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
-                    # append to dataframe
                     data=data.append(chunk_df, ignore_index=True)
             else : print ("file "+list[ii]+"was empty")
             tfile.Close()
@@ -209,7 +205,7 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
             print "tau1&2 all | lep  ",sampleName ,len(data.ix[(data["tau1_fake_prob"].values != 1) & (data["tau2_fake_prob"].values != 1) & (data.proces.values==sampleName)]), len(data.ix[(data["tau1_fake_test"].values != 1) & (data['tau2_fake_test'].values != 1) & (data.proces.values==sampleName)])
             datatest=data["evtWeight"]*data["lep1_fake_prob"]*data["lep2_fake_prob"]*data["tau1_fake_test"]*data["tau2_fake_test"]
             print "sum of weights with/ without lepton in FR ",sampleName , datatest.ix[ (data.proces.values==sampleName)].sum(),data.ix[ (data.proces.values==sampleName)]["totalWeight"].sum()
-        if (channel=="1l_2tau" or channel=="2lss_1tau") :
+        if (channel=="1l_2tau" or channel=="2lss_1tau" or channel=="2los_1tau") :
             nSthuth = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
             nBtruth = len(data.ix[(data.target.values == 1) & (data.bWj1Wj2_isGenMatched.values==1) & (data.key.values==folderName)])
             nSthuthKin = len(data.ix[(data.target.values == 0) & (data.bWj1Wj2_isGenMatchedWithKinFit.values==1) & (data.key.values==folderName)])
@@ -224,7 +220,6 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     nS = len(data.ix[data.target.values == 0])
     nB = len(data.ix[data.target.values == 1])
     print channelInTree," length of sig, bkg: ", nS, nB
-    #print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
     return data
 
 
@@ -334,8 +329,6 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
                         chunk_df["lep3_eta"]=abs(chunk_df["lep3_eta"])
                         chunk_df["avr_lep_eta"]=(abs(chunk_df["lep2_eta"])+abs(chunk_df["lep1_eta"])+abs(chunk_df["lep3_eta"]))/2.
                         chunk_df["tau_eta"]=abs(chunk_df["tau_eta"])
-                        #chunk_df.ix[(chunk_df["mbb_loose"].values < 0)]=0
-                        #chunk_df.ix[(chunk_df["mbb_medium"].values < 0)]=0
                         chunk_df["max_lep_eta"]=chunk_df[["lep1_eta","lep2_eta","lep3_eta"]].max(axis=1)
                         WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["lep3_fake_prob"] #*chunk_df["tau_fake_prob"]
                         chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
@@ -358,10 +351,10 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
                         #WtoMultiply=chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
                         chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
                     if channel=="2lss_1tau" :
-                        #WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"] #*chunk_df["tau_fake_prob"]
-                        #chunk_df.ix[(chunk_df["mbb"].values < 0)]=0*chunk_df.ix[(chunk_df["mbb"].values < 0)]
                         chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"] #WtoMultiply
                         chunk_df["max_eta_Lep"]=chunk_df[['tau_eta', 'lep1_eta', 'lep2_eta']].max(axis=1)
+                    if channel=="2los_1tau" :
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]*chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau_fake_prob"]
                     chunk_df['key']=folderName
                     chunk_df["target"]=target
                     chunk_df['proces']=sampleName
@@ -370,20 +363,15 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
             else : print ("file "+list[ii]+"was empty")
             tfile.Close()
         if len(dataloc) == 0 : continue
-        #dataloc=dataloc.ix[dataloc.evtWeight.values <0.08]
-        #dataloc=dataloc.ix[dataloc.genWeight.values <10]
         nS = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.proces.values==sampleName)])
         nB = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.proces.values==sampleName)])
         print sampleName,"length of sig, bkg: ", nS, nB, dataloc.ix[(dataloc.proces.values==sampleName)]["totalWeight"].sum(), dataloc.ix[(dataloc.proces.values==sampleName)]["totalWeight"].sum()
         if channel=="2l_2tau" :
-            #print "pos | neg (weight) ",sampleName , len(dataloc.ix[(dataloc["genWeight"].values > 0) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["genWeight"].values < 0) & (dataloc.proces.values==sampleName)])
-            #print "pos | neg (evtweight) ",sampleName , len(dataloc.ix[(dataloc["evtWeight"].values > 0) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["evtWeight"].values < 0) & (dataloc.proces.values==sampleName)])
             print "tau1 all | lep  ",sampleName , len(dataloc.ix[(dataloc["tau1_fake_prob"].values != 1) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["tau1_fake_test"].values != 1) & (dataloc.proces.values==sampleName)])
             print "tau2 all | lep  ",sampleName , len(dataloc.ix[(dataloc["tau2_fake_prob"].values != 1) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["tau2_fake_test"].values != 1) & (dataloc.proces.values==sampleName)])
             print "tau1&2 all | lep  ",sampleName ,len(dataloc.ix[(dataloc["tau1_fake_prob"].values != 1) & (dataloc["tau2_fake_prob"].values != 1) & (dataloc.proces.values==sampleName)]), len(dataloc.ix[(dataloc["tau1_fake_test"].values != 1) & (dataloc['tau2_fake_test'].values != 1) & (dataloc.proces.values==sampleName)])
             datatest=dataloc["evtWeight"]*dataloc["lep1_fake_prob"]*dataloc["lep2_fake_prob"]*dataloc["tau1_fake_test"]*dataloc["tau2_fake_test"]
             print "sum of weights with/ without lepton in FR ",sampleName , datatest.ix[ (dataloc.proces.values==sampleName)].sum(),dataloc.ix[ (dataloc.proces.values==sampleName)]["totalWeight"].sum()
-
         if (channel=="1l_2tau" or channel=="2lss_1tau") :
             nSthuth = len(dataloc.ix[(dataloc.target.values == 0) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
             nBtruth = len(dataloc.ix[(dataloc.target.values == 1) & (dataloc.bWj1Wj2_isGenMatched.values==1) & (dataloc.proces.values==sampleName)])
@@ -401,14 +389,7 @@ def load_data_fullsim(inputPath,channelInTree,variables,criteria,testtruth,bdtTy
     print sampleName," length of sig, bkg: ", nS, nB
     return dataloc
 
-def normalize(arr):
-    return (arr-arr.min())/(arr.max()-arr.min())
-    #result = df.copy()
-    #for feature_name in df.columns:
-    #    max_value = df[feature_name].max()
-    #    min_value = df[feature_name].min()
-    #    result[feature_name] = (df[feature_name] - min_value) / (max_value - min_value)
-    #return result
+def normalize(arr): return (arr-arr.min())/(arr.max()-arr.min())
 
 def make_plots(
     featuresToPlot,nbin,

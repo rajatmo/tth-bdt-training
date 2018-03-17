@@ -18,7 +18,8 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
 import numpy as np
-
+import psutil
+import os
 from rep.estimators import TMVAClassifier
 
 import pickle
@@ -75,22 +76,44 @@ bdtType=options.bdtType
 trainvar=options.variables
 hyppar=str(options.variables)+"_ntrees_"+str(options.ntrees)+"_deph_"+str(options.treeDeph)+"_mcw_"+str(options.mcw)+"_lr_0o0"+str(int(options.lr*100))
 
-#channel="2lss_1tau"
-channel=options.channel #"1l_2tau"
+channel=options.channel
+
 if channel=='1l_2tau':
 	channelInTree='1l_2tau_OS_Tight'
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/1l_2tau_2018Jan26_forBDT_tightLmediumT/histograms/1l_2tau/forBDTtraining_OS/' #  - tight lepton, loose tau || 1l_2tau_2018Jan24_forBDT_tightLlooseT || 1l_2tau_2018Jan24_forBDT_tightLmediumT || 1l_2tau_2018Jan24_forBDT_tightLisolooseT
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/1l_2tau_2018Jan26_forBDT_tightLmediumT/histograms/1l_2tau/forBDTtraining_OS/'
 	channelInTreeTight='1l_2tau_OS_Tight'
 	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/1l_2tau_2018Jan26_forBDT_tightLtightT/histograms/1l_2tau/forBDTtraining_OS/'
 	channelInTreeFS='1l_2tau_OS_Tight'
 	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan28_BDT_toTrees_FS_looseT/histograms/1l_2tau/Tight_OS/'
-	# 2018Jan28_BDT_toTrees_FS_looseT | 1l_2tau_2018Jan23_VHbb_tree | 2018Jan28_BDT_toTrees_FS
-	# 2018Jan26_BDT_fromVHbb_toTrees_fullsimData
 	criteria=[]
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 	FullsimWP="TightLep_MediumTau"
 	FastsimWP="TightLep_TightTau"
 	FastsimTWP="TightLep_TightTau"
+
+# 2los_1tau_2018Mar14_BDT_TLepTTau
+if channel=='2los_1tau':
+	channelInTree='2los_1tau_Tight'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepTTau/histograms/2los_1tau/forBDTtraining/'
+	FastsimWP= "LooseLep_TightTau"
+	criteria=[]
+	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
+	channelInTreeTight='2los_1tau_Tight'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepTTau/histograms/2los_1tau/forBDTtraining/'
+	FastsimTWP="TightLep_MediumTau"
+	if bdtType=="evtLevelSUM_TTH_M" :
+		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+		FullsimWP= "TightLep_MediumTau"
+	if bdtType=="evtLevelSUM_TTH_T" :
+		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepTTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+		FullsimWP= "TightLep_TightTau"
+	else :
+		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
+		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
+		FullsimWP= "TightLep_MediumTau"
+
 
 if channel=='2lss_1tau':
 	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
@@ -99,7 +122,7 @@ if channel=='2lss_1tau':
 	FastsimWP= "LooseLep_TightTau"
 	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
 	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb27_BDT_TLepVVLTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-	criteria=[] # loose is 27
+	criteria=[]
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 	channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
 	#channelInTreeTight='2lss_1tau_lepSS_sumOS_Loose'
@@ -151,26 +174,16 @@ if channel=="2l_2tau": # see Feb10
 
 
 if channel=="3l_1tau":
-	#channelInTree='3l_1tau_OS_lepLoose_tauTight'
-	#channelInTree='3l_1tau_OS_lepTight_tauLoose'
-	#channelInTree='3l_1tau_OS_lepTight_tauTight'
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_TLepVVLTau/histograms/3l_1tau/forBDTtraining_OS/'
 	channelInTree='3l_1tau_OS_lepLoose_tauTight'
 	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_LLepVLTau/histograms/3l_1tau/forBDTtraining_OS/'
 	criteria=[]
 	testtruth="None"
-	#channelInTreeTight='3l_1tau_OS_lepLoose_tauTight'
-	#channelInTreeTight='3l_1tau_OS_lepLoose_tauTight'
-	#channelInTreeTight='3l_1tau_OS_lepTight_tauLoose'
 	channelInTreeTight='3l_1tau_OS_lepTight_tauTight'
 	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_TLepMTau/histograms/3l_1tau/forBDTtraining_OS/'
-	#channelInTreeFS='3l_1tau_OS_lepLoose_tauTight' #
-	#channelInTreeFS='3l_1tau_OS_lepLoose_tauLoose'
-	#channelInTreeFS='3l_1tau_OS_lepLoose_tauTight'
 	channelInTreeFS='3l_1tau_OS_lepTight_tauTight'
 	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_VHbb_trees_TLepMTau/histograms/3l_1tau/forBDTtraining_OS/'
 	FullsimWP="TightLep_MediumTau"
-	FastsimWP="TightLep_VVLooseTau"
+	FastsimWP="LooseLep_VLooseTau"
 	FastsimTWP="TightLep_MediumTau"
 
 print "reading "+inputPath
@@ -182,6 +195,77 @@ proc=subprocess.Popen(['mkdir '+options.channel],shell=True,stdout=subprocess.PI
 out = proc.stdout.read()
 
 def trainVars(all):
+
+        if channel=="2los_1tau" and all==True  :return [
+			'HadTop_eta', 'HadTop_pt',
+			'avg_dr_jet', 'dr_lep1_tau_os', 'dr_lep2_tau_ss',
+			'dr_lepOS_HTfitted', 'dr_lepOS_HTunfitted', 'dr_lepSS_HTfitted', 'dr_lepSS_HTunfitted',
+			'dr_leps', 'dr_tau_HTfitted', 'dr_tau_HTunfitted', #'evtWeight',
+			'fitHTptoHTmass', 'fitHTptoHTpt', #'genTopPt', 'genWeight',
+			'htmiss', 'lep1_conePt', 'lep1_eta', #'lep1_fake_prob', 'lep1_genLepPt',
+			'lep1_pt', 'lep1_tth_mva', 'lep2_conePt', 'lep2_eta', #'lep2_fake_prob', 'lep2_genLepPt',
+			'lep2_pt', 'lep2_tth_mva', #'lumiScale',
+			'mT_lep1', 'mT_lep2', 'mTauTauVis', #'mass_lepOS_HTfitted', 'mass_lepSS_HTfitted',
+			'max_lep_eta', 'mbb', 'mbb_loose',
+			'min_lep_eta', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
+			#'mvaDiscr_2lss', 'mvaOutput_2lss_ttV', 'mvaOutput_2lss_ttbar', 'mvaOutput_hadTopTagger',
+			'mvaOutput_hadTopTaggerWithKinFit', 'ptbb', 'ptbb_loose', 'ptmiss', 'tau_eta',
+			#'tau_fake_prob', 'tau_genTauPt', 'tau_mva', 'lep2_charge', 'lep2_isTight',
+			'tau_pt', 'unfittedHadTop_eta', 'unfittedHadTop_pt', #'bWj1Wj2_isGenMatched',
+			'bWj1Wj2_isGenMatchedWithKinFit', #'hadtruth', 'lep1_charge', 'lep1_isTight',
+			'lep1_tau_charge', 'nBJetLoose', 'nBJetMedium',
+			'nJet', 'nLep', 'nTau', #'tau_charge', 'tau_isTight', 'run', 'lumi', 'evt'
+		]
+
+        if trainvar=="noHTT" and channel=="2los_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
+			return [
+			'avg_dr_jet', #'dr_lep1_tau_os',
+			'dr_lep2_tau_ss',
+			'dr_leps',
+			#'lep1_conePt',
+			#'lep2_conePt',
+			#'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis',
+			'tau_pt', 'tau_eta',
+			#'max_lep_eta', #'min_lep_eta', #'lep2_eta','lep1_eta',
+			'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
+			#'mbb', 'ptbb', # (medium b)
+			'mbb_loose', #'ptbb_loose',
+			'ptmiss', #'htmiss',
+			#'nBJetLoose',
+			#'nBJetMedium',
+			'nJet',
+			]
+
+        if trainvar=="HTT" and channel=="2los_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
+			return [
+			'avg_dr_jet', #'dr_lep1_tau_os',
+			'dr_lep2_tau_ss',
+			'dr_leps',
+			#'lep1_conePt',
+			#'lep2_conePt',
+			#'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis',
+			'tau_pt', 'tau_eta',
+			#'max_lep_eta', #'min_lep_eta', #'lep2_eta','lep1_eta',
+			'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
+			#'mbb', 'ptbb', # (medium b)
+			'mbb_loose', #'ptbb_loose',
+			'ptmiss', #'htmiss',
+			#'nBJetLoose',
+			#'nBJetMedium',
+			'nJet',
+			'mvaOutput_hadTopTaggerWithKinFit',
+			'unfittedHadTop_pt',
+			#'dr_lepOS_HTfitted', 'dr_lepOS_HTunfitted',
+			#'dr_lepSS_HTfitted', #'dr_lepSS_HTunfitted',
+			'dr_tau_HTfitted', #'dr_tau_HTunfitted',
+			'fitHTptoHTmass', #'fitHTptoHTpt',
+			#'HadTop_eta', 'HadTop_pt',
+			#'mass_lepOS_HTfitted', 'mass_lepSS_HTfitted',
+			]
 
         if channel=="2lss_1tau" and all==True  :return [
 		#'HadTop_eta', 'HadTop_pt', 'MT_met_lep1', 'avg_dr_jet',
@@ -222,11 +306,9 @@ def trainVars(all):
 			'dr_leps',
 			'lep1_conePt',
 			'lep2_conePt',
-			#'mT_lep1',
 			'mT_lep2',
 			'mTauTauVis1',
 			'mTauTauVis2',
-			#'max_lep_eta',
 			'mbb',
 			'mindr_lep1_jet',
 			'mindr_lep2_jet',
@@ -240,7 +322,6 @@ def trainVars(all):
 			return [
 			'avg_dr_jet',
 			'dr_lep1_tau',
-			#'dr_lep2_tau',
 			'dr_leps',
 			'lep1_conePt',
 			'lep2_conePt',
@@ -253,8 +334,6 @@ def trainVars(all):
 			'mindr_tau_jet',
 			'ptmiss',
 			'max_lep_eta',
-			#'mbb',
-			#'nJet',
 			'tau_pt'
 			]
 
@@ -288,22 +367,17 @@ def trainVars(all):
 			'dr_leps',
 			'lep1_conePt',
 			'lep2_conePt',
-			#'mT_lep1',
 			'mT_lep2',
-			#'mTauTauVis1',
 			'mTauTauVis2',
-			#'max_lep_eta',
 			'mbb',
 			'mindr_lep1_jet',
 			'mindr_lep2_jet',
 			'mindr_tau_jet',
-			#'nJet',
 			'ptmiss',
 			'tau_pt',
 			'mvaOutput_hadTopTaggerWithKinFit',
 			'mvaOutput_Hj_tagger',
 			'unfittedHadTop_pt',
-			#'nJet25_Recl', 'avg_dr_jet'
 			]
 
         if trainvar=="HTT_LepID" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
@@ -367,7 +441,6 @@ def trainVars(all):
 			'mTauTauVis1',
 			'mTauTauVis2',
 			'max_lep_eta',
-			#'mbb',
 			'mindr_lep1_jet',
 			'mindr_lep2_jet',
 			'mindr_tau_jet',
@@ -375,8 +448,6 @@ def trainVars(all):
 			'ptmiss',
 			'tau_pt',
 			'mvaOutput_hadTopTaggerWithKinFit',
-			#'mvaOutput_Hj_tagger',
-			#'unfittedHadTop_pt',
 			]
 
         if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
@@ -385,11 +456,9 @@ def trainVars(all):
 			'dr_lep1_tau',
 			'dr_lep2_tau',
 			'dr_leps',
-			#'lep1_conePt',
 			'lep2_conePt',
 			'mT_lep1',
 			'mT_lep2',
-			#'mTauTauVis1',
 			'mTauTauVis2',
 			'max_lep_eta',
 			'mbb',
@@ -401,7 +470,6 @@ def trainVars(all):
 			'tau_pt',
 			"memOutput_LR",
 			'mvaOutput_hadTopTaggerWithKinFit',
-			#'mvaOutput_Hj_tagger',
 			'unfittedHadTop_pt',
 			]
 
@@ -411,11 +479,9 @@ def trainVars(all):
 			'dr_lep1_tau',
 			'dr_lep2_tau',
 			'dr_leps',
-			#'lep1_conePt',
 			'lep2_conePt',
 			'mT_lep1',
 			'mT_lep2',
-			#'mTauTauVis1',
 			'mTauTauVis2',
 			'max_lep_eta',
 			'mbb',
@@ -427,7 +493,6 @@ def trainVars(all):
 			'tau_pt',
 			"memOutput_LR",
 			'mvaOutput_hadTopTaggerWithKinFit',
-			#'mvaOutput_Hj_tagger',
 			'unfittedHadTop_pt',
 			]
 
@@ -437,11 +502,9 @@ def trainVars(all):
 			'dr_lep1_tau',
 			'dr_lep2_tau',
 			'dr_leps',
-			#'lep1_conePt',
 			'lep2_conePt',
 			'mT_lep1',
 			'mT_lep2',
-			#'mTauTauVis1',
 			'mTauTauVis2',
 			'max_lep_eta',
 			'mbb',
@@ -457,17 +520,38 @@ def trainVars(all):
 			'unfittedHadTop_pt',
 			]
 
+        if trainvar=="HTT" and channel=="2lss_1tau" and "evtLevelSUM_TTH" in bdtType and all==False :
+			return [
+			'avg_dr_jet',
+			'dr_lep1_tau',
+			'dr_lep2_tau',
+			'dr_leps',
+			'lep2_conePt',
+			'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis2',
+			'max_lep_eta',
+			'mbb',
+			'mindr_lep1_jet',
+			'mindr_lep2_jet',
+			'mindr_tau_jet',
+			'nJet',
+			'ptmiss',
+			'tau_pt',
+			'mvaOutput_hadTopTaggerWithKinFit',
+			'mvaOutput_Hj_tagger',
+			'unfittedHadTop_pt',
+			]
+
         if trainvar=="HTTMEM" and channel=="2lss_1tau" and bdtType=="evtLevelSUM_TTH_T" and all==False :
 			return [
 			'avg_dr_jet',
 			'dr_lep1_tau',
 			'dr_lep2_tau',
 			'dr_leps',
-			#'lep1_conePt',
 			'lep2_conePt',
 			'mT_lep1',
 			'mT_lep2',
-			#'mTauTauVis1',
 			'mTauTauVis2',
 			'max_lep_eta',
 			'mbb',
@@ -485,101 +569,53 @@ def trainVars(all):
 
         if channel=="2l_2tau" and all==True : return [
 		"lep1_pt", "lep1_eta",
-		#"lep1_conePt", "lep1_tth_mva", "mindr_lep1_jet", "mT_lep1", "dr_lep1_tau1", "dr_lep1_tau2",
 		"lep2_pt", "lep2_eta", "dr_leps",
-		#"lep2_conePt",  "lep2_tth_mva", "mindr_lep2_jet", "mT_lep2", "dr_lep2_tau1", "dr_lep2_tau2",
-		#"mindr_tau1_jet", "mindr_tau2_jet", "avg_dr_jet", "ptmiss",  "htmiss", "tau1_mva",
-		#"tau2_mva",
 		"tau1_pt",  "tau1_eta",
 		"tau2_pt", "tau2_eta",
 		"dr_taus", "mTauTauVis", "cosThetaS_hadTau",
-		#"lumiScale",
-		#"lep1_genLepPt", "lep2_genLepPt",
-		#"tau1_genTauPt", "tau2_genTauPt",
-		#"pT_LT1_m",  "pT_LT2_m",  "mass_LT1_m",  "mass_LT2_m",
-		#"pT_LT1",  "pT_LT2",  "mass_LT1",  "mass_LT2",
-		#"is_OS",
-		#"min_dr_lep_tau","max_dr_lep_tau","avr_dr_lep_tau",
 		'avr_lep_eta','avr_tau_eta',
-		#"leptonPairCharge", "hadTauPairCharge",
-		#"hadTau1Charge","hadTau2Charge",
 		"nJet", "nBJetLoose",
-		#"lep1_fake_prob", "lep2_fake_prob", "tau1_fake_prob", "tau2_fake_prob",
-		#"genWeight", "evtWeight",
-		#"tau1_fake_test", "tau2_fake_test","weight_fakeRate" ,"weights_dataToMC"
 		]
 
         if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
 			"mTauTauVis", "cosThetaS_hadTau",
-			#'tau1_pt','tau2_pt',
-			#"tau1_eta", "tau2_eta",
 			"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
 			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
 			"mT_lep1", "mT_lep2",
 			"dr_taus", #"dr_leps",
-			#"mindr_lep1_jet",
-			#"mindr_lep2_jet",
 			"min_dr_lep_jet",
 			"mindr_tau1_jet",
-			#"mindr_tau2_jet",
 			"avg_dr_jet",
-			#"avr_dr_lep_tau",
 			"min_dr_lep_tau","max_dr_lep_tau",
-			#"ptmiss",  #"htmiss",
 			"is_OS",
 			"nJet",
-			#"mbb_loose" #,"mbb_medium"
-			#"nBJetLoose",
 			]
 
         if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
 			"mTauTauVis", "cosThetaS_hadTau",
 			'tau1_pt',
 			'tau2_pt',
-			#"tau1_eta",
 			"tau2_eta",
-			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
-			#"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
 			"mindr_lep1_jet",
 			"mT_lep1", #"mT_lep2",
-			#"mindr_lep2_jet",
-			#"mindr_tau1_jet",
-			#"mindr_tau2_jet",
 			"mindr_tau_jet",
-			#"avg_dr_jet",
-			#"avr_dr_lep_tau",
-			#"ptmiss",  #"htmiss",
-			#"dr_taus",
-			#"dr_leps",
-			#"min_dr_lep_tau",
 			"max_dr_lep_tau",
 			"is_OS",
-			#"nJet",
 			"nBJetLoose",
-			#"mbb_loose" #,"mbb_medium"
 			]
 
         if trainvar=="noHTT" and channel=="2l_2tau"  and bdtType=="evtLevelSUM_TTH_M" and all==False :
 			return [
 			"mTauTauVis", "cosThetaS_hadTau",
 			'tau1_pt','tau2_pt',
-			#"tau1_eta", #"tau2_eta",
-			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
 			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
 			"mindr_lep1_jet",
 			"mT_lep1", #"mT_lep2",
-			#"mindr_lep2_jet",
-			#"mindr_tau1_jet",
-			#"mindr_tau2_jet",
 			"mindr_tau_jet",
 			"avg_dr_jet",
 			"avr_dr_lep_tau",
-			#"ptmiss",  #"htmiss",
 			"dr_taus", #"dr_leps",
-			#"min_dr_lep_tau",
-			#"max_dr_lep_tau",
 			"is_OS",
-			#"nJet",
 			"nBJetLoose",
 			"mbb_loose"
 			]
@@ -588,23 +624,14 @@ def trainVars(all):
 			return [
 			"mTauTauVis", "cosThetaS_hadTau",
 			'tau1_pt','tau2_pt',
-			#"tau1_eta", #"tau2_eta",
-			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
 			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
 			"mindr_lep1_jet",
 			"mT_lep1", #"mT_lep2",
-			#"mindr_lep2_jet",
-			#"mindr_tau1_jet",
-			#"mindr_tau2_jet",
 			"mindr_tau_jet",
 			"avg_dr_jet",
 			"avr_dr_lep_tau",
-			#"ptmiss",  #"htmiss",
 			"dr_taus", #"dr_leps",
-			#"min_dr_lep_tau",
-			#"max_dr_lep_tau",
 			"is_OS",
-			#"nJet",
 			"nBJetLoose",
 			"mbb_loose"
 			]
@@ -613,36 +640,23 @@ def trainVars(all):
 			return [
 			"mTauTauVis", "cosThetaS_hadTau",
 			'tau1_pt','tau2_pt',
-			#"tau1_eta", #"tau2_eta",
-			#"lep1_conePt", #"lep1_eta", #"lep1_tth_mva",
 			"lep2_conePt", #"lep2_eta", #"lep2_tth_mva",
 			"mindr_lep1_jet",
 			"mT_lep1", #"mT_lep2",
-			#"mindr_lep2_jet",
-			#"mindr_tau1_jet",
-			#"mindr_tau2_jet",
 			"mindr_tau_jet",
 			"avg_dr_jet",
 			"avr_dr_lep_tau",
-			#"ptmiss",  #"htmiss",
 			"dr_taus", #"dr_leps",
-			#"min_dr_lep_tau",
-			#"max_dr_lep_tau",
 			"is_OS",
-			#"nJet",
 			"nBJetLoose",
 			"mbb_loose"
 			]
 
         if channel=="1l_2tau" and all==True :return [
-		#"lep_pt",
 		"lep_conePt", #
-		#"lep_eta",
-		#"lep_tth_mva",
 		"mindr_lep_jet", "mindr_tau1_jet", "mindr_tau2_jet",
 		"avg_dr_jet", "ptmiss",
 		"htmiss", "mT_lep",
-		#"tau1_mva", "tau2_mva",
 		"tau1_pt", "tau2_pt",
 		"tau1_eta", "tau2_eta",
 		"dr_taus",
@@ -655,10 +669,7 @@ def trainVars(all):
 		"costS_HadTop_tautau",
 		"costS_tau",
 		"mTauTauVis",
-		#"lumiScale",
 		"mvaOutput_hadTopTagger",
-		#'mvaOutput_Hj_tagger',# "mvaOutput_Hjj_tagger",
-		#"mvaOutput_hadTopTaggerWithKinFit",
 		"mT_lepHadTop", #
 		"mT_lepHadTopH",
 		"HadTop_pt","HadTop_eta",
@@ -696,60 +707,35 @@ def trainVars(all):
 	if trainvar=="noHTT" and channel=="1l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
 		'avg_dr_jet',
 		'dr_taus',
-		#'htmiss',
 		'ptmiss',
 		'lep_conePt',
 		'mT_lep',
 		'mTauTauVis',
 		'mindr_lep_jet',
 		'mindr_tau1_jet',
-		#'mindr_tau2_jet',
-		#'nJet',
-		#'dr_lep_tau_os',
 		'dr_lep_tau_ss',
-		#"dr_lep_tau_lead",
 		"dr_lep_tau_sublead",
 		"costS_tau",
-		#"dr_HadTop_tau_OS",
-		#"dr_HadTop_tau_SS",
-		#"tau1_eta",
-		#"tau2_eta"
-		#"mT_lepHadTop",
-		#"mT_lepHadTopH",
-		#'nBJetLoose',
 		"tau1_pt",
 		"tau2_pt"
 		]
 
 	if trainvar=="HTTMVAonlyWithKinFit" and channel=="1l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
-		#"lep_pt",
 		"lep_conePt", #"lep_eta", #"lep_tth_mva",
 		"mindr_lep_jet", #"mindr_tau1_jet",
 		"mindr_tau2_jet",
 		"avg_dr_jet", #"ptmiss",
 		"mT_lep", #"htmiss", #"tau1_mva", "tau2_mva",
-		#"tau1_pt",
 		"tau2_pt",
-		#"tau1_eta", "tau2_eta",
 		"dr_taus", #"dr_lep_tau_os",
 		"dr_lep_tau_ss", #"dr_lep_tau_lead", #"dr_lep_tau_sublead",
-		#"costS_tau",
 		"mTauTauVis",
-		#"lumiScale", "genWeight", "evtWeight",
-		#"mT_lepHadTop" ,
-		#"mT_lepHadTopH",
-		#"HadTop_pt", #"HadTop_eta",
-		#"dr_lep_HadTop",
-		#"dr_HadTop_tau_OS", #"dr_HadTop_tau_SS",
 		"dr_HadTop_tau_lead", #"dr_HadTop_tau_sublead",
-		#"dr_HadTop_tautau",
-		#"dr_HadTop_lepton",
 		"mass_HadTop_lepton", #"costS_HadTop_tautau",
 		"mvaOutput_hadTopTaggerWithKinFit" #"mvaOutput_hadTopTagger",
 		]
 
 	if trainvar=="HTTMVAonlyWithKinFitLepID" and channel=="1l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
-		#"lep_pt",
 		"lep_conePt", #"lep_eta",
 		"lep_tth_mva",
 		"mindr_lep_jet", #"mindr_tau1_jet",
@@ -757,23 +743,11 @@ def trainVars(all):
 		"avg_dr_jet", #"ptmiss",
 		"mT_lep", #"htmiss", #
 		"tau1_mva", "tau2_mva",
-		#"tau1_pt",
 		"tau2_pt",
-		#"tau1_eta", "tau2_eta",
 		"dr_taus", #"dr_lep_tau_os",
 		"dr_lep_tau_ss", #"dr_lep_tau_lead", #"dr_lep_tau_sublead",
-		#"costS_tau",
 		"mTauTauVis",
-		#"lumiScale", "genWeight", "evtWeight",
-		#"mT_lepHadTop" ,
-		#"mT_lepHadTopH",
-		#"HadTop_pt", #"HadTop_eta",
-		#"dr_lep_HadTop",
-		#"dr_HadTop_tau_OS", #"dr_HadTop_tau_SS",
 		"dr_HadTop_tau_lead", #"dr_HadTop_tau_sublead",
-		#"dr_HadTop_tautau",
-		#"dr_HadTop_lepton",
-		#"mass_HadTop_lepton", #"costS_HadTop_tautau",
 		"mvaOutput_hadTopTaggerWithKinFit" #"mvaOutput_hadTopTagger",
 		]
 
@@ -791,30 +765,19 @@ def trainVars(all):
 	if trainvar=="noHTT" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
 		'avg_dr_jet',
 		'dr_taus',
-		#'htmiss',
 		'ptmiss',
-		#'lep_conePt',
 		'mT_lep',
 		"nJet",
 		'mTauTauVis',
 		'mindr_lep_jet',
 		'mindr_tau1_jet',
 		'mindr_tau2_jet',
-		#'nJet',
-		#'dr_lep_tau_os',
-		#'dr_lep_tau_ss',
 		"dr_lep_tau_lead",
-		#"dr_lep_tau_sublead",
 		"costS_tau",
-		#"dr_HadTop_tau_OS",
-		#"dr_HadTop_tau_SS",
-		#"mT_lepHadTop",
-		#"mT_lepHadTopH",
 		'nBJetLoose',
 		"tau1_pt",
 		"tau2_pt"
 		]
-
 
 	if trainvar=="HTTMVAonlyWithKinFit" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
 				'avg_dr_jet',
@@ -830,42 +793,31 @@ def trainVars(all):
 				"dr_lep_tau_lead",
 				"costS_tau",
 				'mvaOutput_hadTopTaggerWithKinFit',
-				#"mT_lepHadTop",
 				"mT_lepHadTopH"
 		]
 
 	if trainvar=="HTTMVAonlyNoKinFitLepID" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
 				'avg_dr_jet',
-				#'dr_taus',
 				'htmiss',
-				#'ptmiss',
-				#'lep_conePt',
 				'mT_lep',
 				'mTauTauVis',
 				'mindr_lep_jet',
 				'mindr_tau1_jet',
 				'nJet',
 				'dr_lep_tau_ss',
-				#"dr_lep_tau_lead",
 				"costS_tau",
 				'mvaOutput_hadTopTaggerWithKinFit',
-				#"mT_lepHadTop",
-				#"mT_lepHadTopH",
 				'lep_tth_mva',
 				'tau1_mva',
 				'tau2_mva',
-				#'HadTop_pt',
 				"tau1_pt",
 				"tau2_pt",
-				#"dr_HadTop_tau_lead"
 		]
 
 	if trainvar=="HTTMVAonlyWithKinFit" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH"  and all==False :return [
 				'avg_dr_jet',
 				'dr_taus',
-				#'ptmiss',
 				'htmiss',
-				#'lep_conePt',
 				'mT_lep',
 				'mTauTauVis',
 				'mindr_lep_jet',
@@ -874,7 +826,7 @@ def trainVars(all):
 				'dr_lep_tau_ss',
 				"dr_lep_tau_lead",
 				"costS_tau",
-                'mvaOutput_hadTopTaggerWithKinFit',
+				'mvaOutput_hadTopTaggerWithKinFit',
 				'nBJetLoose',
 				"tau1_pt",
 				"tau2_pt"
@@ -883,120 +835,74 @@ def trainVars(all):
 	if trainvar=="HTT" and channel=="1l_2tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
-						#'htmiss',
 						'ptmiss',
 						'lep_conePt',
 						'mT_lep',
 						'mTauTauVis',
 						'mindr_lep_jet',
 						'mindr_tau1_jet',
-						#'mindr_tau2_jet',
-						#'nJet',
-						#'dr_lep_tau_os',
 						'dr_lep_tau_ss',
-						#"dr_lep_tau_lead",
 						"dr_lep_tau_sublead",
 						"costS_tau",
-						#"dr_HadTop_tau_OS",
-						#"dr_HadTop_tau_SS",
-						#"mT_lepHadTop",
-						#"mT_lepHadTopH",
-						#'nBJetLoose',
 						"tau1_pt",
 						"tau2_pt",
 						'mvaOutput_hadTopTaggerWithKinFit',
-						#'HadTop_pt',
-						#"dr_HadTop_tau_lead",
-						#"mvaOutput_Hj_tagger",
-						#'mvaOutput_Hjj_tagger',
 		]
 
 	if trainvar=="HTT" and channel=="1l_2tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
-						#'htmiss',
 						'ptmiss',
-						#'lep_conePt',
 						'mT_lep',
 						"nJet",
 						'mTauTauVis',
 						'mindr_lep_jet',
 						'mindr_tau1_jet',
 						'mindr_tau2_jet',
-						#'nJet',
-						#'dr_lep_tau_os',
-						#'dr_lep_tau_ss',
 						"dr_lep_tau_lead",
-						#"dr_lep_tau_sublead",
 						"costS_tau",
-						#"dr_HadTop_tau_OS",
-						#"dr_HadTop_tau_SS",
-						#"mT_lepHadTop",
-						#"mT_lepHadTopH",
 						'nBJetLoose',
 						"tau1_pt",
 						"tau2_pt",
 						'mvaOutput_hadTopTaggerWithKinFit',
 						'HadTop_pt',
-						#"dr_HadTop_tau_lead",
 						"mvaOutput_Hj_tagger",
-						#'mvaOutput_Hjj_tagger',
 		]
 
 	if trainvar=="HTT" and channel=="1l_2tau"  and 'evtLevelSUM_TTH' in bdtType and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
-						#'htmiss',
 						'ptmiss',
 						'lep_conePt',
 						'mT_lep',
-						#"nJet",
 						'mTauTauVis',
 						'mindr_lep_jet',
 						'mindr_tau1_jet',
 						'mindr_tau2_jet',
-						#'nJet',
-						#'dr_lep_tau_os',
 						'dr_lep_tau_ss',
 						"dr_lep_tau_lead",
-						#"dr_lep_tau_sublead",
 						"costS_tau",
-						#"dr_HadTop_tau_OS",
-						#"dr_HadTop_tau_SS",
-						#"mT_lepHadTop",
-						#"mT_lepHadTopH",
 						'nBJetLoose',
 						"tau1_pt",
 						"tau2_pt",
 						'mvaOutput_hadTopTaggerWithKinFit',
 						'HadTop_pt',
-						#"dr_HadTop_tau_lead",
-						"mvaOutput_Hj_tagger",
-						#'mvaOutput_Hjj_tagger',
 	]
 
 	if trainvar=="noHTT" and channel=="1l_2tau" and 'evtLevelSUM_TTH' in bdtType and all==False :return [
 						'avg_dr_jet',
 						'dr_taus',
-						#'htmiss',
 						'ptmiss',
 						'lep_conePt',
 						'mT_lep',
-						#"nJet",
 						'mTauTauVis',
 						'mindr_lep_jet',
 						'mindr_tau1_jet',
 						'mindr_tau2_jet',
 						'nJet',
-						#'dr_lep_tau_os',
 						'dr_lep_tau_ss',
 						"dr_lep_tau_lead",
-						#"dr_lep_tau_sublead",
 						"costS_tau",
-						#"dr_HadTop_tau_OS",
-						#"dr_HadTop_tau_SS",
-						#"mT_lepHadTop",
-						#"mT_lepHadTopH",
 						'nBJetLoose',
 						"tau1_pt",
 						"tau2_pt",
@@ -1022,34 +928,19 @@ def trainVars(all):
 		]
 
         if trainvar=="noHTT" and channel=="3l_1tau"  and bdtType=="evtLevelTTV_TTH" and all==False :return [
-			#"lep1_pt",
 			"lep1_conePt", "lep2_conePt", #"lep1_eta",  "lep2_eta", #"lep1_tth_mva",
 			"mindr_lep1_jet",  #"dr_lep1_tau",
-			#"lep2_pt", "lep2_tth_mva",
 			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
-			#"lep3_pt",
-			#"lep3_conePt",
-			#"lep3_eta", #"lep3_tth_mva",
-			#"mindr_lep3_jet", #"mT_lep3", #"dr_lep3_tau",
-			#"mindr_tau_jet",
 			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
 			"tau_pt", #"tau_eta",
 			"dr_leps",
 			"mTauTauVis1", "mTauTauVis2",
-			#"mbb_loose", #"mbb_medium", #"dr_tau_los1", "dr_tau_los2",
-			#"dr_tau_lss", #"dr_lss",
-			#"dr_los1", "dr_los2",
-			#"nJet", #"nBJetLoose", #"nBJetMedium",
 			]
 
         if trainvar=="noHTT" and channel=="3l_1tau"  and bdtType=="evtLevelTT_TTH" and all==False :return [
-			#"lep1_conePt", #"lep2_conePt", #"lep1_eta",  "lep2_eta", #"lep1_tth_mva",
 			"mindr_lep1_jet",  #"dr_lep1_tau",
-			#"lep2_pt", "lep2_tth_mva",
 			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
-			#"lep3_pt",
 			"lep3_conePt",
-			#"lep3_eta", #"lep3_tth_mva",
 			"mindr_lep3_jet", #"mT_lep3", #"dr_lep3_tau",
 			"mindr_tau_jet",
 			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
@@ -1057,36 +948,26 @@ def trainVars(all):
 			"dr_leps",
 			"mTauTauVis1", "mTauTauVis2",
 			"mbb_loose", #"mbb_medium", #"dr_tau_los1", "dr_tau_los2",
-			#"dr_tau_lss", #"dr_lss",
-			#"dr_los1", "dr_los2",
-			#"nJet", "nBJetLoose", #"nBJetMedium",
 			]
 
         if trainvar=="noHTT" and channel=="3l_1tau"  and "evtLevelSUM_TTH" in bdtType and all==False :return [
 			"lep1_conePt", "lep2_conePt", #"lep1_eta",  "lep2_eta", #"lep1_tth_mva",
 			"mindr_lep1_jet",  #"dr_lep1_tau",
-			#"lep2_pt", "lep2_tth_mva",
-			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
-			#"lep3_pt",
-			"lep3_conePt",
-			#"lep3_eta", #"lep3_tth_mva",
-			"mindr_lep3_jet", #"mT_lep3", #"dr_lep3_tau",
+			"max_lep_eta", #"dr_lep2_tau",
 			"mindr_tau_jet",
-			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
+			"ptmiss",  #"htmiss", "tau_mva",
 			"tau_pt", #"tau_eta",
 			"dr_leps",
 			"mTauTauVis1", "mTauTauVis2",
 			"mbb_loose", #"mbb_medium", #"dr_tau_los1", "dr_tau_los2",
-			#"dr_tau_lss", #"dr_lss",
-			#"dr_los1", "dr_los2",
-			#"nJet", "nBJetLoose", #"nBJetMedium",
+			"nJet", #"nBJetLoose", #"nBJetMedium",
 			]
 
 ####################################################################################################
 ## Load data
-data=load_data(inputPath,channelInTree,trainVars(False),[],testtruth,bdtType)
-dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(False),[],testtruth,bdtType)
-doFS=True
+data=load_data(inputPath,channelInTree,trainVars(True),[],testtruth,bdtType)
+dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(True),[],testtruth,bdtType)
+doFS=False
 if doFS : dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeFS,trainVars(True),[],testtruth,"all")
 if doFS2 : dataTightFS2=load_data_fullsim(inputPathTightFS2,channelInTreeFS2,trainVars(True),[],testtruth,"all")
 weights="totalWeight"
@@ -1164,10 +1045,20 @@ if channel=="3l_1tau" and 'evtLevelSUM_TTH' in bdtType :
 	fastsimTTVtight=6.0
 	# balance backgrounds
 	if bdtType=="evtLevelSUM_TTH_M" :
-		TTdatacard=3.78+0.24
-		TTVdatacard=4.42
-		TTfullsim=1.07
-		TTVfullsim=1.0
+		TTdatacard=1.08396
+		TTVdatacard=0.259286+3.5813
+		TTfullsim=0.59
+		TTVfullsim=0.24+2.48
+	if bdtType=="evtLevelSUM_TTH_T" :
+		TTdatacard=0.60
+		TTVdatacard=0.15+2.90
+		TTfullsim=0.59
+		TTVfullsim=0.24+2.48
+	if bdtType=="evtLevelSUM_TTH_VT" :
+		TTdatacard=0.42
+		TTVdatacard=0.08+2.36
+		TTfullsim=0.59
+		TTVfullsim=0.24+2.48
 else :
 	TTdatacard=1.0
 	TTVdatacard=1.0
@@ -1591,3 +1482,5 @@ if options.HypOpt==False :
 			#plt.subplots_adjust(left=0.9, right=0.9, top=0.9, bottom=0.1)
 			plt.savefig("{}/{}_{}_{}_corr_{}_FS.pdf".format(channel,bdtType,trainvar,str(len(trainVars(False))),label))
 			ax.clear()
+process = psutil.Process(os.getpid())
+print(process.memory_info().rss)
