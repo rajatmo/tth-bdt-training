@@ -412,7 +412,7 @@ def make_plots(
         min_value2, max_value2 = np.percentile(data2[feature], [0.0, 99])
         if printmin : print (min_value, max_value,feature)
         values1, bins, _ = plt.hist(data1[feature].values, weights= data1[weights].values.astype(np.float64) ,
-                                   range=(min(min_value,min_value2), max(max_value,max_value2)),
+                                   range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), #  0.5 ),#
                                    bins=nbin, edgecolor=color1, color=color1,
                                    label=label1, **hist_params )
         if drawStatErr:
@@ -420,11 +420,12 @@ def make_plots(
             mid = 0.5*(bins[1:] + bins[:-1])
             err=np.sqrt(values1*normed)/normed # denominator is because plot is normalized
             plt.errorbar(mid, values1, yerr=err, fmt='none', color= color1, ecolor= color1, edgecolor=color1, lw=2)
-        values2, bins, _ = plt.hist(data2[feature].values, weights= data2[weights].values.astype(np.float64) ,
-                                   range=(min(min_value,min_value2), max(max_value,max_value2)),
+        if 1>0 : #'gen' not in feature:
+            values2, bins, _ = plt.hist(data2[feature].values, weights= data2[weights].values.astype(np.float64) ,
+                                   range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), # 0.5 ),#
                                    bins=nbin, edgecolor=color2, color=color2,
                                    label=label2, **hist_params)
-        if drawStatErr:
+        if drawStatErr and 'gen' not in feature:
             normed = sum(data2[feature].values)
             mid = 0.5*(bins[1:] + bins[:-1])
             err=np.sqrt(values2*normed)/normed # denominator is because plot is normalized
@@ -618,7 +619,7 @@ def doStackPlot(hTT,hTTH,hTTW,hEWK,hRares,name,label):
     print ("saved",name+".pdf")
 
 def finMaxMin(histSource) :
-    file = TFile(source+".root","READ");
+    file = TFile(histSource+".root","READ");
     file.cd()
     hSum = TH1F()
     for keyO in file.GetListOfKeys() :
@@ -968,3 +969,57 @@ def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget):
     print (shapeVariable,central)
     #print do1
     return [central,do1,do2,up1,up2]
+
+def evaluateFOM(clf,keys,features,tag,train,test,nBdeplet,nB,nS,f_score_dicts,datatest):
+    #datatest=pandas.read_csv('structured/'+process+'_Structured_from_20000sig_1.csv')
+    #datatest['pT_b_o_kinFit_pT_b']=datatest['pT_b']/datatest['kinFit_pT_b']
+    #datatest['pT_Wj2_o_kinFit_pT_Wj2']=datatest['pT_Wj2']/datatest['kinFit_pT_Wj2']
+    #datatest['pT_Wj1_o_kinFit_pT_Wj1']=datatest['pT_Wj1']/datatest['kinFit_pT_Wj1']
+    #datatest['cosTheta_leadEWj_restTop'] = datatest['cosTheta_leadEWj_restTop'].abs()
+    # make angles abs
+    countTruth=0
+    countEvt=0
+    countHadTruth=0
+    print ("events raw: ",int(datatest["counter"].min()),int(datatest["counter"].max()))
+    for ii in  np.unique(data["counter"].values):   #range(int(datatest["counter"].min(axis=0)),int(datatest["counter"].max())) :
+        if countEvt > 20000 : continue
+        #print ii
+        row=datatest.loc[datatest["counter"].values == ii]
+        if len(row)>0 :
+            countEvt=countEvt+1
+            row=datatest.loc[datatest["counter"].values == ii]
+            proba = clf.predict_proba(row[features].values)
+            if proba[:,1].sum() > 0 : countHadTruth = countHadTruth + 1
+            max= np.argmax(proba[:,1] )
+            if row["bWj1Wj2_isGenMatched"].iloc[max] == 1 : countTruth=countTruth+1
+    print ("process"+\
+    			" truthRatio(%)"+\
+    			" hyp Nfeat"+\
+    			" trainROC testROC ratioROC"+\
+    			" nB nBdeplet nS"+\
+    			" variables"+\
+    			" totEvt"+\
+    			" EvtThruth")
+    print (str(process)+\
+        #" "+str(round(100*float(countTruth)/float(countEvt), 2))+\
+        #" "+trainvar+" "+str(len(features))+\
+        #" "+str(train)+" "+str(test)+" "+str(round(100.0*float(test)/train,2))+\
+        #" "+str(nB)+" "+str(nBdeplet)+" "+str(nS)+\
+        #" "+str(f_score_dicts)+\
+        " "+str(countEvt)+\
+        " "+str(countHadTruth)+\
+        " "+str(countTruth))
+    file = open(channel+'/'+keys+'_in_'+'_tag_'+tag+'_XGB_FOM'+'_nvar'+str(len(features))+'.txt',"w")
+    file.write(
+    			" "+str(round(100*float(countTruth)/float(countEvt), 2))+\
+    			" "+trainvar+" "+str(len(features))+\
+    			" "+str(train)+" "+str(test)+" "+str(round(100.0*float(test)/train,2))+\
+    			" "+str(nB)+" "+str(nBdeplet)+" "+str(nS)+\
+    			" "+str(f_score_dicts)+\
+    			" "+str(countEvt)+\
+                " "+str(countHadTruth)+\
+    			" "+str(countTruth)
+    			)
+    file.close()
+    print ("Date: ", time.asctime( time.localtime(time.time()) ))
+####################################################################################################
