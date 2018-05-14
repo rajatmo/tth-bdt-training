@@ -399,7 +399,7 @@ def make_plots(
     printmin,
     plotResiduals
     ) :
-    hist_params = {'normed': True, 'histtype': 'bar', 'fill': True , 'lw':3, 'alpha':0.3}
+    hist_params = {'normed': True, 'histtype': 'bar', 'fill': True , 'lw':3}
     sizeArray=int(math.sqrt(len(featuresToPlot))) if math.sqrt(len(featuresToPlot)) % int(math.sqrt(len(featuresToPlot))) == 0 else int(math.sqrt(len(featuresToPlot)))+1
     drawStatErr=True
     residuals=[]
@@ -412,8 +412,9 @@ def make_plots(
         min_value2, max_value2 = np.percentile(data2[feature], [0.0, 99])
         if printmin : print (min_value, max_value,feature)
         values1, bins, _ = plt.hist(data1[feature].values, weights= data1[weights].values.astype(np.float64) ,
-                                   range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), #  0.5 ),#
-                                   bins=nbin, edgecolor=color1, color=color1,
+                                   #range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), #  0.5 ),#
+                                   range=(min(min_value,min_value2),  max(max_value,max_value2)), #  0.5 ),#
+                                   bins=nbin, edgecolor=color1, color=color1, alpha = 0.4,
                                    label=label1, **hist_params )
         if drawStatErr:
             normed = sum(data1[feature].values)
@@ -422,10 +423,11 @@ def make_plots(
             plt.errorbar(mid, values1, yerr=err, fmt='none', color= color1, ecolor= color1, edgecolor=color1, lw=2)
         if 1>0 : #'gen' not in feature:
             values2, bins, _ = plt.hist(data2[feature].values, weights= data2[weights].values.astype(np.float64) ,
-                                   range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), # 0.5 ),#
-                                   bins=nbin, edgecolor=color2, color=color2,
+                                   #range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), # 0.5 ),#
+                                   range=(min(min_value,min_value2),  max(max_value,max_value2)), # 0.5 ),#
+                                   bins=nbin, edgecolor=color2, color=color2, alpha = 0.3,
                                    label=label2, **hist_params)
-        if drawStatErr and 'gen' not in feature:
+        if drawStatErr :
             normed = sum(data2[feature].values)
             mid = 0.5*(bins[1:] + bins[:-1])
             err=np.sqrt(values2*normed)/normed # denominator is because plot is normalized
@@ -456,6 +458,61 @@ def make_plots(
             print feature+' '+r'mu=%.3f, sig=%.3f$' %(mu, sigma)
         plt.savefig(channel+"/"+bdtType+"_"+trainvar+"_Variables_Signal_fullsim_residuals.pdf")
         plt.clf()
+
+def make_plots_gen(
+    featuresToPlot,nbin,
+    data1,label1,color1,
+    plotname,
+    printmin
+    ) :
+    hist_params = {'histtype': 'bar', 'fill': True , 'lw':3, 'alpha':0.3}
+    sizeArray=int(math.sqrt(len(featuresToPlot))) if math.sqrt(len(featuresToPlot)) % int(math.sqrt(len(featuresToPlot))) == 0 else int(math.sqrt(len(featuresToPlot)))+1
+    drawStatErr=True
+    residuals=[]
+    plt.figure(figsize=(4*sizeArray, 4*sizeArray))
+    for n in range(0,3):
+        # add sub plot on our figure
+        plt.subplot(sizeArray, sizeArray, n+1)
+        # define range for histograms by cutting 1% of data from both ends
+        min_value, max_value = [50,250] #np.percentile(data1[feature], [0.0, 99])
+        min_value2, max_value2 = [50,250] #np.percentile(data2[feature], [0.0, 99])
+        #if printmin : print (min_value, max_value,feature)
+        values1, bins, _ = plt.hist(
+                                   [data1[featuresToPlot[n]].values, data1[featuresToPlot[n+3]].values],
+                                   #weights= data1[weights].values.astype(np.float64) ,
+                                   range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), #  0.5 ),#
+                                   bins=nbin, #edgecolor=[color1,color1], color=[color1,color1],
+                                   stacked=True,
+                                   label="Top", **hist_params )
+        plt.ylim(ymin=0.00001)
+        if n == 2 : plt.legend(loc='best')
+        plt.xlabel(featuresToPlot[n])
+        #plt.xscale('log')
+        #plt.yscale('log')
+    plt.ylim(ymin=0)
+    plt.savefig(plotname)
+    plt.clf()
+
+def make_plots_genpt(data1,label1,color1, plotname) :
+    # plot eff / genPt bins
+    datax = []
+    datay = []
+    binsGenPt = [0, 50, 100, 150, 200, 250, 300, 350 , 400 , 500 , 600 , 700 , 800]
+    for ii in range(0,len(binsGenPt)-1) :
+        numerator = float((data1.loc[(data["genTopPt"] > binsGenPt[ii]) & (data["genTopPt"] <= binsGenPt[ii+1]) & (data[target]==1)]['weights'].sum()))
+        denominator = float((data1.loc[(data["genTopPt"] > binsGenPt[ii]) & (data["genTopPt"] <= binsGenPt[ii+1]) & (data["hadtruth"] > 0)]['weights'].sum())) if numerator > 0 else 1.
+        print (ii,binsGenPt[ii],binsGenPt[ii+1], numerator, denominator, numerator/denominator)
+        datay.append(numerator/denominator)
+        datax.append(binsGenPt[ii])
+    plt.step(datax, datay, lw = 3 , color = color1)
+    plt.ylabel("Accuracy", fontsize=20)
+    plt.xlabel('genTop '+r'$\mathbf{\mathrm{p_T}}$'+' (GeV)', fontsize=20)
+    plt.ylim(0, 1.45)
+    plt.text(25, 1.35, 'CMS', style='normal', fontsize=25, fontweight='bold')
+    plt.text(25, 1.25, 'Preliminary', fontsize=23, style='italic')
+    plt.text(575, 1.48, '(13 TeV)', fontsize=20) # 35.9 fb$^{-1}$
+    plt.savefig(plotname)
+    plt.clf()
 
 def load_data_xml (dataIn) :
     data=dataIn
