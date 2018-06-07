@@ -22,10 +22,10 @@ parser.add_option("--uni", type="string", dest="uni", help="  Set of variables t
 (options, args) = parser.parse_args()
 
 doLimits = True
-doImpacts = True
-doYields = True
-doGOF = False ## not working
-doPlots = True
+doImpacts = False
+doYields = False
+doGOF = True
+doPlots = False
 
 channel = options.channel
 university = options.uni
@@ -169,14 +169,17 @@ for nn, card in enumerate(cards) :
             run_cmd('plotImpacts.py -i impacts.json -o  impacts')
             run_cmd('mv impacts.pdf '+mom+local+'impacts_'+channels[nn]+"_"+university+'.pdf')
 
-        if doGOF : ### not working
+        if doGOF :
             run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn], my_file, datacardFile_output))
-            run_cmd('combine -M FitDiagnostics -d %s  -t -1' % (txtFile))
-            run_cmd('python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root')
-            run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated' % (datacardFile_output))
-            run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated  -n .saturated.toys -t 200 -s 0:4:1 --parallel 5' % (datacardFile_output))
-            run_cmd('combineTool.py -M CollectGoodnessOfFit --input higgsCombine.saturated.GoodnessOfFit.mH120.root higgsCombine.saturated.toys.GoodnessOfFit.mH120.*.root -o GoF_saturated.json')
+            run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 %s' % (txtFile))
+            run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 -t 1000 -s 12345  %s --saveToys --toysFreq' % (txtFile))
+            # the bellow work on CMSSW7X
+            #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated' % (datacardFile_output))
+            #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated  -n .saturated.toys -t 200 -s 0:4:1 --parallel 5' % (datacardFile_output))
+            run_cmd('combineTool.py -M CollectGoodnessOfFit --input higgsCombineTest.GoodnessOfFit.mH120.root higgsCombineTest.GoodnessOfFit.mH120.12345.root -o GoF_saturated.json')
             run_cmd('$CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plotGof.py --statistic saturated --mass 120.0 GoF_saturated.json -o GoF_saturated')
+            run_cmd('mv GoF_saturated.pdf '+mom+local+'GoF_saturated_'+channels[nn]+"_"+university+'.pdf')
+            run_cmd('mv GoF_saturated.png '+mom+local+'GoF_saturated_'+channels[nn]+"_"+university+'.png')
             run_cmd('rm higgsCombine*root')
 
         if doYields :
