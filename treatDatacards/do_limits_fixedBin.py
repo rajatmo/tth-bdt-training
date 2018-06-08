@@ -23,8 +23,8 @@ parser.add_option("--uni", type="string", dest="uni", help="  Set of variables t
 
 doLimits = True
 doImpacts = False
-doYields = False
-doGOF = True
+doYields = True
+doGOF = False
 doPlots = False
 
 channel = options.channel
@@ -104,7 +104,7 @@ print ("to run this script your CMSSW_base should be the one that CombineHaveste
 datacardToRun=[]
 for nn, card in enumerate(cards) :
     #if not channel == channels[nn] : continue
-    #if nn > 0 : continue
+    #if nn < 2 : continue
     my_file = mom+local+card_prefix+card+'.root'
     if os.path.exists(my_file) :
         print ("testing ", my_file)
@@ -158,6 +158,7 @@ for nn, card in enumerate(cards) :
             +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog[nn])+','+str(hasFlips[nn])+','+hasConversions[nn]+',\\"BDT\\",\\"\\",'+str(min[nn])+','+str(max[nn])+')')
             #root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\"2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M_11bins_quantiles\",\"2018jun02/\",\"2lss_1tau\",\"/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/\",false,false,\"BDT\",\"\",0.0,10.0)
             filesh.write(makeplots+ "\n")
+            print ("to have the plots take the makePlots command from: ",mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
 
         if doImpacts :
             run_cmd('combineTool.py  -M T2W -i %s' % (txtFile))
@@ -201,10 +202,12 @@ for nn, card in enumerate(cards) :
             rfr = mlf.Get('fit_s')
             print 'Pre-fit tables:'
             filey = open(mom+local+"yields_"+channels[nn]+"_"+university+".tex","w")
-            PrintTables(cmb, tuple(), 'ttH_'+channels[nn], filey, blinded=False)
+            PrintTables(cmb, tuple(), 'ttH_'+channels[nn], filey, university, channels[nn], blinded=False)
             #cmb.UpdateParameters(rfr) 'ttH_2l_2tau'
             #print 'Post-fit tables:\n\n'
             #PrintTables(cmb, (rfr, 500))
+            print ("the yields are on this file: ", mom+local+"yields_"+channels[nn]+"_"+university+".tex")
+
     else : print (my_file,"does not exist ")
     if doPlots : run_cmd("bash "+mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
 ################################################################

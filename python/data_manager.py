@@ -412,8 +412,8 @@ def make_plots(
         min_value2, max_value2 = np.percentile(data2[feature], [0.0, 99])
         if printmin : print (min_value, max_value,feature)
         values1, bins, _ = plt.hist(data1[feature].values, weights= data1[weights].values.astype(np.float64) ,
-                                   #range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), #  0.5 ),#
-                                   range=(min(min_value,min_value2),  max(max_value,max_value2)), #  0.5 ),#
+                                   range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), #  0.5 ),#
+                                   #range=(min(min_value,min_value2),  max(max_value,max_value2)), #  0.5 ),#
                                    bins=nbin, edgecolor=color1, color=color1, alpha = 0.4,
                                    label=label1, **hist_params )
         if drawStatErr:
@@ -423,8 +423,8 @@ def make_plots(
             plt.errorbar(mid, values1, yerr=err, fmt='none', color= color1, ecolor= color1, edgecolor=color1, lw=2)
         if 1>0 : #'gen' not in feature:
             values2, bins, _ = plt.hist(data2[feature].values, weights= data2[weights].values.astype(np.float64) ,
-                                   #range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), # 0.5 ),#
-                                   range=(min(min_value,min_value2),  max(max_value,max_value2)), # 0.5 ),#
+                                   range=(max(min(min_value,min_value2),0),  max(max_value,max_value2)), # 0.5 ),#
+                                   #range=(min(min_value,min_value2),  max(max_value,max_value2)), # 0.5 ),#
                                    bins=nbin, edgecolor=color2, color=color2, alpha = 0.3,
                                    label=label2, **hist_params)
         if drawStatErr :
@@ -875,7 +875,8 @@ def rebinRegular(histSource,nbin, BINtype,originalBinning,doplots,variables,bdtT
         if BINtype=="ranged" : name=histSource+"_"+str(nbins)+"bins_ranged.root"
         if BINtype=="quantiles" :
             name=histSource+"_"+str(nbins)+"bins_quantiles.root"
-            nbinsQuant=getQuantiles(hFakes,nbins,xmax) # nbins+1 if first quantile is zero (hSumAll,nbins,xmax) #
+            nbinsQuant= getQuantiles(hFakes,nbins,xmax) # getQuantiles(hSumAll,nbins,xmax) ## nbins+1 if first quantile is zero
+            print ("Bins by quantiles",nbins,nbinsQuant)
             xmaxLbin=xmaxLbin+[nbinsQuant[nbins-2]]
         fileOut  = TFile(name, "recreate");
         hTTi = TH1F()
@@ -1080,3 +1081,73 @@ def evaluateFOM(clf,keys,features,tag,train,test,nBdeplet,nB,nS,f_score_dicts,da
     file.close()
     print ("Date: ", time.asctime( time.localtime(time.time()) ))
 ####################################################################################################
+
+def run_cmd(command):
+  print "executing command = '%s'" % command
+  p = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+  stdout, stderr = p.communicate()
+  print stderr
+  return stdout
+
+###########################################################
+# doYields
+
+def AddSystQuad2(a,b):
+    a2 = math.pow(a, 2.)
+    b2 = math.pow(b, 2.)
+    x  = a2 + b2
+    quad =  math.sqrt(x)
+    return quad
+
+def AddSystQuad4(a,b,c,d):
+    a2 = math.pow(a, 2.)
+    b2 = math.pow(b, 2.)
+    c2 = math.pow(c, 2.)
+    d2 = math.pow(d, 2.)
+    x  = a2 + b2 + c2 + d2
+    quad =  math.sqrt(x)
+    return quad
+
+def AddSystQuad7(a,b,c,d,e,f,g):
+    a2 = math.pow(a, 2.)
+    b2 = math.pow(b, 2.)
+    c2 = math.pow(c, 2.)
+    d2 = math.pow(d, 2.)
+    e2 = math.pow(e, 2.)
+    f2 = math.pow(f, 2.)
+    g2 = math.pow(g, 2.)
+    x  = a2 + b2 + c2 + d2 + e2 + f2 + g2
+    quad =  math.sqrt(x)
+    return quad
+
+def PrintTables(cmb, uargs, label, filey, uni, channel, blinded):
+    c_2l_2tau = cmb.cp().bin([label])
+
+    filey.write(r"""
+\begin{tabular}{|l|r@{$ \,\,\pm\,\, $}l|}
+\hline
+Process & \multicolumn{2}{c|}{2l_2tau} \\
+\hline
+\hline"""+"\n")
+    filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hzz']).GetRate(), c_2l_2tau.cp().process(['ttH_hzz']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww']).GetRate(), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow \tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt']).GetRate(), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK']).GetRate(), c_2l_2tau.cp().process(['EWK']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ']).GetRate(), c_2l_2tau.cp().process(['TTZ']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW']).GetRate(), c_2l_2tau.cp().process(['TTW']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Rares']).GetRate(), c_2l_2tau.cp().process(['Rares']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'Fakes  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['fakes_data']).GetRate(), c_2l_2tau.cp().process(['fakes_data']).GetUncertainty(*uargs))+"\n")
+    if uni == "Tallinn" :
+        filey.write(r'Conversions  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['conversions']).GetRate(), c_2l_2tau.cp().process(['conversions']).GetUncertainty(*uargs))+"\n")
+    if uni == "Cornell" :
+        filey.write(r'Conversions  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Conversion']).GetRate(), c_2l_2tau.cp().process(['Conversion']).GetUncertainty(*uargs))+"\n")
+    if channel == "2lss_1tau" :
+        filey.write(r'Flips  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['flips_data']).GetRate(), c_2l_2tau.cp().process(['flips_data']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'Total Expected background    & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().backgrounds().GetRate(), c_2l_2tau.cp().backgrounds().GetUncertainty(*uargs))+"\n")
+    filey.write(r'SM expectation                        & $%.2f$ & $%.2f$ \\' % (
+        c_2l_2tau.cp().backgrounds().GetRate() + c_2l_2tau.cp().process(['ttH_htt']).GetRate() + c_2l_2tau.cp().process(['ttH_hww']).GetRate() + c_2l_2tau.cp().process(['ttH_hzz']).GetRate() , AddSystQuad4( c_2l_2tau.cp().backgrounds().GetUncertainty(*uargs), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_hzz']).GetUncertainty(*uargs)) )+"\n")
+    filey.write(r'\hline'+"\n")
+    if blinded : filey.write(r'Observed data & \multicolumn{2}{c|}{$-$} \\'+"\n")
+    else : filey.write(r'Observed data & \multicolumn{2}{c|}{$%g$} \\' % (c_2l_2tau.cp().GetObservedRate())+"\n")
+    filey.write(r"""\hline
+\end{tabular}"""+"\n")
