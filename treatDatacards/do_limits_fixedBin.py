@@ -66,6 +66,13 @@ channels = [
 "3l_1tau"
 ]
 
+wdata = [
+"",
+"_FRjt_syst",
+"",
+"_FRjt_syst"
+]
+
 dolog = [
 "true",
 "false",
@@ -115,7 +122,7 @@ for nn, card in enumerate(cards) :
         # make txt datacard
         datacard_file=my_file
         datacardFile_output = mom+local+"ttH_"+card+".root"
-        run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn], my_file, datacardFile_output))
+        run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
 
         #
         txtFile = datacardFile_output.replace(".root", ".txt")
@@ -148,7 +155,7 @@ for nn, card in enumerate(cards) :
             run_cmd('mv impacts.pdf '+mom+local+'impacts_'+channels[nn]+"_"+university+'.pdf')
 
         if doGOF :
-            run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn], my_file, datacardFile_output))
+            run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
             run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 %s' % (txtFile))
             run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 -t 1000 -s 12345  %s --saveToys --toysFreq' % (txtFile))
             # the bellow work on CMSSW7X
@@ -162,7 +169,7 @@ for nn, card in enumerate(cards) :
 
         if doYields :
             # fitDiagnostics.root
-            run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn], my_file, datacardFile_output))
+            run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
             run_cmd('combine -M FitDiagnostics -d %s  -t -1' % (txtFile))
             run_cmd('python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root')
             run_cmd('combineTool.py  -M T2W -i %s' % (txtFile))
