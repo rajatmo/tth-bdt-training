@@ -1129,14 +1129,24 @@ def PrintTables(cmb, uargs, label, filey, uni, channel, blinded):
 Process & \multicolumn{2}{c|}{2l_2tau} \\
 \hline
 \hline"""+"\n")
-    filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hzz']).GetRate(), c_2l_2tau.cp().process(['ttH_hzz']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww']).GetRate(), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow \tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt']).GetRate(), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK']).GetRate(), c_2l_2tau.cp().process(['EWK']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ']).GetRate(), c_2l_2tau.cp().process(['TTZ']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW']).GetRate(), c_2l_2tau.cp().process(['TTW']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTWW']).GetRate(), c_2l_2tau.cp().process(['TTWW']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Rares']).GetRate(), c_2l_2tau.cp().process(['Rares']).GetUncertainty(*uargs))+"\n")
+    if channel == "2lss_1tau" or "3l_1tau":
+        filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hzz_faketau']).GetRate()+c_2l_2tau.cp().process(['ttH_hzz_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['ttH_hzz_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_hzz_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww_faketau']).GetRate()+c_2l_2tau.cp().process(['ttH_hww_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['ttH_hww_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_hww_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow\tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt_faketau']).GetRate()+c_2l_2tau.cp().process(['ttH_htt_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['ttH_htt_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_tt_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK_faketau']).GetRate()+c_2l_2tau.cp().process(['EWK_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['EWK_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['EWK_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ_faketau']).GetRate()+c_2l_2tau.cp().process(['TTZ_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['TTZ_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['TTZ_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW_faketau']).GetRate()+c_2l_2tau.cp().process(['TTW_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['TTW_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['TTW_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTWW_faketau']).GetRate()+c_2l_2tau.cp().process(['TTWW_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['TTWW_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['TTWW_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Rares_faketau']).GetRate()+c_2l_2tau.cp().process(['Rares_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['Rares_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['Rares_gentau']).GetUncertainty(*uargs)))+"\n")
+    else :
+        filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hzz']).GetRate(), c_2l_2tau.cp().process(['ttH_hzz']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww']).GetRate(), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'$\cPqt\cPaqt$H,H$\rightarrow \tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt']).GetRate(), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK']).GetRate(), c_2l_2tau.cp().process(['EWK']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ']).GetRate(), c_2l_2tau.cp().process(['TTZ']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW']).GetRate(), c_2l_2tau.cp().process(['TTW']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTWW']).GetRate(), c_2l_2tau.cp().process(['TTWW']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Rares']).GetRate(), c_2l_2tau.cp().process(['Rares']).GetUncertainty(*uargs))+"\n")
     filey.write(r'Fakes  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['fakes_data']).GetRate(), c_2l_2tau.cp().process(['fakes_data']).GetUncertainty(*uargs))+"\n")
     if uni == "Tallinn" :
         filey.write(r'Conversions  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['conversions']).GetRate(), c_2l_2tau.cp().process(['conversions']).GetUncertainty(*uargs))+"\n")

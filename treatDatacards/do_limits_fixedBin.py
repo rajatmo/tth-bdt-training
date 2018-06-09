@@ -21,11 +21,11 @@ parser.add_option("--channel ", type="string", dest="channel", help="The ones wh
 parser.add_option("--uni", type="string", dest="uni", help="  Set of variables to use -- it shall be put by hand in the code", default="Tallinn")
 (options, args) = parser.parse_args()
 
-doLimits = True
-doImpacts = True
+doLimits = False
+doImpacts = False
 doYields = False
-doGOF = False
-doPlots = True
+doGOF = True
+doPlots = False
 
 blinded=True
 #prepareDatacards_1l_2tau_mvaOutput_final.root  prepareDatacards_2lss_1tau_sumOS_mvaOutput_final.root
@@ -33,14 +33,14 @@ blinded=True
 channel = options.channel
 university = options.uni
 if university == "Tallinn":
-    mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun08/"
+    mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun09/"
     local = "Tallinn/"
     card_prefix = "prepareDatacards_"
     cards = [
-    "1l_2tau_mvaOutput_final",
-    "2lss_1tau_sumOS_mvaOutput_final",
-    "2l_2tau_mvaOutput_final",
-    "3l_1tau_mvaOutput_final"
+    "1l_2tau_mvaOutput_final_x",
+    "2lss_1tau_sumOS_mvaOutput_final_x",
+    "2l_2tau_mvaOutput_final_x",
+    "3l_1tau_mvaOutput_final_x"
     ]
     folders = [
     "ttH_1l_2tau/",
@@ -114,7 +114,7 @@ print ("to run this script your CMSSW_base should be the one that CombineHaveste
 datacardToRun=[]
 for nn, card in enumerate(cards) :
     #if not channel == channels[nn] : continue
-    #if nn < 2 : continue
+    if nn == 0 : continue
     my_file = mom+local+card_prefix+card+'.root'
     if os.path.exists(my_file) :
         print ("testing ", my_file)
