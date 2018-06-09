@@ -1135,6 +1135,7 @@ Process & \multicolumn{2}{c|}{2l_2tau} \\
     filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK']).GetRate(), c_2l_2tau.cp().process(['EWK']).GetUncertainty(*uargs))+"\n")
     filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ']).GetRate(), c_2l_2tau.cp().process(['TTZ']).GetUncertainty(*uargs))+"\n")
     filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW']).GetRate(), c_2l_2tau.cp().process(['TTW']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTWW']).GetRate(), c_2l_2tau.cp().process(['TTWW']).GetUncertainty(*uargs))+"\n")
     filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Rares']).GetRate(), c_2l_2tau.cp().process(['Rares']).GetUncertainty(*uargs))+"\n")
     filey.write(r'Fakes  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['fakes_data']).GetRate(), c_2l_2tau.cp().process(['fakes_data']).GetUncertainty(*uargs))+"\n")
     if uni == "Tallinn" :

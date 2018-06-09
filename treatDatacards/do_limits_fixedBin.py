@@ -22,22 +22,25 @@ parser.add_option("--uni", type="string", dest="uni", help="  Set of variables t
 (options, args) = parser.parse_args()
 
 doLimits = True
-doImpacts = False
-doYields = True
+doImpacts = True
+doYields = False
 doGOF = False
-doPlots = False
+doPlots = True
 
+blinded=True
+#prepareDatacards_1l_2tau_mvaOutput_final.root  prepareDatacards_2lss_1tau_sumOS_mvaOutput_final.root
+#prepareDatacards_2l_2tau_mvaOutput_final.root  prepareDatacards_3l_1tau_mvaOutput_final.root
 channel = options.channel
 university = options.uni
 if university == "Tallinn":
-    mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun05/"
+    mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun08/"
     local = "Tallinn/"
     card_prefix = "prepareDatacards_"
     cards = [
-    "1l_2tau_mvaOutput_HTT_SUM_VT",
-    "2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M_11bins_quantiles",
-    "2l_2tau_mvaOutput_plainKin_SUM_VT",
-    "3l_1tau_mvaOutput_plainKin_SUM_M"
+    "1l_2tau_mvaOutput_final",
+    "2lss_1tau_sumOS_mvaOutput_final",
+    "2l_2tau_mvaOutput_final",
+    "3l_1tau_mvaOutput_final"
     ]
     folders = [
     "ttH_1l_2tau/",
@@ -108,32 +111,6 @@ for nn, card in enumerate(cards) :
     my_file = mom+local+card_prefix+card+'.root'
     if os.path.exists(my_file) :
         print ("testing ", my_file)
-        file=TFile(my_file)
-        if university == "Tallinn" : signal_testBin = file.Get("fakes_data")
-        else : signal_testBin = file.Get("x_fakes_data")
-        if (signal_testBin.GetNbinsX() >  50) or (university == "Cornell") :
-            print ("extracting rebinned: ", signal_testBin.GetNbinsX())
-            my_file = mom+card_prefix+card+'_Binned.root'
-            file2=TFile(my_file,"RECREATE")
-            file2.cd()
-            for nkey, keyO in enumerate(file.GetListOfKeys()) :
-               h2 = TH1F()
-               obj =  keyO.ReadObj()
-               #print (keyO.GetName(), type(obj))
-               if university == "Tallinn" :
-                   if (type(obj) is not TH1F) : continue
-                   h2 = file.Get(folders[nn]+"rebinned/"+str(keyO.GetName())+"_rebinned")
-               if university == "Cornell" :
-                   if (type(obj) is not TH1D) : continue
-                   h2 = file.Get(str(keyO.GetName()))
-               #print h2.Integral()
-               h2.SetName(str(keyO.GetName()))
-               h2.Write()
-               if university == "Cornell" :
-                   h2.SetName("x_data_obs")
-                   h2.Write()
-            file2.Close()
-        print ("testing ", my_file)
 
         # make txt datacard
         datacard_file=my_file
@@ -145,9 +122,9 @@ for nn, card in enumerate(cards) :
         logFile = datacardFile_output.replace(".root", ".log")
         logFileNoS = datacardFile_output.replace(".root", "_noSyst.log")
         if doLimits :
-            run_cmd('combine -M Asymptotic -m %s -t -1 -S 0 %s &> %s' % (str(125), txtFile, logFileNoS))
-            run_cmd('combine -M Asymptotic -m %s -t -1 %s &> %s' % (str(125), txtFile, logFile))
-            run_cmd('rm higgsCombineTest.Asymptotic.mH125.root')
+            run_cmd('combine -M AsymptoticLimits -m %s -t -1 --run blind -S 0 %s &> %s' % (str(125), txtFile, logFileNoS))
+            run_cmd('combine -M AsymptoticLimits -m %s -t -1 --run blind %s &> %s' % (str(125), txtFile, logFile))
+            run_cmd('rm higgsCombineTest.AsymptoticLimits.mH125.root')
 
         if doPlots :
             filesh = open(mom+local+"execute_plots"+channels[nn]+"_"+university+".sh","w")
@@ -155,7 +132,7 @@ for nn, card in enumerate(cards) :
             rootFile = mom+local+"ttH_"+card+"_shapes.root"
             run_cmd('PostFitShapes -d %s -o %s -m 125 ' % (txtFile, rootFile))
             makeplots=('root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\\"'
-            +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog[nn])+','+str(hasFlips[nn])+','+hasConversions[nn]+',\\"BDT\\",\\"\\",'+str(min[nn])+','+str(max[nn])+')')
+            +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog[nn])+','+str(hasFlips[nn])+','+hasConversions[nn]+',\\"BDT\\",\\"Events\\",'+str(min[nn])+','+str(max[nn])+')')
             #root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\"2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M_11bins_quantiles\",\"2018jun02/\",\"2lss_1tau\",\"/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/\",false,false,\"BDT\",\"\",0.0,10.0)
             filesh.write(makeplots+ "\n")
             print ("to have the plots take the makePlots command from: ",mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
@@ -197,12 +174,14 @@ for nn, card in enumerate(cards) :
             wsp = fin.Get('w')
             cmb = ch.CombineHarvester()
             cmb.SetFlag("workspaces-use-clone", True)
-            ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', False)
+            ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', True)
             mlf = TFile('fitDiagnostics.root')
+            print "arrived here"
             rfr = mlf.Get('fit_s')
+            print "arrived here3"
             print 'Pre-fit tables:'
             filey = open(mom+local+"yields_"+channels[nn]+"_"+university+".tex","w")
-            PrintTables(cmb, tuple(), 'ttH_'+channels[nn], filey, university, channels[nn], blinded=False)
+            PrintTables(cmb, tuple(), 'ttH_'+channels[nn], filey, university, channels[nn], blinded)
             #cmb.UpdateParameters(rfr) 'ttH_2l_2tau'
             #print 'Post-fit tables:\n\n'
             #PrintTables(cmb, (rfr, 500))
