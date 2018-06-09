@@ -22,10 +22,10 @@ parser.add_option("--uni", type="string", dest="uni", help="  Set of variables t
 (options, args) = parser.parse_args()
 
 doLimits = True
-doImpacts = True
+doImpacts = False
 doYields = False
-doGOF = False
-doPlots = True
+doGOF = True
+doPlots = False
 
 blinded=True
 #prepareDatacards_1l_2tau_mvaOutput_final.root  prepareDatacards_2lss_1tau_sumOS_mvaOutput_final.root
