@@ -23,8 +23,8 @@ parser.add_option("--uni", type="string", dest="uni", help="  Set of variables t
 
 doLimits = False
 doImpacts = False
-doYields = False
-doGOF = True
+doYields = True
+doGOF = False
 doPlots = False
 
 blinded=True
@@ -113,11 +113,29 @@ print ("to run this script your CMSSW_base should be the one that CombineHaveste
 #####################################################################
 datacardToRun=[]
 for nn, card in enumerate(cards) :
-    #if not channel == channels[nn] : continue
-    if nn == 0 : continue
+    if not channel == channels[nn] : continue
+    #if nn == 0 : continue
     my_file = mom+local+card_prefix+card+'.root'
     if os.path.exists(my_file) :
         print ("testing ", my_file)
+        if channel=="3l_1tau" :
+            print ("testing ", my_file)
+            file = TFile(my_file,"READ");
+            my_file = mom+local+card_prefix+card+'_noNeg.root'
+            file2 = TFile(my_file,"RECREATE");
+            file2.cd()
+            h2 = TH1F()
+            for keyO in file.GetListOfKeys() :
+               obj =  keyO.ReadObj()
+               if type(obj) is not TH1F : continue
+               h2=obj.Clone()
+               for bin in range (0, h2.GetXaxis().GetNbins()) :
+                   if h2.GetBinContent(bin) < 0 :
+                       print keyO
+                       print h2.GetBinContent(bin)
+                       h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.0001)
+               h2.Write()
+            file2.Close()
 
         # make txt datacard
         datacard_file=my_file
