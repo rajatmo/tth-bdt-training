@@ -21,11 +21,12 @@ parser.add_option("--channel ", type="string", dest="channel", help="The ones wh
 parser.add_option("--uni", type="string", dest="uni", help="  Set of variables to use -- it shall be put by hand in the code", default="Tallinn")
 (options, args) = parser.parse_args()
 
-doLimits = False
+doLimits = True
 doImpacts = False
-doYields = True
+doYields = False
 doGOF = False
-doPlots = False
+doPlots = True
+readLimits = False
 
 blinded=True
 #prepareDatacards_1l_2tau_mvaOutput_final.root  prepareDatacards_2lss_1tau_sumOS_mvaOutput_final.root
@@ -40,13 +41,17 @@ if university == "Tallinn":
     "1l_2tau_mvaOutput_final_x",
     "2lss_1tau_sumOS_mvaOutput_final_x",
     "2l_2tau_mvaOutput_final_x",
-    "3l_1tau_mvaOutput_final_x"
+    "3l_1tau_mvaOutput_final_x_noNeg",
+    "2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M",
+    "1l_2tau_mvaOutput_HTT_SUM_VT"
     ]
     folders = [
     "ttH_1l_2tau/",
     "",
     "ttH_2l_2tau/",
-    "ttH_3l_1tau/"
+    "ttH_3l_1tau/",
+    "ttH_2lss_1tau/",
+    "ttH_1l_2tau/",
     ]
 elif university == "Cornell":
     mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun05/"
@@ -63,155 +68,220 @@ channels = [
 "1l_2tau",
 "2lss_1tau",
 "2l_2tau",
-"3l_1tau"
+"3l_1tau",
+"2lss_1tau",
+"1l_2tau"
 ]
 
 wdata = [
 "",
 "_FRjt_syst",
 "",
-"_FRjt_syst"
+"_FRjt_syst",
+"_FRjt_syst",
+""
+]
+
+isSplit = [
+"false",
+"true",
+"false",
+"true",
+"true",
+"false"
 ]
 
 dolog = [
 "true",
 "false",
 "false",
-"false"
+"false",
+"false",
+"true"
 ]
 
 min = [
 0.1,
 0.0,
 0.0,
-0.0
+0.0,
+0.0,
+0.1
 ]
 
 max = [
 2000,
 15.0,
 15.0,
-2.0
+2.0,
+15.0,
+2000
 ]
 
 hasConversions = [
 "true",
 "true",
 "false",
-"false"
+"false",
+"true",
+"true"
 ]
 
 hasFlips = [
 "false",
 "true",
 "false",
-"true"
+"true",
+"true",
+"false"
 ]
 
 print ("to run this script your CMSSW_base should be the one that CombineHavester installed")
 
-#####################################################################
-datacardToRun=[]
-for nn, card in enumerate(cards) :
-    if not channel == channels[nn] : continue
-    #if nn == 0 : continue
-    my_file = mom+local+card_prefix+card+'.root'
-    if os.path.exists(my_file) :
-        print ("testing ", my_file)
-        if channel=="3l_1tau" :
+
+if not readLimits :
+    #####################################################################
+    datacardToRun=[]
+    for nn, card in enumerate(cards) :
+        #if not channel == channels[nn] : continue
+        if not nn == 5 : continue
+        my_file = mom+local+card_prefix+card+'.root'
+        file = TFile(my_file,"READ");
+        if os.path.exists(my_file) :
             print ("testing ", my_file)
-            file = TFile(my_file,"READ");
-            my_file = mom+local+card_prefix+card+'_noNeg.root'
-            file2 = TFile(my_file,"RECREATE");
-            file2.cd()
-            h2 = TH1F()
-            for keyO in file.GetListOfKeys() :
-               obj =  keyO.ReadObj()
-               if type(obj) is not TH1F : continue
-               h2=obj.Clone()
-               for bin in range (0, h2.GetXaxis().GetNbins()) :
-                   if h2.GetBinContent(bin) < 0 :
-                       print keyO
-                       print h2.GetBinContent(bin)
-                       h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.0001)
-               h2.Write()
-            file2.Close()
-
-        # make txt datacard
-        datacard_file=my_file
-        datacardFile_output = mom+local+"ttH_"+card+".root"
-        run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
-
-        #
-        txtFile = datacardFile_output.replace(".root", ".txt")
-        logFile = datacardFile_output.replace(".root", ".log")
-        logFileNoS = datacardFile_output.replace(".root", "_noSyst.log")
-        if doLimits :
-            run_cmd('combine -M AsymptoticLimits -m %s -t -1 --run blind -S 0 %s &> %s' % (str(125), txtFile, logFileNoS))
-            run_cmd('combine -M AsymptoticLimits -m %s -t -1 --run blind %s &> %s' % (str(125), txtFile, logFile))
-            run_cmd('rm higgsCombineTest.AsymptoticLimits.mH125.root')
-
-        if doPlots :
-            filesh = open(mom+local+"execute_plots"+channels[nn]+"_"+university+".sh","w")
-            filesh.write("#!/bin/bash\n")
-            rootFile = mom+local+"ttH_"+card+"_shapes.root"
-            run_cmd('PostFitShapes -d %s -o %s -m 125 ' % (txtFile, rootFile))
-            makeplots=('root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\\"'
-            +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog[nn])+','+str(hasFlips[nn])+','+hasConversions[nn]+',\\"BDT\\",\\"Events\\",'+str(min[nn])+','+str(max[nn])+')')
-            #root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\"2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M_11bins_quantiles\",\"2018jun02/\",\"2lss_1tau\",\"/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/\",false,false,\"BDT\",\"\",0.0,10.0)
-            filesh.write(makeplots+ "\n")
-            print ("to have the plots take the makePlots command from: ",mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
-
-        if doImpacts :
-            run_cmd('combineTool.py  -M T2W -i %s' % (txtFile))
-            run_cmd('combineTool.py -M Impacts -m 125 -d %s  --expectSignal 1 --allPars --parallel 8 -t -1 --doInitialFit' % (datacardFile_output))
-            run_cmd('combineTool.py -M Impacts -m 125 -d %s  --expectSignal 1 --allPars --parallel 8 -t -1 --robustFit 1 --doFits' % (datacardFile_output))
-            run_cmd('combineTool.py -M Impacts -m 125 -d %s  -o impacts.json' % (datacardFile_output))
-            run_cmd('rm higgsCombineTest*.root')
-            run_cmd('rm higgsCombine*root')
-            run_cmd('plotImpacts.py -i impacts.json -o  impacts')
-            run_cmd('mv impacts.pdf '+mom+local+'impacts_'+channels[nn]+"_"+university+'.pdf')
-
-        if doGOF :
+            if nn < 4 :
+                my_file = mom+local+card_prefix+card+'_noNeg.root'
+                file2 = TFile(my_file,"RECREATE");
+                file2.cd()
+                h2 = TH1F()
+                for keyO in file.GetListOfKeys() :
+                   obj =  keyO.ReadObj()
+                   if type(obj) is not TH1F : continue
+                   h2=obj.Clone()
+                   for bin in range (0, h2.GetXaxis().GetNbins()) :
+                       if h2.GetBinContent(bin) < 0 :
+                           #print keyO
+                           #print h2.GetBinContent(bin)
+                           h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.00001)
+                   h2.Write()
+                file2.Close()
+            else :
+                print ("testing ", my_file)
+                my_file = mom+local+card_prefix+card+'_rebin_x.root'
+                file2 = TFile(my_file,"RECREATE");
+                file2.cd()
+                h2 = TH1F()
+                for keyO in file.GetListOfKeys() :
+                   obj =  keyO.ReadObj()
+                   if (type(obj) is not TH1F) : continue
+                   h2 = file.Get(folders[nn]+"rebinned/"+str(keyO.GetName())+"_rebinned")
+                   h2.SetName("x_"+str(keyO.GetName()))
+                   for bin in range (0, h2.GetXaxis().GetNbins()) :
+                       if h2.GetBinContent(bin) < 0 :
+                           #print keyO
+                           #print h2.GetBinContent(bin)
+                           h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.00001)
+                   h2.Write()
+                file2.Close()
+            # make txt datacard
+            datacard_file=my_file
+            datacardFile_output = mom+local+"ttH_"+card+".root"
             run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
-            run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 %s' % (txtFile))
-            run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 -t 1000 -s 12345  %s --saveToys --toysFreq' % (txtFile))
-            # the bellow work on CMSSW7X
-            #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated' % (datacardFile_output))
-            #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated  -n .saturated.toys -t 200 -s 0:4:1 --parallel 5' % (datacardFile_output))
-            run_cmd('combineTool.py -M CollectGoodnessOfFit --input higgsCombineTest.GoodnessOfFit.mH120.root higgsCombineTest.GoodnessOfFit.mH120.12345.root -o GoF_saturated.json')
-            run_cmd('$CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plotGof.py --statistic saturated --mass 120.0 GoF_saturated.json -o GoF_saturated')
-            run_cmd('mv GoF_saturated.pdf '+mom+local+'GoF_saturated_'+channels[nn]+"_"+university+'.pdf')
-            run_cmd('mv GoF_saturated.png '+mom+local+'GoF_saturated_'+channels[nn]+"_"+university+'.png')
-            run_cmd('rm higgsCombine*root')
 
-        if doYields :
-            # fitDiagnostics.root
-            run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
-            run_cmd('combine -M FitDiagnostics -d %s  -t -1' % (txtFile))
-            run_cmd('python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root')
-            run_cmd('combineTool.py  -M T2W -i %s' % (txtFile))
-            ROOT.PyConfig.IgnoreCommandLineOptions = True
-            gROOT.SetBatch(ROOT.kTRUE)
-            gSystem.Load('libHiggsAnalysisCombinedLimit')
-            print ("Retrieving yields from: ",datacardFile_output)
-            fin = TFile(datacardFile_output)
-            wsp = fin.Get('w')
-            cmb = ch.CombineHarvester()
-            cmb.SetFlag("workspaces-use-clone", True)
-            ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', True)
-            mlf = TFile('fitDiagnostics.root')
-            print "arrived here"
-            rfr = mlf.Get('fit_s')
-            print "arrived here3"
-            print 'Pre-fit tables:'
-            filey = open(mom+local+"yields_"+channels[nn]+"_"+university+".tex","w")
-            PrintTables(cmb, tuple(), 'ttH_'+channels[nn], filey, university, channels[nn], blinded)
-            #cmb.UpdateParameters(rfr) 'ttH_2l_2tau'
-            #print 'Post-fit tables:\n\n'
-            #PrintTables(cmb, (rfr, 500))
-            print ("the yields are on this file: ", mom+local+"yields_"+channels[nn]+"_"+university+".tex")
+            #
+            txtFile = datacardFile_output.replace(".root", ".txt")
+            logFile = datacardFile_output.replace(".root", ".log")
+            logFileNoS = datacardFile_output.replace(".root", "_noSyst.log")
+            if doLimits :
+                run_cmd('combine -M AsymptoticLimits -m %s -t -1 --run blind -S 0 %s &> %s' % (str(125), txtFile, logFileNoS))
+                run_cmd('combine -M AsymptoticLimits -m %s -t -1 --run blind %s &> %s' % (str(125), txtFile, logFile))
+                run_cmd('rm higgsCombineTest.AsymptoticLimits.mH125.root')
 
-    else : print (my_file,"does not exist ")
-    if doPlots : run_cmd("bash "+mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
+            if doPlots :
+                filesh = open(mom+local+"execute_plots"+channels[nn]+"_"+university+".sh","w")
+                filesh.write("#!/bin/bash\n")
+                rootFile = mom+local+"ttH_"+card+"_shapes.root"
+                run_cmd('PostFitShapes -d %s -o %s -m 125 ' % (txtFile, rootFile))
+                makeplots=('root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\\"'
+                +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog[nn])+','+str(hasFlips[nn])+','+hasConversions[nn]+',\\"BDT\\",\\"\\",'+str(min[nn])+','+str(max[nn])+', false)')
+                #root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\"2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M_11bins_quantiles\",\"2018jun02/\",\"2lss_1tau\",\"/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/\",false,false,\"BDT\",\"\",0.0,10.0)
+                filesh.write(makeplots+ "\n")
+                print ("to have the plots take the makePlots command from: ",mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
+
+            if doImpacts :
+                run_cmd('combineTool.py  -M T2W -i %s' % (txtFile))
+                run_cmd('combineTool.py -M Impacts -m 125 -d %s  --expectSignal 1 --allPars --parallel 8 -t -1 --doInitialFit' % (datacardFile_output))
+                run_cmd('combineTool.py -M Impacts -m 125 -d %s  --expectSignal 1 --allPars --parallel 8 -t -1 --robustFit 1 --doFits' % (datacardFile_output))
+                run_cmd('combineTool.py -M Impacts -m 125 -d %s  -o impacts.json' % (datacardFile_output))
+                run_cmd('rm higgsCombineTest*.root')
+                run_cmd('rm higgsCombine*root')
+                run_cmd('plotImpacts.py -i impacts.json -o  impacts')
+                run_cmd('mv impacts.pdf '+mom+local+'impacts_'+channels[nn]+"_"+university+'.pdf')
+
+            if doGOF :
+                run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
+                run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 %s' % (txtFile))
+                run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 -t 1000 -s 12345  %s --saveToys --toysFreq' % (txtFile))
+                # the bellow work on CMSSW7X
+                #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated' % (datacardFile_output))
+                #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated  -n .saturated.toys -t 200 -s 0:4:1 --parallel 5' % (datacardFile_output))
+                run_cmd('combineTool.py -M CollectGoodnessOfFit --input higgsCombineTest.GoodnessOfFit.mH120.root higgsCombineTest.GoodnessOfFit.mH120.12345.root -o GoF_saturated.json')
+                run_cmd('$CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plotGof.py --statistic saturated --mass 120.0 GoF_saturated.json -o GoF_saturated')
+                run_cmd('mv GoF_saturated.pdf '+mom+local+'GoF_saturated_'+channels[nn]+"_"+university+'.pdf')
+                run_cmd('mv GoF_saturated.png '+mom+local+'GoF_saturated_'+channels[nn]+"_"+university+'.png')
+                run_cmd('rm higgsCombine*root')
+
+            if doYields :
+                # fitDiagnostics.root
+                run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=true' % ('WriteDatacards_'+channels[nn]+wdata[nn], my_file, datacardFile_output))
+                run_cmd('combine -M FitDiagnostics -d %s  -t -1' % (txtFile))
+                run_cmd('python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root')
+                run_cmd('combineTool.py  -M T2W -i %s' % (txtFile))
+                ROOT.PyConfig.IgnoreCommandLineOptions = True
+                gROOT.SetBatch(ROOT.kTRUE)
+                gSystem.Load('libHiggsAnalysisCombinedLimit')
+                print ("Retrieving yields from: ",datacardFile_output)
+                fin = TFile(datacardFile_output)
+                wsp = fin.Get('w')
+                cmb = ch.CombineHarvester()
+                cmb.SetFlag("workspaces-use-clone", True)
+                ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', False)
+                mlf = TFile('fitDiagnostics.root')
+                print "arrived here"
+                rfr = mlf.Get('fit_s')
+                print "arrived here3"
+                print 'Pre-fit tables:'
+                filey = open(mom+local+"yields_"+channels[nn]+"_"+university+".tex","w")
+                PrintTables(cmb, tuple(), 'ttH_'+channels[nn], filey, university, channels[nn], blinded)
+                #cmb.UpdateParameters(rfr) 'ttH_2l_2tau'
+                #print 'Post-fit tables:\n\n'
+                #PrintTables(cmb, (rfr, 500))
+                print ("the yields are on this file: ", mom+local+"yields_"+channels[nn]+"_"+university+".tex")
+
+        else : print (my_file,"does not exist ")
+        if doPlots : run_cmd("bash "+mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
 ################################################################
+
+if readLimits :
+    colorsToDo = np.arange(1,len(cards))
+    binstoDo=np.arange(1,len(cards))
+    file = open(mom+local+"limits.csv","w")
+    for nn,channel in enumerate(channels) :
+        #options.variables+'_'+bdtTypesToDoFile[ns]+'_nbin_'+str(nbins)
+        limits=ReadLimits( cards[nn], binstoDo,"" ,channel,mom+local,-1,-1)
+        print (len(binstoDo),len(limits[0]))
+        for jj in limits[0] : file.write(str(jj)+', ')
+        file.write('\n')
+        plt.plot(binstoDo,limits[0], color=colorsToDo[nn],linestyle='-',marker='o',label="bdtTypesToDoLabel[nn]")
+        plt.plot(binstoDo,limits[1], color=colorsToDo[nn],linestyle='-')
+        plt.plot(binstoDo,limits[3], color=colorsToDo[nn],linestyle='-')
+    ax.legend(loc='best', fancybox=False, shadow=False , ncol=1)
+    ax.set_xlabel('nbins')
+    ax.set_ylabel('limits')
+    maxsum=0
+    plt.axis((min(binstoDo),max(binstoDo),0.5,2.5))
+    ax.legend(loc='best', fancybox=False, shadow=False , ncol=1)
+    ax.set_xlabel('nbins')
+    ax.set_ylabel('limits')
+    maxsum=0
+    plt.axis((min(binstoDo),max(binstoDo),0.5,2.5))
