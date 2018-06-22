@@ -15,23 +15,20 @@ def run_cmd(command):
   print stderr
   return stdout
 
-# Download the bellow folders to mom and untar them
+# Download the bellow folders to mom and untar them on the same location than this script
 # https://svnweb.cern.ch/cern/wsvn/cmshcg/trunk/cadi/HIG-18-019/
 # https://svnweb.cern.ch/cern/wsvn/cmshcg/trunk/cadi/HIG-17-018/
-
-workingDir = os.getcwd()
-workingDir = workingDir+"/"
-print "Working directory is: "+workingDir
-#mom = "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/"
 mom_2017 = "HIG-18-019.r7705/"
 mom_2016_multilep = "HIG-17-018.r7707/tth_multilepton/cards_v7d_200717/"
 mom_2016_htt= "HIG-17-018.r7707/tth_htt/2017Jul21/"
 
+workingDir = os.getcwd()
+workingDir = workingDir+"/"
+print "Working directory is: "+workingDir
 procP1=glob.glob(workingDir+mom_2017+"*.txt")
 procP2=glob.glob(workingDir+mom_2016_multilep+"*.txt")
 procP3=glob.glob(workingDir+mom_2016_htt+"*.txt")
 everybody = procP1 + procP2 + procP3
-
 
 combine_cards = False
 float_signal = True
