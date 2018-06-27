@@ -93,27 +93,17 @@ if channel=='1l_2tau':
 
 # 2los_1tau_2018Mar14_BDT_TLepTTau
 if channel=='2los_1tau':
-	channelInTree='2los_1tau_Tight'
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepTTau/histograms/2los_1tau/forBDTtraining/'
+	channelInTree='2los_1tau_Loose'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_LLepMTau/histograms/2los_1tau/forBDTtraining/'
 	FastsimWP= "LooseLep_TightTau"
 	criteria=[]
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 	channelInTreeTight='2los_1tau_Tight'
-	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepTTau/histograms/2los_1tau/forBDTtraining/'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepLTau/histograms/2los_1tau/forBDTtraining/'
 	FastsimTWP="TightLep_MediumTau"
-	if bdtType=="evtLevelSUM_TTH_M" :
-		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
-		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-		FullsimWP= "TightLep_MediumTau"
-	if bdtType=="evtLevelSUM_TTH_T" :
-		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
-		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepTTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-		FullsimWP= "TightLep_TightTau"
-	else :
-		channelInTreeFS='2lss_1tau_lepSS_sumOS_Tight'
-		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2lss_1tau_2018Feb26_VHbb_trees_TLepMTau/histograms/2lss_1tau/forBDTtraining_SS_OS/'
-		FullsimWP= "TightLep_MediumTau"
-
+	channelInTreeFS='2los_1tau_Tight'
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_fullsim_TLepVTTau/histograms/2los_1tau/Tight/'
+	FullsimWP= "TightLep_VTightTau"
 
 if channel=='2lss_1tau':
 	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
@@ -218,6 +208,27 @@ def trainVars(all):
 		]
 
         if trainvar=="noHTT" and channel=="2los_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
+			return [
+			'avg_dr_jet', #'dr_lep1_tau_os',
+			'dr_lep2_tau_ss',
+			'dr_leps',
+			#'lep1_conePt',
+			#'lep2_conePt',
+			#'mT_lep1',
+			'mT_lep2',
+			'mTauTauVis',
+			'tau_pt', 'tau_eta',
+			#'max_lep_eta', #'min_lep_eta', #'lep2_eta','lep1_eta',
+			'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
+			#'mbb', 'ptbb', # (medium b)
+			'mbb_loose', #'ptbb_loose',
+			'ptmiss', #'htmiss',
+			#'nBJetLoose',
+			#'nBJetMedium',
+			'nJet',
+			]
+
+        if trainvar=="noHTT" and channel=="2los_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
 			return [
 			'avg_dr_jet', #'dr_lep1_tau_os',
 			'dr_lep2_tau_ss',
@@ -361,6 +372,26 @@ def trainVars(all):
 
         if trainvar=="HTT" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
 			return [
+			"avg_dr_jet",
+			"dr_lep1_tau",
+			"dr_lep2_tau",
+			"dr_leps",
+			"lep2_conePt",
+			"mT_lep1",
+			"mT_lep2",
+			"mTauTauVis2",
+			"max_lep_eta",
+			"mbb",
+			"mindr_lep1_jet",
+			"mindr_lep2_jet",
+			"mindr_tau_jet",
+			"nJet",
+			"ptmiss",
+			"tau_pt",
+			'mvaOutput_hadTopTaggerWithKinFit',
+			'unfittedHadTop_pt'
+			]
+			"""
 			'avg_dr_jet',
 			'dr_lep1_tau',
 			'dr_lep2_tau',
@@ -378,7 +409,7 @@ def trainVars(all):
 			'mvaOutput_hadTopTaggerWithKinFit',
 			'mvaOutput_Hj_tagger',
 			'unfittedHadTop_pt',
-			]
+			"""
 
         if trainvar=="HTT_LepID" and channel=="2lss_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
 			return [
@@ -514,13 +545,13 @@ def trainVars(all):
 			'nJet',
 			'ptmiss',
 			'tau_pt',
-			"memOutput_LR",
+			#"memOutput_LR",
 			'mvaOutput_hadTopTaggerWithKinFit',
-			'mvaOutput_Hj_tagger',
-			'unfittedHadTop_pt',
+			#'mvaOutput_Hj_tagger',
+			'HadTop_pt', #'unfittedHadTop_pt',
 			]
 
-        if trainvar=="HTT" and channel=="2lss_1tau" and "evtLevelSUM_TTH" in bdtType and all==False :
+        if trainvar=="HTT" and channel=="2lss_1tau" and "evtLevelSUM_TTH_M" in bdtType and all==False :
 			return [
 			'avg_dr_jet',
 			'dr_lep1_tau',
@@ -539,7 +570,7 @@ def trainVars(all):
 			'ptmiss',
 			'tau_pt',
 			'mvaOutput_hadTopTaggerWithKinFit',
-			'mvaOutput_Hj_tagger',
+			#'mvaOutput_Hj_tagger',
 			'unfittedHadTop_pt',
 			]
 
@@ -967,7 +998,7 @@ def trainVars(all):
 ## Load data
 data=load_data(inputPath,channelInTree,trainVars(True),[],testtruth,bdtType)
 dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(True),[],testtruth,bdtType)
-doFS=False
+doFS=True
 if doFS : dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeFS,trainVars(True),[],testtruth,"all")
 if doFS2 : dataTightFS2=load_data_fullsim(inputPathTightFS2,channelInTreeFS2,trainVars(True),[],testtruth,"all")
 weights="totalWeight"
@@ -981,6 +1012,8 @@ if channel=="1l_2tau" or channel=="2lss_1tau":
 #################################################################################
 ## Balance datasets
 #https://stackoverflow.com/questions/34803670/pandas-conditional-multiplication
+data.loc[data['target']==0, ['totalWeight']] *= 100000/data.loc[data['target']==0]["totalWeight"].sum()
+data.loc[data['target']==1, ['totalWeight']] *= 100000/data.loc[data['target']==1]["totalWeight"].sum()
 
 print ("norm", data.loc[data[target]==0][weights].sum(),data.loc[data[target]==1][weights].sum())
 ### TT-sample is usually much more than fakes

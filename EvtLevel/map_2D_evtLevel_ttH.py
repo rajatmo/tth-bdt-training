@@ -92,11 +92,19 @@ if channel=='2lss_1tau':
 		channelInTreeTight='2lss_1tau_lepSS_sumOS_Tight'
 		inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-tighLep/histograms/2lss_1tau/forBDTtraining_SS_OS/' #  2017Dec08-BDT-noMEM-tighLep
 		inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/Tight_SS_OS'
-		#'/hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_tightL_mediumTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2018Jan_BDT_fromVHbb_toTrees_fullsimData
-		# /hdfs/local/acaan/ttHAnalysis/2016/2018Jan_BDT_fromVHbb_toTrees_fullsimData/histograms/2lss_1tau/
 
-	#channelInTree='2lss_1tau_lepSS_sumOS_Fakeable_wFakeRateWeights'
-	#inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2017Dec08-BDT-noMEM-fakableLepLooseTau/histograms/2lss_1tau/forBDTtraining_SS_OS/' # 2017Dec08-BDT-noMEM-fakableLepMedTau
+if channel=="3l_1tau":
+	channelInTree='3l_1tau_OS_lepLoose_tauTight'
+	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_LLepVLTau/histograms/3l_1tau/forBDTtraining_OS/'
+	criteria=[]
+	testtruth="None"
+	channelInTreeTight='3l_1tau_OS_lepTight_tauTight'
+	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_BDT_TLepMTau/histograms/3l_1tau/forBDTtraining_OS/'
+	channelInTreeFS='3l_1tau_OS_lepTight_tauTight'
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/3l_1tau_2018Feb19_VHbb_trees_TLepMTau/histograms/3l_1tau/forBDTtraining_OS/'
+	FullsimWP="TightLep_MediumTau"
+	FastsimWP="TightLep_VVLooseTau"
+	FastsimTWP="TightLep_MediumTau"
 
 from sklearn import svm
 import sys , time
@@ -378,6 +386,20 @@ def trainVarsTT(trainvar):
 			"nBJetLoose"
 			]
 
+
+        if trainvar=="noHTT" and channel=="3l_1tau" : return [
+			"mindr_lep1_jet",  #"dr_lep1_tau",
+			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
+			"lep3_conePt",
+			"mindr_lep3_jet", #"mT_lep3", #"dr_lep3_tau",
+			"mindr_tau_jet",
+			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
+			"tau_pt", #"tau_eta",
+			"dr_leps",
+			"mTauTauVis1", "mTauTauVis2",
+			"mbb_loose"
+			]
+
 def trainVarsTTV(trainvar):
 
         if trainvar=="oldVar"  and channel=="2lss_1tau" :return [
@@ -515,18 +537,9 @@ def trainVarsTTV(trainvar):
 			'mTauTauVis',
 			'mindr_lep_jet',
 			'mindr_tau1_jet',
-			#'mindr_tau2_jet',
-			#'nJet',
-			#'dr_lep_tau_os',
 			'dr_lep_tau_ss',
-			#"dr_lep_tau_lead",
 			"dr_lep_tau_sublead",
 			"costS_tau",
-			#"dr_HadTop_tau_OS",
-			#"dr_HadTop_tau_SS",
-			#"mT_lepHadTop",
-			#"mT_lepHadTopH",
-			#'nBJetLoose',
 			"tau1_pt",
 			"tau2_pt",
 			'mvaOutput_hadTopTaggerWithKinFit'
@@ -560,6 +573,16 @@ def trainVarsTTV(trainvar):
 			"nJet",
 			]
 
+        if trainvar=="noHTT" and channel=="3l_1tau"  :return [
+			"lep1_conePt", "lep2_conePt", #"lep1_eta",  "lep2_eta", #"lep1_tth_mva",
+			"mindr_lep1_jet",  #"dr_lep1_tau",
+			"mindr_lep2_jet", "mT_lep2", "mT_lep1", "max_lep_eta", #"dr_lep2_tau",
+			"avg_dr_jet", "ptmiss",  #"htmiss", "tau_mva",
+			"tau_pt", #"tau_eta",
+			"dr_leps",
+			"mTauTauVis1", "mTauTauVis2",
+			]
+
 ####################################################################################################
 ## Load data
 #my_cols_list=Variables_all+['key','target','file']
@@ -570,8 +593,8 @@ weights="totalWeight"
 
 doCSVfile=False
 doInFS=False
-if channel=="2l_2tau" : data=load_data_2l2t()
-if channel=="2lss_1tau" or channel=="1l_2tau"  or channel=="2l_2tau" :
+#if channel=="2l_2tau" : data=load_data_2l2t()
+if channel=="2lss_1tau" or channel=="1l_2tau"  or channel=="2l_2tau" or channel=="3l_1tau" :
 	if options.variables!="oldTrainCSV" : #options.variables!="oldTrainCSV"
 		if options.relaxedLepID==True : data=load_data(inputPath,channelInTree,Variables_all,[],testtruth,"all")
 		else : data=load_data(inputPathTight,channelInTreeTight,Variables_all,[],testtruth,"all") #
@@ -633,6 +656,26 @@ if channel=="1l_2tau" :
 		TTVdatacard=0.39+4.68
 		TTfullsim=223.00
 		TTVfullsim=1.46+7.03
+if channel=="3l_1tau" :
+	fastsimTT=15.99+0.11
+	fastsimTTtight=0.04
+	fastsimTTV=21.23+6.24
+	fastsimTTVtight=6.0
+	if "_M" in BDTtype :
+		TTdatacard=1.08396
+		TTVdatacard=0.259286+3.5813
+		TTfullsim=0.59
+		TTVfullsim=0.24+2.48
+	if "_T" in BDTtype :
+		TTdatacard=0.60
+		TTVdatacard=0.15+2.90
+		TTfullsim=0.59
+		TTVfullsim=0.24+2.48
+	if "_VT" in BDTtype :
+		TTdatacard=0.42
+		TTVdatacard=0.08+2.36
+		TTfullsim=0.59
+		TTVfullsim=0.24+2.48
 else :
 	TTdatacard=1.0
 	TTVdatacard=1.0
@@ -640,6 +683,7 @@ else :
 	TTVfullsim=1.0
 	fastsimTT=1.0
 	fastsimTTV=1.0
+
 data.loc[(data['key']=='TTTo2L2Nu') | (data['key']=='TTToSemilepton'), [weights]]*=TTdatacard/fastsimTT
 data.loc[(data['key']=='TTWJetsToLNu') | (data['key']=='TTZToLLNuNu'), [weights]]*=TTVdatacard/fastsimTTV
 dataTightFS.loc[(dataTightFS['proces']=='TT'), [weights]]*=TTdatacard/TTfullsim
@@ -681,9 +725,15 @@ if channel=="1l_2tau":
 
 if channel=="2l_2tau":
 	basepkl="/home/acaan/CMSSW_9_4_0_pre1/src/tth-bdt-training-test/EvtLevel/2l_2tau"
-	if BDTvar=="noHTT" : ttV_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTTV_TTH_14Var.pkl"
-	#"/2l_2tau_XGB_noHTT_evtLevelTTV_TTH_12Var.pkl"
-	if BDTvar=="noHTT" : tt_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTT_TTH_11Var.pkl" #
+	if BDTvar=="noHTT" :
+		ttV_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTTV_TTH_14Var.pkl"
+		tt_file=basepkl+"/2l_2tau_XGB_noHTT_evtLevelTT_TTH_11Var.pkl" #
+
+if channel=="3l_1tau":
+	basepkl="/home/acaan/CMSSW_9_4_0_pre1/src/tth-bdt-training-test/EvtLevel/3l_1tau"
+	if BDTvar=="noHTT" :
+		ttV_file=basepkl+"/3l_1tau_XGB_noHTT_evtLevelTTV_TTH_13Var.pkl"
+		tt_file=basepkl+"/3l_1tau_XGB_noHTT_evtLevelTT_TTH_15Var.pkl"
 
 if doInFS :
 	dataTT =dataTightFS.ix[(dataTightFS.proces.values=='TT')]
@@ -724,7 +774,7 @@ if BDTvar=="oldTrainCSV" and channel=="2lss_1tau" :
 elif BDTvar=="oldTrain" and channel=="2lss_1tau" :
 	ttBDT="mvaOutput_2lss_ttbar"
 	ttVBDT="mvaOutput_2lss_ttV"
-elif channel=="2lss_1tau" or channel=="1l_2tau":
+elif channel=="2lss_1tau" or channel=="1l_2tau" or channel=="3l_1tau":
 	ttBDT="ttBDT"
 	ttVBDT="ttVBDT"
 elif channel=="2l_2tau" :

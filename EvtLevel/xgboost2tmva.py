@@ -1,5 +1,5 @@
 import re
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as ET
 
 #from xml.etree.ElementTree import Element, SubElement
 #from xml.etree import ElementTree 
