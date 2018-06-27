@@ -215,11 +215,27 @@ if doYields :
 
     #labels = [ "1l_2tau_OS_mvaOutput_final_x_2017", "2l_2tau_sumOS_mvaOutput_final_x_2017", "3l_1tau_OS_mvaOutput_final_x_2017",  "2lss_1tau_sumOS_mvaOutput_final_x_2017"]
     #type = 'tau'
+    colapseCat = False
     #filey = open(workingDir+mom_result+"yields_"+type+"_from_combo_prefit.tex","w")
     #PrintTables_Tau(cmb, tuple(), filey, blinded, labels, type)
 
-    labels = ["ttH_2lss_", "ttH_3l_", "ttH_4l_2017"]
+    labels = ["ttH_2lss_ee_neg_2017",
+    "ttH_2lss_ee_pos_2017",
+    "ttH_2lss_em_bl_neg_2017",
+    "ttH_2lss_em_bl_pos_2017",
+    "ttH_2lss_em_bt_neg_2017",
+    "ttH_2lss_em_bt_pos_2017",
+    "ttH_2lss_mm_bl_neg_2017",
+    "ttH_2lss_mm_bl_pos_2017",
+    "ttH_2lss_mm_bt_neg_2017",
+    "ttH_2lss_mm_bt_pos_2017",
+    "ttH_3l_bl_neg_2017",
+    "ttH_3l_bl_pos_2017",
+    "ttH_3l_bt_neg_2017",
+    "ttH_3l_bt_pos_2017",
+    "ttH_4l_2017"]
     type = 'multilep'
+    colapseCat = True
     filey = open(workingDir+mom_result+"yields_"+type+"_from_combo_prefit.tex","w")
     PrintTables_Tau(cmb, tuple(), filey, blinded, labels, type)
 
@@ -235,24 +251,7 @@ if doYields :
 
 
 
- ttH_2lss_ee_neg_2017
- ttH_2lss_ee_pos_2017
 
- ttH_2lss_em_bl_neg_2017
- ttH_2lss_em_bl_pos_2017
- ttH_2lss_em_bt_neg_2017
- ttH_2lss_em_bt_pos_2017
- ttH_2lss_mm_bl_neg_2017
- ttH_2lss_mm_bl_pos_2017
- ttH_2lss_mm_bt_neg_2017
- ttH_2lss_mm_bt_pos_2017
-
- ttH_3l_bl_neg_2017
- ttH_3l_bl_pos_2017
- ttH_3l_bt_neg_2017
- ttH_3l_bt_pos_2017
-
- ttH_4l_2017
 
  """
  ttH_3l_bl_neg_zpeak_2017
