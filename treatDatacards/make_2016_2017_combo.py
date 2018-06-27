@@ -196,8 +196,8 @@ if float_signal :
 
 if doYields :
     channels = ["3l_1tau_OS_mvaOutput_final_x_2017", "2l_2tau_sumOS_mvaOutput_final_x_2017", "1l_2tau_OS_mvaOutput_final_x_2017", "2lss_1tau_sumOS_mvaOutput_final_x_2017"]
-    #run_cmd("cd "+workingDir+mom_result+' ; combine -M FitDiagnostics -d %s.root  -t -1  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  ; cd %s' % (cardToWrite_2017, workingDir))
-    #run_cmd("cd "+workingDir+mom_result+' ; python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.Test.root -g plots.root  -p r_ttH  ; cd '+workingDir)
+    run_cmd("cd "+workingDir+mom_result+' ; combine -M FitDiagnostics -d %s_3poi.root  -t -1  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  ; cd %s' % (cardToWrite_2017, workingDir))
+    run_cmd("cd "+workingDir+mom_result+' ; python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.Test.root -g plots.root  -p r_ttH  ; cd '+workingDir)
     #ROOT.PyConfig.IgnoreCommandLineOptions = True
     #gROOT.SetBatch(ROOT.kTRUE)
     gSystem.Load('libHiggsAnalysisCombinedLimit')
@@ -253,7 +253,7 @@ if doYields :
 
 
 
- """
+"""
  ttH_3l_bl_neg_zpeak_2017
  ttH_3l_bl_pos_zpeak_2017
  ttH_3l_bt_neg_zpeak_2017
@@ -274,4 +274,4 @@ if doYields :
  ttH_3l_crwz_2017
 
  ttH_4l_crzz_2017
- """
+"""

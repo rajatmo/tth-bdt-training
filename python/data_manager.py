@@ -1187,7 +1187,7 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
         Process & \multicolumn{2}{c|}{$1\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$2\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$3\Plepton + 1\tauh$} & \multicolumn{2}{c|}{$2\Plepton ss + 1\tauh$} \\
         \hline
         \hline"""+"\n")
-    if type = 'multilep' :
+    if type == 'multilep' :
         filey.write(r"""
         \begin{tabular}{|l|r@{$ \,\,\pm\,\, $}l|r@{$ \,\,\pm\,\, $}l|r@{$ \,\,\pm\,\, $}l|}
         \hline
