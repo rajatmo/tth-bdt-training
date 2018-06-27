@@ -35,6 +35,9 @@ university = options.uni
 
 if university == "Tallinn_alternative":
     typeFit = "postfit"
+    takeRebinedFolder=False
+    add_x_prefix=False
+    doRebin = True
     divideByBinWidth = "false"
     doKeepBlinded = "true"
     autoMCstats = "true"
@@ -68,6 +71,9 @@ if university == "Tallinn_alternative":
 
 if university == "Tallinn_CR":
     typeFit = "postfit"
+    takeRebinedFolder=False
+    add_x_prefix=False
+    doRebin = False
     divideByBinWidth = "false"
     doKeepBlinded = "false"
     autoMCstats = "true"
@@ -99,6 +105,9 @@ if university == "Tallinn_CR":
 
 if university == "Tallinn_HH_autoMCstats":
     typeFit = "postfit"
+    takeRebinedFolder=False
+    add_x_prefix=False
+    doRebin = False
     doKeepBlinded = "true"
     autoMCstats = "true"
     useSyst = "true" # use shape syst
@@ -135,6 +144,9 @@ if university == "Tallinn_HH_autoMCstats":
 
 if university == "Tallinn":
     typeFit = "postfit"
+    takeRebinedFolder=False
+    add_x_prefix=False
+    doRebin = False
     doKeepBlinded = "true"
     autoMCstats = "true"
     useSyst = "true" # use shape syst
@@ -184,6 +196,9 @@ if university == "Tallinn":
 
 elif university == "Cornell":
     typeFit = "postfit"
+    takeRebinedFolder=False
+    add_x_prefix=False
+    doRebin = False
     doKeepBlinded = "true"
     autoMCstats = "true"
     useSyst = "true" # use shape syst
@@ -263,78 +278,26 @@ if not readLimits :
         file = TFile(my_file,"READ");
         if os.path.exists(my_file) :
             print ("testing ", my_file)
-            if ((nn < 4 or nn > 5 or nn == 9)) :
-                my_file = mom+local+card_prefix+card+'_noNeg.root'
-                file2 = TFile(my_file,"RECREATE");
-                file2.cd()
-                h2 = TH1F()
-                for keyO in file.GetListOfKeys() :
-                   obj =  keyO.ReadObj()
-                   if type(obj) is not TH1F : continue
-                   h2=obj.Clone()
-                   if university == "Tallinn_alternative" :
-                       if nn == 2 : h2.Rebin(5)
-                       if nn == 3 : h2.Rebin(4)
-                   for bin in range (0, h2.GetXaxis().GetNbins()) :
-                       if h2.GetBinContent(bin) < 0 :
-                           h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.01)
-                       h2.SetBinError(bin, min(h2.GetBinContent(bin), h2.GetBinError(bin)) ) # crop all uncertainties to 100% to avoid negative variations
-                   h2.Write()
-                file2.Close()
-            elif "ctrl" not in channels[nn] :
-                print ("testing ", my_file)
-                my_file = mom+local+card_prefix+card+'_rebin_x.root'
-                file2 = TFile(my_file,"RECREATE");
-                file2.cd()
-                h2 = TH1F()
-                for keyO in file.GetListOfKeys() :
-                   obj =  keyO.ReadObj()
-                   if (type(obj) is not TH1F) : continue
-                   h2 = file.Get(folders[nn]+"rebinned/"+str(keyO.GetName())+"_rebinned")
-                   h2.SetName("x_"+str(keyO.GetName()))
-                   for bin in range (0, h2.GetXaxis().GetNbins()) :
-                       if h2.GetBinContent(bin) < 0 :
-                           #print keyO
-                           #print h2.GetBinContent(bin)
-                           h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.00001)
-                   h2.Write()
-                file2.Close()
-            elif "ctrl" not in channels[nn] :
-                print ("testing ", my_file)
-                my_file = mom+local+card_prefix+card+'_rebin_x.root'
-                file2 = TFile(my_file,"RECREATE");
-                file2.cd()
-                h2 = TH1F()
-                for keyO in file.GetListOfKeys() :
-                   obj =  keyO.ReadObj()
-                   if (type(obj) is not TH1F) : continue
-                   h2 = file.Get(folders[nn]+"rebinned/"+str(keyO.GetName())+"_rebinned")
-                   h2.SetName("x_"+str(keyO.GetName()))
-                   for bin in range (0, h2.GetXaxis().GetNbins()) :
-                       if h2.GetBinContent(bin) < 0 :
-                           #print keyO
-                           #print h2.GetBinContent(bin)
-                           h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.00001)
-                   h2.Write()
-                file2.Close()
-            if  "ctrl"  in channels[nn] :
-                print ("testing ", my_file)
-                my_file = mom+local+card_prefix+card+'_rebin_x.root'
-                file2 = TFile(my_file,"RECREATE");
-                file2.cd()
-                h2 = TH1F()
-                for keyO in file.GetListOfKeys() :
-                   obj =  keyO.ReadObj()
-                   if (type(obj) is not TH1F) : continue
-                   h2 = file.Get(str(keyO.GetName()))
-                   h2.SetName("x_"+str(keyO.GetName()))
-                   for bin in range (0, h2.GetXaxis().GetNbins()) :
-                       if h2.GetBinContent(bin) < 0 :
-                           #print keyO
-                           #print h2.GetBinContent(bin)
-                           h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.00001)
-                   h2.Write()
-                file2.Close()
+            my_file = mom+local+card_prefix+card+'_noNeg.root' # remove the negatives
+            file2 = TFile(my_file,"RECREATE");
+            file2.cd()
+            h2 = TH1F()
+            for keyO in file.GetListOfKeys() :
+               obj =  keyO.ReadObj()
+               if type(obj) is not TH1F : continue
+               if not takeRebinedFolder :  h2=obj.Clone()
+               else : h2 = file.Get(folders[nn]+"rebinned/"+str(keyO.GetName())+"_rebinned")
+               if doRebin :
+                   if channel[nn] == "2l_2tau" : h2.Rebin(5)
+                   if channel[nn] == "3l_1tau" : h2.Rebin(4)
+               for bin in range (0, h2.GetXaxis().GetNbins()) :
+                   if h2.GetBinContent(bin) < 0 :
+                       h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.01)
+                   h2.SetBinError(bin, min(h2.GetBinContent(bin), h2.GetBinError(bin)) ) # crop all uncertainties to 100% to avoid negative variations
+                   if add_x_prefix : h2.SetName("x_"+str(keyO.GetName()))
+               h2.Write()
+            file2.Close()
+
             # make txt datacard
             datacard_file=my_file
             datacardFile_output = mom+local+"ttH_"+card
@@ -375,17 +338,13 @@ if not readLimits :
                 run_cmd('cd '+mom+local+' ;  combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 %s' % (txtFile))
                 run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 -t 1000 -s 12345  %s --saveToys --toysFreq' % (txtFile))
                 run_cmd('cd '+mom+local+'combineTool.py -M CollectGoodnessOfFit --input higgsCombineTest.GoodnessOfFit.mH120.root higgsCombineTest.GoodnessOfFit.mH120.12345.root -o GoF_saturated.json')
-                run_cmd('cd '+mom+local+' $CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plotGof.py --statistic saturated --mass 120.0 GoF_saturated.json -o GoF_saturated')
-                run_cmd('mv GoF_saturated.pdf '+mom+local+'GoF_saturated_'+channels[nn]+"_"+cards[nn]+"_"+university+'.pdf')
-                run_cmd('mv GoF_saturated.png '+mom+local+'GoF_saturated_'+channels[nn]+"_"+cards[nn]+"_"+university+'.png')
-                run_cmd('rm higgsCombine*root')
-                run_cmd('rm GoF_saturated.json')
-                # the bellow work on CMSSW7X
-                #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated' % (datacardFile_output))
-                #run_cmd('combineTool.py -M GoodnessOfFit --algorithm saturated -d %s -n .saturated  -n .saturated.toys -t 200 -s 0:4:1 --parallel 5' % (datacardFile_output))
+                run_cmd('cd '+mom+local+' ; $CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plotGof.py --statistic saturated --mass 120.0 GoF_saturated.json -o GoF_saturated')
+                run_cmd('cd '+mom+local+' ; mv GoF_saturated.pdf '+mom+local+'GoF_saturated_'+channels[nn]+"_"+cards[nn]+"_"+university+'.pdf')
+                run_cmd('cd '+mom+local+' ; mv GoF_saturated.png '+mom+local+'GoF_saturated_'+channels[nn]+"_"+cards[nn]+"_"+university+'.png')
+                run_cmd('cd '+mom+local+' ; rm higgsCombine*root')
+                run_cmd('cd '+mom+local+' ; rm GoF_saturated.json')
 
             if doYields :
-                # fitDiagnostics.root
                 run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=%s --use_autoMCstats=%s' % ('WriteDatacards_'+channels[nn]+wdata, my_file, datacardFile_output, useSyst, autoMCstats))
                 run_cmd('combine -M FitDiagnostics -d %s  -t -1 --expectSignal 1' % (txtFile))
                 run_cmd('python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root')
@@ -414,6 +373,7 @@ if not readLimits :
         if doPlots : run_cmd("bash "+mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
 ################################################################
 
+## in the future this will also do the plots of limits
 if readLimits :
     colorsToDo = np.arange(1,4)
     binstoDo=np.arange(1,4)
