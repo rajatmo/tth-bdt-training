@@ -37,6 +37,7 @@ if university == "Tallinn_alternative":
     typeFit = "postfit"
     divideByBinWidth = "false"
     doKeepBlinded = "true"
+    autoMCstats = "true"
     useSyst = "true" # use shape syst
     mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun09/"
     local = "Tallinn_alternative/"
@@ -69,6 +70,7 @@ if university == "Tallinn_CR":
     typeFit = "postfit"
     divideByBinWidth = "false"
     doKeepBlinded = "false"
+    autoMCstats = "true"
     useSyst = "true" # use shape syst
     mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun09/"
     local = "Tallinn_CR/"
@@ -134,6 +136,7 @@ if university == "Tallinn_HH_autoMCstats":
 if university == "Tallinn":
     typeFit = "postfit"
     doKeepBlinded = "true"
+    autoMCstats = "true"
     useSyst = "true" # use shape syst
     mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun09/"
     local = "Tallinn/"
@@ -182,6 +185,7 @@ if university == "Tallinn":
 elif university == "Cornell":
     typeFit = "postfit"
     doKeepBlinded = "true"
+    autoMCstats = "true"
     useSyst = "true" # use shape syst
     mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun05/"
     local = "Cornell/ch/"
@@ -215,7 +219,7 @@ if not readLimits :
             hasFlips = "false"
             isSplit = "false"
             max = 2000
-            min = 0.1
+            minimim = 0.1
             dolog = "true"
             divideByBinWidth = "false"
         if channels[nn] == "2l_2tau" :
@@ -223,7 +227,7 @@ if not readLimits :
             hasFlips = "false"
             isSplit = "false"
             max = 15.0
-            min = 0.0
+            minimim = 0.0
             dolog = "false"
             divideByBinWidth = "false"
         if channels[nn] == "3l_1tau" :
@@ -233,7 +237,7 @@ if not readLimits :
             isSplit = "true"
             hasFlips = "false"
             max = 2.5
-            min = 0.0
+            minimim = 0.0
             dolog = "false"
             divideByBinWidth = "true"
         if channels[nn] == "2lss_1tau" :
@@ -243,7 +247,7 @@ if not readLimits :
             isSplit = "true"
             hasFlips = "true"
             max = 15.0
-            min = 0.0
+            minimim = 0.0
             dolog = "false"
             divideByBinWidth = "true"
         if "ctrl" in channels[nn] :
@@ -251,7 +255,7 @@ if not readLimits :
             hasFlips = "true"
             isSplit = "false"
             max = 500000
-            min = 0.1
+            minimim = 0.1
             dolog = "true"
             divideByBinWidth = "false"
         #####################################################################
@@ -273,10 +277,8 @@ if not readLimits :
                        if nn == 3 : h2.Rebin(4)
                    for bin in range (0, h2.GetXaxis().GetNbins()) :
                        if h2.GetBinContent(bin) < 0 :
-                           #print keyO
-                           #print h2.GetBinContent(bin)
                            h2.AddBinContent(bin, abs(h2.GetBinContent(bin))+0.01)
-                           h2.SetBinError(bin,min(h2.GetBinContent(bin),h2.GetBinError(bin))) # crop all uncertainties to 100% to avoid negative variations
+                       h2.SetBinError(bin, min(h2.GetBinContent(bin), h2.GetBinError(bin)) ) # crop all uncertainties to 100% to avoid negative variations
                    h2.Write()
                 file2.Close()
             elif "ctrl" not in channels[nn] :
@@ -353,7 +355,7 @@ if not readLimits :
                 run_cmd('cd '+mom+local+' combine -M FitDiagnostics -d %s  -t -1  --expectSignal 1' % (txtFile))
                 run_cmd('cd '+mom+local+' PostFitShapes -d %s -o %s -m 125 -f fitDiagnostics.root:fit_s --postfit --sampling --print' % (txtFile, rootFile)) # --postfit
                 makeplots=('root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\\"'
-                +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog)+','+str(hasFlips)+','+hasConversions+',\\"BDT\\",\\"\\",'+str(min)+','+str(max)+','+isSplit+',\\"'+typeFit+'\\",'+divideByBinWidth+','+doKeepBlinded+')')
+                +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog)+','+str(hasFlips)+','+hasConversions+',\\"BDT\\",\\"\\",'+str(minimim)+','+str(max)+','+isSplit+',\\"'+typeFit+'\\",'+divideByBinWidth+','+doKeepBlinded+')')
                 #root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\"2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M_11bins_quantiles\",\"2018jun02/\",\"2lss_1tau\",\"/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/\",false,false,\"BDT\",\"\",0.0,10.0)
                 filesh.write(makeplots+ "\n")
                 print ("to have the plots take the makePlots command from: ",mom+local+"execute_plots"+channels[nn]+"_"+cards[nn]+"_"+university+".sh")
