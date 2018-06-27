@@ -196,8 +196,8 @@ if float_signal :
 
 if doYields :
     channels = ["3l_1tau_OS_mvaOutput_final_x_2017", "2l_2tau_sumOS_mvaOutput_final_x_2017", "1l_2tau_OS_mvaOutput_final_x_2017", "2lss_1tau_sumOS_mvaOutput_final_x_2017"]
-    run_cmd("cd "+workingDir+mom_result+' ; combine -M FitDiagnostics -d %s_3poi.root  -t -1  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  ; cd %s' % (cardToWrite_2017, workingDir))
-    run_cmd("cd "+workingDir+mom_result+' ; python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.Test.root -g plots.root  -p r_ttH  ; cd '+workingDir)
+    #run_cmd("cd "+workingDir+mom_result+' ; combine -M FitDiagnostics -d %s_3poi.root  -t -1  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  ; cd %s' % (cardToWrite_2017, workingDir))
+    #run_cmd("cd "+workingDir+mom_result+' ; python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.Test.root -g plots.root  -p r_ttH  ; cd '+workingDir)
     #ROOT.PyConfig.IgnoreCommandLineOptions = True
     #gROOT.SetBatch(ROOT.kTRUE)
     gSystem.Load('libHiggsAnalysisCombinedLimit')
@@ -213,40 +213,49 @@ if doYields :
 
     print 'Pre-fit tables:'
 
-    #labels = [ "1l_2tau_OS_mvaOutput_final_x_2017", "2l_2tau_sumOS_mvaOutput_final_x_2017", "3l_1tau_OS_mvaOutput_final_x_2017",  "2lss_1tau_sumOS_mvaOutput_final_x_2017"]
-    #type = 'tau'
+    labels = [ "1l_2tau_OS_mvaOutput_final_x_2017", "2l_2tau_sumOS_mvaOutput_final_x_2017", "3l_1tau_OS_mvaOutput_final_x_2017",  "2lss_1tau_sumOS_mvaOutput_final_x_2017"]
+    type = 'tau'
     colapseCat = False
-    #filey = open(workingDir+mom_result+"yields_"+type+"_from_combo_prefit.tex","w")
-    #PrintTables_Tau(cmb, tuple(), filey, blinded, labels, type)
+    filey = open(os.getcwd()+"/"+mom_result+"yields_"+type+"_from_combo_prefit.tex","w")
+    PrintTables_Tau(cmb, tuple(), filey, blinded, labels, type)
 
-    labels = ["ttH_2lss_ee_neg_2017",
-    "ttH_2lss_ee_pos_2017",
-    "ttH_2lss_em_bl_neg_2017",
-    "ttH_2lss_em_bl_pos_2017",
-    "ttH_2lss_em_bt_neg_2017",
-    "ttH_2lss_em_bt_pos_2017",
-    "ttH_2lss_mm_bl_neg_2017",
-    "ttH_2lss_mm_bl_pos_2017",
-    "ttH_2lss_mm_bt_neg_2017",
-    "ttH_2lss_mm_bt_pos_2017",
-    "ttH_3l_bl_neg_2017",
-    "ttH_3l_bl_pos_2017",
-    "ttH_3l_bt_neg_2017",
-    "ttH_3l_bt_pos_2017",
-    "ttH_4l_2017"]
+    #"""
+    labels = [
+    "2lss_ee_neg_2017",
+    "2lss_ee_pos_2017",
+    #
+    "2lss_em_bl_neg_2017",
+    "2lss_em_bl_pos_2017",
+    #
+    "2lss_mm_bl_neg_2017",
+    "2lss_mm_bl_pos_2017",
+    #
+    "2lss_em_bt_neg_2017",
+    "2lss_em_bt_pos_2017",
+    #
+    "2lss_mm_bt_neg_2017",
+    "2lss_mm_bt_pos_2017",
+    #
+    "3l_bl_neg_2017",
+    "3l_bl_pos_2017",
+    "3l_bt_neg_2017",
+    "3l_bt_pos_2017",
+    #
+    "4l_2017"]
     type = 'multilep'
     colapseCat = True
-    filey = open(workingDir+mom_result+"yields_"+type+"_from_combo_prefit.tex","w")
+    filey = open(os.getcwd()+"/"+mom_result+"yields_"+type+"_from_combo_prefit.tex","w")
     PrintTables_Tau(cmb, tuple(), filey, blinded, labels, type)
+    #"""
 
 
     cmb.UpdateParameters(rfr)
-    workingDir = os.getcwd()
-    workingDir = workingDir+"/"
+    #workingDir = os.getcwd()
+    #workingDir = workingDir+"/"
     #print 'Post-fit tables:'
     #filey = open(workingDir+mom_result+"yields_tau_from_combo_postfit.tex","w")
     #PrintTables_Tau(cmb, (rfr, 500), filey, blinded)
-    print ("the yields are on this file: ", workingDir+mom_result+"yields_tau_"+"from_combo"+"_*.tex")
+    print ("the yields are on this file: ", os.getcwd()+"/"+mom_result+"yields_"+type+"_from_combo"+"_*.tex")
 
 
 
