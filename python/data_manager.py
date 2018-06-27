@@ -1094,6 +1094,12 @@ def run_cmd(command):
 ###########################################################
 # doYields
 
+def AddSystQuad(list):
+    ell = []
+    for element in list : ell = ell + [math.pow(element, 2.)]
+    quad =  math.sqrt(sum(ell))
+    return quad
+
 def AddSystQuad2(a,b):
     a2 = math.pow(a, 2.)
     b2 = math.pow(b, 2.)
@@ -1123,7 +1129,7 @@ def AddSystQuad7(a,b,c,d,e,f,g):
     return quad
 
 def PrintTables(cmb, uargs, label, filey, uni, channel, blinded):
-    c_2l_2tau = cmb.cp().bin([label])
+    c_cat = cmb.cp().bin([label])
 
     filey.write(r"""
 \begin{tabular}{|l|r@{$ \,\,\pm\,\, $}l|}
@@ -1133,38 +1139,166 @@ Process & \multicolumn{2}{c|}{channel} \\
 \hline"""+"\n")
     if channel == "2lss_1tau" or channel == "3l_1tau":
         print (channel, "2lss 3l")
-        filey.write(r'ttH,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hzz_faketau']).GetRate()+c_2l_2tau.cp().process(['ttH_hzz_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['ttH_hzz_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_hzz_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'ttH,H$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww_faketau']).GetRate()+c_2l_2tau.cp().process(['ttH_hww_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['ttH_hww_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_hww_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'ttH,H$\rightarrow\tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt_faketau']).GetRate()+c_2l_2tau.cp().process(['ttH_htt_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['ttH_htt_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_tt_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK_faketau']).GetRate()+c_2l_2tau.cp().process(['EWK_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['EWK_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['EWK_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ_faketau']).GetRate()+c_2l_2tau.cp().process(['TTZ_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['TTZ_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['TTZ_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW_faketau']).GetRate()+c_2l_2tau.cp().process(['TTW_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['TTW_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['TTW_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTWW_faketau']).GetRate()+c_2l_2tau.cp().process(['TTWW_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['TTWW_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['TTWW_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Rares_faketau']).GetRate()+c_2l_2tau.cp().process(['Rares_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['Rares_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['Rares_gentau']).GetUncertainty(*uargs)))+"\n")
-        filey.write(r'tH  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['tH_faketau']).GetRate()+c_2l_2tau.cp().process(['tH_gentau']).GetRate(), AddSystQuad2(c_2l_2tau.cp().process(['tH_faketau']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['tH_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'ttH,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['ttH_hzz_faketau']).GetRate()+c_cat.cp().process(['ttH_hzz_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['ttH_hzz_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['ttH_hzz_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'ttH,H$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['ttH_hww_faketau']).GetRate()+c_cat.cp().process(['ttH_hww_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['ttH_hww_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['ttH_hww_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'ttH,H$\rightarrow\tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['ttH_htt_faketau']).GetRate()+c_cat.cp().process(['ttH_htt_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['ttH_htt_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['ttH_tt_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['EWK_faketau']).GetRate()+c_cat.cp().process(['EWK_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['EWK_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['EWK_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['TTZ_faketau']).GetRate()+c_cat.cp().process(['TTZ_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['TTZ_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['TTZ_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['TTW_faketau']).GetRate()+c_cat.cp().process(['TTW_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['TTW_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['TTW_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['TTWW_faketau']).GetRate()+c_cat.cp().process(['TTWW_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['TTWW_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['TTWW_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['Rares_faketau']).GetRate()+c_cat.cp().process(['Rares_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['Rares_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['Rares_gentau']).GetUncertainty(*uargs)))+"\n")
+        filey.write(r'tH  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['tH_faketau']).GetRate()+c_cat.cp().process(['tH_gentau']).GetRate(), AddSystQuad2(c_cat.cp().process(['tH_faketau']).GetUncertainty(*uargs),c_cat.cp().process(['tH_gentau']).GetUncertainty(*uargs)))+"\n")
     else :
         print channel
-        filey.write(r'ttH,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hzz']).GetRate(), c_2l_2tau.cp().process(['ttH_hzz']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'tt$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww']).GetRate(), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'tt$\rightarrow \tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt']).GetRate(), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK']).GetRate(), c_2l_2tau.cp().process(['EWK']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ']).GetRate(), c_2l_2tau.cp().process(['TTZ']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW']).GetRate(), c_2l_2tau.cp().process(['TTW']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTWW']).GetRate(), c_2l_2tau.cp().process(['TTWW']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Rares']).GetRate(), c_2l_2tau.cp().process(['tH']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'tH  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['tH']).GetRate(), c_2l_2tau.cp().process(['tH']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'Fakes  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['fakes_data']).GetRate(), c_2l_2tau.cp().process(['fakes_data']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'ttH,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['ttH_hzz']).GetRate(), c_cat.cp().process(['ttH_hzz']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'tt$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['ttH_hww']).GetRate(), c_cat.cp().process(['ttH_hww']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'tt$\rightarrow \tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['ttH_htt']).GetRate(), c_cat.cp().process(['ttH_htt']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['EWK']).GetRate(), c_cat.cp().process(['EWK']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['TTZ']).GetRate(), c_cat.cp().process(['TTZ']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['TTW']).GetRate(), c_cat.cp().process(['TTW']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'TTWW  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['TTWW']).GetRate(), c_cat.cp().process(['TTWW']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'Rares  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['Rares']).GetRate(), c_cat.cp().process(['tH']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'tH  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['tH']).GetRate(), c_cat.cp().process(['tH']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'Fakes  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['fakes_data']).GetRate(), c_cat.cp().process(['fakes_data']).GetUncertainty(*uargs))+"\n")
     if uni == "Tallinn" :
-        filey.write(r'Conversions  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['conversions']).GetRate(), c_2l_2tau.cp().process(['conversions']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'Conversions  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['conversions']).GetRate(), c_cat.cp().process(['conversions']).GetUncertainty(*uargs))+"\n")
     if uni == "Cornell" :
-        filey.write(r'Conversions  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['Conversion']).GetRate(), c_2l_2tau.cp().process(['Conversion']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'Conversions  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['Conversion']).GetRate(), c_cat.cp().process(['Conversion']).GetUncertainty(*uargs))+"\n")
     if channel == "2lss_1tau" :
-        filey.write(r'Flips  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['flips_data']).GetRate(), c_2l_2tau.cp().process(['flips_data']).GetUncertainty(*uargs))+"\n")
-    filey.write(r'\hline Total Expected background    & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().backgrounds().GetRate(), c_2l_2tau.cp().backgrounds().GetUncertainty(*uargs))+"\n")
+        filey.write(r'Flips  & $%.2f$ & $%.2f$ \\' % (c_cat.cp().process(['flips_data']).GetRate(), c_cat.cp().process(['flips_data']).GetUncertainty(*uargs))+"\n")
+    filey.write(r'\hline Total Expected background    & $%.2f$ & $%.2f$ \\' % (c_cat.cp().backgrounds().GetRate(), c_cat.cp().backgrounds().GetUncertainty(*uargs))+"\n")
     filey.write(r'\hline SM expectation                        & $%.2f$ & $%.2f$ \\' % (
-        c_2l_2tau.cp().backgrounds().GetRate() + c_2l_2tau.cp().process(['ttH_htt']).GetRate() + c_2l_2tau.cp().process(['ttH_hww']).GetRate() + c_2l_2tau.cp().process(['ttH_hzz']).GetRate() , AddSystQuad4( c_2l_2tau.cp().backgrounds().GetUncertainty(*uargs), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs),c_2l_2tau.cp().process(['ttH_hzz']).GetUncertainty(*uargs)) )+"\n")
+        c_cat.cp().backgrounds().GetRate() + c_cat.cp().process(['ttH_htt']).GetRate() + c_cat.cp().process(['ttH_hww']).GetRate() + c_cat.cp().process(['ttH_hzz']).GetRate() , AddSystQuad4( c_cat.cp().backgrounds().GetUncertainty(*uargs), c_cat.cp().process(['ttH_htt']).GetUncertainty(*uargs), c_cat.cp().process(['ttH_hww']).GetUncertainty(*uargs),c_cat.cp().process(['ttH_hzz']).GetUncertainty(*uargs)) )+"\n")
     filey.write(r'\hline'+"\n")
     if blinded : filey.write(r'Observed data & \multicolumn{2}{c|}{$-$} \\'+"\n")
-    else : filey.write(r'Observed data & \multicolumn{2}{c|}{$%g$} \\' % (c_2l_2tau.cp().GetObservedRate())+"\n")
+    else : filey.write(r'Observed data & \multicolumn{2}{c|}{$%g$} \\' % (c_cat.cp().GetObservedRate())+"\n")
     filey.write(r"""\hline
 \end{tabular}"""+"\n")
+
+
+def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
+
+    c_cat = []
+    for label in labels : c_cat = c_cat  + [cmb.cp().bin(['ttH_'+label])]
+    if type == 'tau' :
+        filey.write(r"""
+        \begin{tabular}{|l|r@{$ \,\,\pm\,\, $}l|r@{$ \,\,\pm\,\, $}l|r@{$ \,\,\pm\,\, $}l|r@{$ \,\,\pm\,\, $}l|}
+        \hline
+        Process & \multicolumn{2}{c|}{$1\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$2\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$3\Plepton + 1\tauh$} & \multicolumn{2}{c|}{$2\Plepton ss + 1\tauh$} \\
+        \hline
+        \hline"""+"\n")
+    if type = 'multilep' :
+        filey.write(r"""
+        \begin{tabular}{|l|r@{$ \,\,\pm\,\, $}l|r@{$ \,\,\pm\,\, $}l|r@{$ \,\,\pm\,\, $}l|}
+        \hline
+        Process & \multicolumn{2}{c|}{$1\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$2\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$3\Plepton + 1\tauh$} & \multicolumn{2}{c|}{$2\Plepton ss + 1\tauh$} \\
+        \hline
+        \hline"""+"\n")
+
+    signals = [
+        'ttH_hzz',
+        'ttH_hww',
+        'ttH_htt',
+        'ttH_hmm',
+        'ttH_hzg'
+        ]
+
+    TTWX = [
+        'TTW',
+        'TTWW'
+        ]
+
+    tH = [
+        'tHq',
+        'tHW'
+        ]
+
+    singleCompMC = [
+        'TTZ',
+        'EWK',
+        'fakes_data',
+        'conversions',
+        'flips',
+        'Rares'
+    ]
+
+    singleCompMClabels = [
+        '$\cPqt\cPaqt\cPZ$',
+        '$\PW\PW + \PW\cPZ$',
+        'Misidentified',
+        'Conversions',
+        'signal flip',
+        'Other'
+    ]
+
+    for todo in [signals, TTWX, tH] :
+
+        sigsum = [0.0]*len(todo)
+        sigsumErr = [0.0]*len(todo)
+
+        if len(todo) > 2 :
+            linesigsum = 'ttH (sum)&'
+            signalslabel = [
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \cPZ\cPZ$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \PW\PW$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \Pgt\Pgt$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \mu\mu$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \cPZ\gamma$& ',
+                ]
+        elif todo == TTWX :
+            linesigsum = 'ttW + ttWW &'
+            signalslabel = [
+                r'$\cPqt\cPaqt\PW$ & ',
+                r'$\cPqt\cPaqt\PW\PW$ & '
+                ]
+        elif todo == tH :
+            linesigsum = '$\cPqt\PHiggs$ (sum) &'
+            signalslabel = [
+                r'$\cPqt\PHiggs q$ & ',
+                r'$\cPqt\PHiggs\PW$ & '
+                ]
+
+        for ss, signal in enumerate(todo) :
+            linesig = signalslabel[ss]
+            for ll, label in enumerate(labels) :
+                if "2lss_1tau" in label or  "3l_1tau" in label :
+                    thissig = c_cat[ll].cp().process([signal+'_faketau']).GetRate() + c_cat[ll].cp().process([signal+'_gentau']).GetRate()
+                    thissigErr = AddSystQuad({c_cat[ll].cp().process([signal+'_faketau']).GetUncertainty(*uargs), c_cat[ll].cp().process([signal+'_gentau']).GetUncertainty(*uargs)})
+                else :
+                    thissig = c_cat[ll].cp().process([signal]).GetRate()
+                    thissigErr = c_cat[ll].cp().process([signal]).GetUncertainty(*uargs)
+                #print (label, signal, thissig, thissigErr )
+                linesig = linesig + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+                if ll == len(labels) - 1 : linesig = linesig + ' \\'
+                else : linesig = linesig + ' &'
+                sigsum[ll] = sigsum[ll] + thissig
+                sigsumErr[ll] = AddSystQuad({sigsumErr[ll], thissigErr})
+            filey.write(linesig+"\n")
+        filey.write(r'\hline'+"\n")
+
+        for ll, label in enumerate(labels) :
+            linesigsum = linesigsum + ' $%.2f$ & $%.2f$ ' % (sigsum[ll], sigsumErr[ll])
+            if ll == len(labels) - 1 : linesigsum = linesigsum + ' \\'
+            else : linesigsum = linesigsum + ' &'
+        filey.write(linesigsum+r' \\ \n')
+        filey.write(r'\hline'+"\n")
+
+    for ss, signal in enumerate(singleCompMC) :
+        lineTTZ = singleCompMClabels[ss]+' & '
+        for ll, label in enumerate(labels) :
+            if ("2lss_1tau" in label or  "3l_1tau" in label ) and signal not in ['fakes_data', 'flips']:
+                thissig = c_cat[ll].cp().process([signal+'_faketau']).GetRate() + c_cat[ll].cp().process([signal+'_gentau']).GetRate()
+                thissigErr = AddSystQuad({c_cat[ll].cp().process([signal+'_faketau']).GetUncertainty(*uargs), c_cat[ll].cp().process([signal+'_gentau']).GetUncertainty(*uargs)})
+            else :
+                thissig = c_cat[ll].cp().process([signal]).GetRate()
+                thissigErr = c_cat[ll].cp().process([signal]).GetUncertainty(*uargs)
+            lineTTZ = lineTTZ + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+            if ll == len(labels) - 1 : lineTTZ = lineTTZ + r' \\ \n'
+            else : lineTTZ = lineTTZ + ' &'
+        filey.write(lineTTZ+r' \\ \n')
+
+    filey.write(r'\hline'+"\n")
+    if blinded : filey.write(r'Observed data & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$-$}  \\ \n')
+    else : filey.write(r'Observed data & \multicolumn{2}{c|}{$%g$} & \multicolumn{2}{c|}{$%g$} & \multicolumn{2}{c|}{$%g$} & \multicolumn{2}{c|}{$%g$} \\' % (c_cat[0].cp().GetObservedRate(), c_cat[1].cp().GetObservedRate(), c_cat[2].cp().GetObservedRate(), c_cat[3].cp().GetObservedRate())+"\n")
+    filey.write(r"""\hline
+    \end{tabular}"""+"\n")
