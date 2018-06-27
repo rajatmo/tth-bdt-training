@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 # python do_limits.py --channel "2lss_1tau" --uni "Tallinn"
 from optparse import OptionParser
 parser = OptionParser()
-parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default="2lss_1tau")
+parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default="none")
 parser.add_option("--uni", type="string", dest="uni", help="  Set of variables to use -- it shall be put by hand in the code", default="Tallinn")
 (options, args) = parser.parse_args()
 
@@ -224,8 +224,8 @@ print ("to run this script your CMSSW_base should be the one that CombineHaveste
 
 if not readLimits :
     for nn, card in enumerate(cards) :
-        if not nn < 4 : continue
-        #if not channels[nn] == "2l_2tau" : continue #
+        if not nn < 4 and channel == "none" : continue
+        elif not channel == "none" not channels[nn] == channel : continue #
         #####################################################################
         wdata = "" # to append to WriteDatacard_$channel
         hasConversions = "true"
