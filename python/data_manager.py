@@ -1145,8 +1145,9 @@ Process & \multicolumn{2}{c|}{channel} \\
     else :
         print channel
         filey.write(r'ttH,H$\rightarrow$ZZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hzz']).GetRate(), c_2l_2tau.cp().process(['ttH_hzz']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'tt$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww']).GetRate(), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs))+"\n")
-        filey.write(r'tt$\rightarrow \tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt']).GetRate(), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'ttH$\rightarrow$WW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_hww']).GetRate(), c_2l_2tau.cp().process(['ttH_hww']).GetUncertainty(*uargs))+"\n")
+        filey.write(r'ttH$\rightarrow \tau \tau$  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['ttH_htt']).GetRate(), c_2l_2tau.cp().process(['ttH_htt']).GetUncertainty(*uargs))+"\n")
+        print ("ttHtt", c_2l_2tau.cp().process(['ttH_htt']).GetRate())
         filey.write(r'EWK  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['EWK']).GetRate(), c_2l_2tau.cp().process(['EWK']).GetUncertainty(*uargs))+"\n")
         filey.write(r'TTZ  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTZ']).GetRate(), c_2l_2tau.cp().process(['TTZ']).GetUncertainty(*uargs))+"\n")
         filey.write(r'TTW  & $%.2f$ & $%.2f$ \\' % (c_2l_2tau.cp().process(['TTW']).GetRate(), c_2l_2tau.cp().process(['TTW']).GetUncertainty(*uargs))+"\n")
