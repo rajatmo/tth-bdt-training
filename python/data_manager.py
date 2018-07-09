@@ -1176,21 +1176,25 @@ Process & \multicolumn{2}{c|}{channel} \\
 \end{tabular}"""+"\n")
 
 
-def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
+def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
 
     c_cat = []
+    sum_proc = []
+    err_sum_proc = []
     for label in labels :
         c_cat = c_cat  + [cmb.cp().bin(['ttH_'+label])]
+        sum_proc = sum_proc + [0]
+        err_sum_proc = err_sum_proc + [0]
 
     header = r'\begin{tabular}{|l|'
     bottom = r'Observed data & '
     for ll in xrange(len(labels)) :
         header = header + r'r@{$ \,\,\pm\,\, $}l|'
         if blinded : bottom = bottom + r' \multicolumn{2}{c|}{$-$} '
-        else : bottom = bottom + r' \multicolumn{2}{c|}{$%g$} \\' % (c_cat[ll].cp().GetObservedRate())
+        else : bottom = bottom + r' \multicolumn{2}{c|}{$%g$} ' % (c_cat[ll].cp().GetObservedRate())
         if ll == len(labels) - 1 : bottom = bottom + r' \\'
         else : bottom = bottom + ' &'
-    header = header +"\n"
+    header = header +"} \n"
     bottom = bottom +"\n"
     filey.write(header)
 
@@ -1207,15 +1211,43 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
 
     if type == 'multilep2lss' :
         conversions = "Convs"
+        flips = 'data_flips'
+        fakes_data = 'data_fakes'
+
+        filey.write(r"""
+        \hline
+        Process & \multicolumn{20}{c|}{$2\Plepton ss$}  \\ \hline
+        B-tag  & \multicolumn{4}{c|}{no req.}  & \multicolumn{8}{c|}{Loose}  & \multicolumn{8}{c|}{Tight}   \\ \hline
+        Leptons  & \multicolumn{4}{c|}{$ee$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$}  \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} \\ \hline
+        \hline
+        \hline"""+"\n")
+
+    if type == 'multilepCR2lss' :
+        conversions = "Convs"
         flips = 'flips_data'
         fakes_data = 'data_fakes'
 
         filey.write(r"""
         \hline
-        Process & \multicolumn{20}{c|}{$2\Plepton ss$} & \multicolumn{8}{c|}{$3\Plepton$} & \multicolumn{2}{c|}{$4\Plepton + 1\tauh$}  \\ \hline
-        B-tag  & \multicolumn{4}{c|}{no req.}  & \multicolumn{8}{c|}{Loose}  & \multicolumn{8}{c|}{Tight}  & \multicolumn{4}{c|}{Loose}  & \multicolumn{4}{c|}{Tight} & \multicolumn{2}{c|}{no req.}  \\ \hline
-        Leptons  & \multicolumn{4}{c|}{$ee$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$}  \\ \hline
-        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$}  & \multicolumn{2}{c|}{$+\-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$}& \multicolumn{2}{c|}{$+$}  \\ \hline
+        Process & \multicolumn{20}{c|}{$2\Plepton ss$}  \\ \hline
+        B-tag   & \multicolumn{4}{c|}{no req.} & \multicolumn{8}{c|}{Loose}  & \multicolumn{8}{c|}{Tight}  \\ \hline
+        Leptons  & \multicolumn{4}{c|}{$ee$} & \multicolumn{4}{c|}{$em$}  & \multicolumn{4}{c|}{$mm$} & \multicolumn{4}{c|}{$em$}  & \multicolumn{4}{c|}{$mm$} \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} \\ \hline
+        \hline
+        \hline"""+"\n")
+
+    if type == 'multilepCR3l4l' :
+        conversions = "Convs"
+        flips = 'flips_data'
+        fakes_data = 'data_fakes'
+
+        filey.write(r"""
+        \hline
+        Process & \multicolumn{10}{c|}{$3\Plepton$} & \multicolumn{2}{c|}{$4\Plepton$}  \\ \hline
+        CR & \multicolumn{8}{c|}{$\PcZ$-peak} & \multicolumn{2}{c|}{$WZ$ enrich.}  & \multicolumn{2}{c|}{$ZZ$ enrich.} \\ \hline
+        B-tag  & \multicolumn{4}{c|}{Loose}  & \multicolumn{4}{c|}{Tight}  & \multicolumn{4}{c|}{no req.}   \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & & \multicolumn{4}{c|}{no req.} \\ \hline
         \hline
         \hline"""+"\n")
 
@@ -1226,10 +1258,9 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
 
         filey.write(r"""
         \hline
-        Process & \multicolumn{20}{c|}{$2\Plepton ss$} & \multicolumn{8}{c|}{$3\Plepton$} & \multicolumn{2}{c|}{$4\Plepton + 1\tauh$}  \\ \hline
+        Process &  \multicolumn{8}{c|}{$3\Plepton$} & \multicolumn{2}{c|}{$4\Plepton + 1\tauh$}  \\ \hline
         B-tag  & \multicolumn{4}{c|}{no req.}  & \multicolumn{8}{c|}{Loose}  & \multicolumn{8}{c|}{Tight}  & \multicolumn{4}{c|}{Loose}  & \multicolumn{4}{c|}{Tight} & \multicolumn{2}{c|}{no req.}  \\ \hline
-        Leptons  & \multicolumn{4}{c|}{$ee$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$}  \\ \hline
-        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$}  & \multicolumn{2}{c|}{$+\-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$}& \multicolumn{2}{c|}{$+$}  \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} \\ \hline
         \hline
         \hline"""+"\n")
 
@@ -1246,7 +1277,7 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
         'TTWW'
         ]
 
-    if type == 'multilep' :
+    if 'multilep' in type :
         tH = [
         'tHW_htt',
         'tHq_htt',
@@ -1256,12 +1287,12 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
         'tHq_hzz'
         ]
         signalslabel_tH = [
-            r'$\cPqt\PHiggs q$ & ',
-            r'$\cPqt\PHiggs\PW$ & ',
-            r'$\cPqt\PHiggs q$ & ',
-            r'$\cPqt\PHiggs\PW$ & ',
-            r'$\cPqt\PHiggs q$ & ',
-            r'$\cPqt\PHiggs\PW$ & '
+            r'$\cPqt\PHiggs q$ $\PHiggs \to \Pgt\Pgt$& ',
+            r'$\cPqt\PHiggs\PW$ $\PHiggs \to \Pgt\Pgt$& ',
+            r'$\cPqt\PHiggs q$ $\PHiggs \to \PW\PW$ & ',
+            r'$\cPqt\PHiggs\PW$ $\PHiggs \to \PW\PW$ & ',
+            r'$\cPqt\PHiggs q$ $\PHiggs \to \cPZ\cPZ$  & ',
+            r'$\cPqt\PHiggs\PW$ $\PHiggs \to \cPZ\cPZ$  & '
             ]
 
     if type == 'tau' :
@@ -1290,7 +1321,7 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
     ]
 
     singleCompMClabels = []
-    if type == 'tau' : singleCompMClabels = singleCompMClabels + ['$\PW\cPZ + \cPZ\cPZ$&']
+    if type == 'tau' : singleCompMClabels = singleCompMClabels + ['$\PW\cPZ + \cPZ\cPZ$']
     singleCompMClabels = singleCompMClabels + [
         '$\cPqt\cPaqt\cPZ$',
         'Misidentified',
@@ -1300,7 +1331,7 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
     ]
 
     if type == 'tau' : listTosum = [signals, TTWX, tH]
-    if type == 'multilep' : listTosum = [signals, TTWX, tH, EWK]
+    if 'multilep' in type : listTosum = [signals, TTWX, tH, EWK]
     for todo in listTosum :
 
         sigsum = [0.0 for i in xrange(len(labels))]
@@ -1340,17 +1371,22 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
                 else :
                     thissig = c_cat[ll].cp().process([signal]).GetRate()
                     thissigErr = c_cat[ll].cp().process([signal]).GetUncertainty(*uargs)
-                print (label, signal, thissig, thissigErr )
-                linesig = linesig + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+                if not thissig + thissigErr < 0.05:
+                    linesig = linesig + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+                else : linesig = linesig + r' \multicolumn{2}{c|}{$< 0.05$} '
                 if ll == len(labels) - 1 : linesig = linesig + r' \\'
                 else : linesig = linesig + ' &'
                 sigsum[ll] = sigsum[ll] + thissig
                 sigsumErr[ll] = AddSystQuad({sigsumErr[ll], thissigErr})
+                sum_proc[ll] = sum_proc[ll] + thissig
+                err_sum_proc[ll] = AddSystQuad({err_sum_proc[ll], thissigErr})
             filey.write(linesig+"\n")
         filey.write(r'\hline'+"\n")
 
         for ll, label in enumerate(labels) :
-            linesigsum = linesigsum + ' $%.2f$ & $%.2f$ ' % (sigsum[ll], sigsumErr[ll])
+            if not sigsum[ll] +  sigsumErr[ll] < 0.05:
+                linesigsum = linesigsum + ' $%.2f$ & $%.2f$ ' % (sigsum[ll], sigsumErr[ll])
+            else :  linesigsum = linesigsum + r' \multicolumn{2}{c|}{$< 0.05$} '
             if ll == len(labels) - 1 : linesigsum = linesigsum + r' \\'
             else : linesigsum = linesigsum + ' &'
         filey.write(linesigsum+"\n")
@@ -1365,10 +1401,23 @@ def PrintTables_Tau(cmb, uargs, filey, blinded, labels, type):
             else :
                 thissig = c_cat[ll].cp().process([signal]).GetRate()
                 thissigErr = c_cat[ll].cp().process([signal]).GetUncertainty(*uargs)
-            lineTTZ = lineTTZ + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+            if not thissig + thissigErr < 0.05:
+                lineTTZ = lineTTZ + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+            else : lineTTZ = lineTTZ + r' \multicolumn{2}{c|}{$< 0.05$} '
+            sum_proc[ll] = sum_proc[ll] + thissig
+            err_sum_proc[ll] = AddSystQuad({err_sum_proc[ll], thissigErr})
             if ll == len(labels) - 1 : lineTTZ = lineTTZ + r' \\ '+"\n"
             else : lineTTZ = lineTTZ + ' &'
-        filey.write(lineTTZ+r' \\ '+"\n")
+        filey.write(lineTTZ+"\n")
+
+    lineSUM = r'\hline\hline'+"\n"+' SM expectation & '
+    for ll, label in enumerate(labels) :
+        if not sum_proc[ll] + err_sum_proc[ll] < 0.05:
+            lineSUM = lineSUM + ' $%.2f$ & $%.2f$ ' % (sum_proc[ll] , err_sum_proc[ll] )
+        else : lineSUM = lineSUM + r' \multicolumn{2}{c|}{$< 0.05$} '
+        if ll == len(labels) - 1 : lineSUM = lineSUM + r' \\ '+"\n"
+        else : lineSUM = lineSUM + ' &'
+    filey.write(lineSUM+"\n")
 
     filey.write(r'\hline'+"\n")
     filey.write(bottom)
