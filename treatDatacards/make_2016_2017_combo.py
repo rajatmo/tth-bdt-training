@@ -9,51 +9,80 @@ import glob
 execfile("../python/data_manager.py")
 from random import randint
 
-####
-takeCombo = True
+#####################################################################
+## From where to take the cards:
+# The bellow is going to construct the combo card from scratch given the path of the cards by channel (see mom_2017/mom_2016)
 copy_cards =  False
 combine_cards = False
+# If you already have the combined card put the bellow true (see mom_result)
+takeCombo = True
+#####################################################################
+
+#####################################################################
+## What to do:
+doFits = False ## To do any of the rest you must have ran with this being True once
+## but, once it is done one there is no need to loose time repeating it
 
 #######################
-## What to do
-doFits = True ## To do any of the rest you must have ran with this being True once
-
+## Each of the steps bellow take time, I suggest to do on one separated runs
+# (like this they can be also done in parallel)
+# 1)
 doCategories = True
 
+# 2)
+# for combo is almost mandatory send to grid,
+# if you run on lxplus combineTool is already set to send to Condor (see bellow 'How')
 doImpactCombo = False
 doImpact2017 = False
+# If you will run in Condor this must be done in two steps:
+#  -  the first with impactsSubmit= True ---> wait for the jobs to be ready
+#      - To see that is all done: check that you have the same number of root files than the number of nuissances to be considered
+#  - after the jobs are done run again with impactsSubmit = False to wrap up the plot
+impactsSubmit = False
 
+# 3) -- optional
+# fast version of the impacts -- Hessian approximation for quick checks
 doHessImpactCombo = False
 doHessImpact2017 = False
 
+# 4)
+# the bellow take lots of time, better to do on one run
+# It is almost mandatory send to grid,
+# if you run on lxplus combineTool is already set to send to Condor (see bellow 'How')
 doGOFCombo = False
 doGOF2017 = False
+# If you will run in Condor this must be done in two steps:
+#  -  the first with GOF_submit = True ---> wait for the jobs to be ready
+#     -- each job will contain 2 toys
+#        (if needed run the submission bash script created again up to you be happy with the number of toys)
+#  - after the jobs are done run again with GOF_submit = False  to wrap up the plot
 GOF_submit = False
 
+# 5)
 # OR you do from Combine or from from Havester
 preparePostFitCombine = False
 preparePostFitHavester = False
 
-doYieldsAndPlots = False
-# OR you do from Combine or from from Havester
-# you must have ran the respective preparePostFit... before (or put as true as well)
+doYieldsAndPlots = False # will do the prefit and postfit table of yields.
+# If any of the bellow are true it also do prefit and postfit plots
+# You must have ran the respective preparePostFit... before (or put as true as well)
 doPostFitCombine = False # doYieldsAndPlots must be true
 doPostFitHavester = False # doYieldsAndPlots must be true
-#######################
+#####################################################################
 
-#######################
-## How?
+#####################################################################
+## How to do?
 btag_correlated = True # if true it does not manipulate the cards
 JES_correlated = True # if true it does not manipulate the cards
 blinded = False
-blindedOutput = False
+blindedOutput = False ## do not draw the rate on the impacts plot
 sendToCondor = False ### Impacts and GOF for combo need it
-#######################
+#####################################################################
 
 # Download the bellow folders to mom and untar them on the same location than this script
 # https://svnweb.cern.ch/cern/wsvn/cmshcg/trunk/cadi/HIG-18-019/
 # https://svnweb.cern.ch/cern/wsvn/cmshcg/trunk/cadi/HIG-17-018/
-mom_2017 = "HIG-18-019.r7705/2018jun28/"
+mom_2017 = "HIG-18-019.r7705/2018jun28/" ## these are updated from svn version !!!!!!!!!!!
 mom_2017_multilep = "HIG-18-019.r7705/2018jun28/multilep/"
 mom_2017_tau = "HIG-18-019.r7705/2018jun28/tau/"
 mom_2016 = "HIG-17-018.r7707/2016_for_hig18019/"
@@ -63,15 +92,16 @@ procP1=glob.glob(os.getcwd()+"/"+mom_2017+"/*/*.txt")
 procP2=glob.glob(os.getcwd()+"/"+mom_2016+"*.txt")
 everybody = procP1 + procP2
 
+## The results are going to be saved on the local folder mom_result
 if not takeCombo :
-    if not btag_correlated : mom_result = "comblo_2016_2017_uncorrJES/"
+    if not btag_correlated : mom_result = "combo_2016_2017_uncorrJES/"
     else :
         if  blinded : mom_result = "combo_2016_2017/"
         else : mom_result = "combo_2016_2017_unblided/"
 else :
+    # you will need to put the combined card on the folder hardcoded bellow
     mom_result = "gpetrucc_2017/"
     #mom_result = "gpetrucc_2017_2016/"
-
 
 ToCondor = " "
 if sendToCondor : ToCondor = " --job-mode condor --sub-opt '+MaxRuntime = 18000'"
@@ -240,17 +270,19 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
 
     if (card == cardToWrite and doImpactCombo) or (card == cardToWrite_2017 and doImpact2017) :
         ### For impacts 2017 + 2016 only
-        ## it creates many files, better to do in separate repo
-        run_cmd("mkdir impacts_"+card)
-        enterHere = os.getcwd()+"/"+mom_result+"/impacts_"+card
-        run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  --parallel 8 %s --doInitialFit  --keepFailures ; cd - "  % (WS_output, blindStatement))
-        run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  --parallel 8 %s --robustFit 1 --doFits %s ; cd - "  % (WS_output, blindStatement, sendToCondor))
-        blindedOutputOpt = ' '
-        if blindedOutput : blindedOutputOpt =  ' --blind'
-        run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  -o impacts.json    %s ; plotImpacts.py -i impacts.json %s -o impacts_btagCorr%s_blinded%s  ; cd -" % (WS_output, redefineToTTH, str(blindedOutputOpt), str(btag_correlated), str(blinded)))
+        ## it creates many files !!!!
+        if not sendToCondor or impactsSubmit :
+            run_cmd("mkdir impacts_"+card)
+            enterHere = os.getcwd()+"/"+mom_result+"/impacts_"+card
+            run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  --parallel 8 %s --doInitialFit  --keepFailures ; cd - "  % (WS_output, blindStatement))
+            run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  --parallel 8 %s --robustFit 1 --doFits %s ; cd - "  % (WS_output, blindStatement, sendToCondor))
+        if not sendToCondor or not impactsSubmit :
+            blindedOutputOpt = ' '
+            if blindedOutput : blindedOutputOpt =  ' --blind'
+            run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  -o impacts.json    %s ; plotImpacts.py -i impacts.json %s -o impacts_btagCorr%s_blinded%s  ; cd -" % (WS_output, redefineToTTH, str(blindedOutputOpt), str(btag_correlated), str(blinded)))
 
     if (card == cardToWrite and doGOFCombo) or (card == cardToWrite_2017 and doGOF2017) :
-        ## it creates many files, better to do in separate repo
+        ## it creates many files !!!!
         run_cmd("mkdir gof_"+card)
         enterHere = os.getcwd()+"/"+mom_result+"/gof_"+card
         if sendToCondor :
@@ -332,7 +364,7 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
         mlf = TFile(enterHere+'/fitDiagnostics.root')
         rfr = mlf.Get('fit_s')
         typeFit = " "
-        for fit in ["postfit"] : # , "prefit"
+        for fit in ["prefit", "postfit"] :
             print fit+' tables:'
             if fit == "postfit" :
                 cmb.UpdateParameters(rfr)
@@ -408,12 +440,10 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
             labels = [
              "2lss_ee_neg_3j",
              "2lss_ee_pos_3j",
-             #
              "2lss_em_bl_neg_3j",
              "2lss_em_bl_pos_3j",
              "2lss_mm_bl_neg_3j",
              "2lss_mm_bl_pos_3j",
-             #
              "2lss_em_bt_neg_3j",
              "2lss_em_bt_pos_3j",
              "2lss_mm_bt_neg_3j",
