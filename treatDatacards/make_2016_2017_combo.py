@@ -63,10 +63,10 @@ GOF_submit = False
 preparePostFitCombine = False
 preparePostFitHavester = False
 
-doYieldsAndPlots = False # will do the prefit and postfit table of yields.
+doYieldsAndPlots = True # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
 # You must have ran the respective preparePostFit... before (or put as true as well)
-doPostFitCombine = False # doYieldsAndPlots must be true
+doPostFitCombine = True # doYieldsAndPlots must be true
 doPostFitHavester = False # doYieldsAndPlots must be true
 #####################################################################
 
@@ -194,14 +194,13 @@ if combine_cards :
     run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; "+string_combine_2017+" ; cd %s"  % (os.getcwd()+"/"))
 
 
-WS_output = card+"_3poi"
 redefineToTTH = " --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH "
 
 floating_ttV = \
-"--PO 'map=.*/TTZ.*:r_ttZ[1,0,6]'\
---PO 'map=.*/TTW:r_ttW[1,-2,6]'\
---PO 'map=.*/TTW_.*:r_ttW[1,-2,6]'\
---PO 'map=.*/TTWW.*:r_ttW[1,-2,6]' "
+" --PO 'map=.*/TTZ.*:r_ttZ[1,0,6]'\
+ --PO 'map=.*/TTW:r_ttW[1,-2,6]'\
+ --PO 'map=.*/TTW_.*:r_ttW[1,-2,6]'\
+ --PO 'map=.*/TTWW.*:r_ttW[1,-2,6]' "
 
 ### loop for combo results 2017 and 2017 + 2016
 ### hardcode the paths if you want to consider already combined cards
@@ -210,7 +209,7 @@ if takeCombo :
     cardToWrite = "../gpetrucc_2017_2016/comb_1617v2_withCR_sanity"
 
 for card in [ cardToWrite_2017 , cardToWrite  ] : # ,
-
+    WS_output = card+"_3poi"
     if doFits :
         run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; text2workspace.py %s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose  --PO 'map=.*/ttH.*:r_ttH[1,-5,10]' %s ; cd -"  % (card, WS_output, floating_ttV))
 
@@ -220,44 +219,47 @@ for card in [ cardToWrite_2017 , cardToWrite  ] : # ,
 
         run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit %s.root %s --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --algo singles  --cminDefaultMinimizerType Minuit --keepFailures > %s_rate_3D.log  ; cd -"  % (WS_output, blindStatement, WS_output))
 
-    if (doHessImpactCombo and card == cardToWrite) or (doHessImpactCombo2017 and card == cardToWrite2017) :
+    if (doHessImpactCombo and card == cardToWrite) or (doHessImpact2017 and card == cardToWrite2017) :
         # hessian impacts
-
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combineTool.py -M Impacts -d %s.root --rMin -2 --rMax 5  %s   -m 125 --doFits --approx hesse ; cd - "  % (WS_output, blindStatement))
+        run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/HesseImpacts_"+card)
+        enterHere = os.getcwd()+"/"+mom_result+"/HesseImpacts_"+card
+        run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -d %s.root --rMin -2 --rMax 5  %s   -m 125 --doFits --approx hesse ; cd - "  % (WS_output, blindStatement))
 
         run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combineTool.py -M Impacts -d %s.root -m 125 -o impacts.json --approx hesse --rMin -2 --rMax 5  %s; plotImpacts.py -i impacts.json -o  impacts ; mv impacts.pdf impacts_hesse_JESCorr%s ; cd -" % (WS_output, blindStatement, str(btag_correlated)))
 
     if doCategories  and card == cardToWrite_2017 :
         ### for category by category - 2017 only
-        run_cmd("mkdir categories_"+card)
-        enterHere = os.getcwd()+"/"+mom_result+"/categories_"+card
+        run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/categories_"+card+"_folder")
+        enterHere = os.getcwd()+"/"+mom_result+"/categories_"+card+"_folder"
+        print enterHere
         WS_output_byCat = card+"_Catpoi_final"
 
         if not takeCombo :
             floating_by_cat = \
             "--PO 'map=.*2lss_e.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
-PO 'map=.*2lss_m.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
-PO 'map=.*3l_b.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
-PO 'map=.*4l_2.*/ttH.*:r_ttH_4l[1,-5,10]'\
-PO 'map=.*2lss_1tau.*/ttH.*:r_ttH_2lss_1tau[1,-5,10]'\
-PO 'map=.*3l_1tau.*/ttH.*:r_ttH_3l_1tau[1,-5,10]'\
-PO 'map=.*2l_2tau.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
-PO 'map=.*1l_2tau.*/ttH.*:r_ttH_1l_2tau[1,-5,10]'\
+ --PO 'map=.*2lss_m.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
+ --PO 'map=.*3l_b.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
+ --PO 'map=.*3l_cr.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
+ --PO 'map=.*4l.*/ttH.*:r_ttH_4l[1,-5,10]'\
+ --PO 'map=.*2lss_1tau.*/ttH.*:r_ttH_2lss_1tau[1,-5,10]'\
+ --PO 'map=.*3l_1tau.*/ttH.*:r_ttH_3l_1tau[1,-5,10]'\
+ --PO 'map=.*2l_2tau.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
+ --PO 'map=.*1l_2tau.*/ttH.*:r_ttH_1l_2tau[1,-5,10]'\
 "
         else :
             floating_by_cat = \
             "--PO 'map=.*2lss_e.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
---PO 'map=.*2lss_m.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
---PO 'map=.*3l_b.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
-PO 'map=.*3l_cr.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
-PO 'map=.*4l_.*/ttH.*:r_ttH_4l[1,-10,20]'\
-PO 'map=.*1l_2tau.*/ttH.*:r_ttH_1l_2tau[1,-5,10]'\
-PO 'map=.*2lss_1tau_.*/ttH.*:r_ttH_2lss_1tau[1,-5,10]'\
-PO 'map=.*3l_1tau_.*/ttH.*:r_ttH_3l_1tau[1,-5,10]'\
-PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
+  --PO 'map=.*2lss_m.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
+  --PO 'map=.*3l_b.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
+  --PO 'map=.*3l_cr.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
+  --PO 'map=.*4l.*/ttH.*:r_ttH_4l[1,-5,10]'\
+  --PO 'map=.*1l_2tau.*/ttH.*:r_ttH_1l_2tau[1,-5,10]'\
+  --PO 'map=.*2lss_1tau_.*/ttH.*:r_ttH_2lss_1tau[1,-5,10]'\
+  --PO 'map=.*3l_1tau_.*/ttH.*:r_ttH_3l_1tau[1,-5,10]'\
+  --PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
 "
 
-        run_cmd("cd "+enterHere+" ; text2workspace.py ../%s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose %s %s; cd -"  % (card, WS_output_byCat, floating_ttV, floating_by_cat))
+        run_cmd("cd "+enterHere+" ; text2workspace.py %s/../%s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose %s %s; cd -"  % (enterHere, card, WS_output_byCat, floating_ttV, floating_by_cat))
 
         parameters = "r_ttW=1,r_ttZ=1"
         for rate in ["r_ttH_2lss_0tau", "r_ttH_3l_0tau", "r_ttH_4l", "r_ttH_2lss_1tau", "r_ttH_3l_1tau", "r_ttH_2l_2tau", "r_ttH_1l_2tau", "r_ttW", "r_ttZ"] :
@@ -272,7 +274,7 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
         ### For impacts 2017 + 2016 only
         ## it creates many files !!!!
         if not sendToCondor or impactsSubmit :
-            run_cmd("mkdir impacts_"+card)
+            run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/impacts_"+card)
             enterHere = os.getcwd()+"/"+mom_result+"/impacts_"+card
             run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  --parallel 8 %s --doInitialFit  --keepFailures ; cd - "  % (WS_output, blindStatement))
             run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d %s.root  --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  --parallel 8 %s --robustFit 1 --doFits %s ; cd - "  % (WS_output, blindStatement, sendToCondor))
@@ -283,7 +285,7 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
 
     if (card == cardToWrite and doGOFCombo) or (card == cardToWrite_2017 and doGOF2017) :
         ## it creates many files !!!!
-        run_cmd("mkdir gof_"+card)
+        run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/gof_"+card)
         enterHere = os.getcwd()+"/"+mom_result+"/gof_"+card
         if sendToCondor :
             ### if you are submitting to condor you need to do in 2 steps, the second step collect the toys
@@ -315,17 +317,17 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
         ### for category by category - 2017 only
         run_cmd("mkdir "+savePostfitCombine)
         enterHere = os.getcwd()+"/"+mom_result+"/"+savePostfitCombine
-        run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics ../%s.root %s --saveNormalization --saveShapes --saveWIthUncertainties %s ; cd -' % (WS_output, redefineToTTH, sendToCondor))
+        run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics %s/../%s.root %s --saveNormalization --saveShapes --saveWIthUncertainties %s ; cd -' % (enterHere, WS_output, redefineToTTH, sendToCondor))
         print ("the output with the shapes is going to be fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine")
 
     if preparePostFitHavester  and card == cardToWrite_2017 :
         print ("[WARNING:] combine does not deal well with autoMCstats option for bin by bin stat uncertainty")
         run_cmd("mkdir "+savePostfitHavester)
         enterHere = os.getcwd()+"/"+mom_result+"/"+savePostfitHavester
-        run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics ../%s.root %s ; cd -' % (WS_output, redefineToTTH))
+        run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics %s/../%s.root %s ; cd -' % (enterHere, WS_output, redefineToTTH))
         print ("the diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if you have a crash!")
         doPostfit = " -f fitDiagnostics.root:fit_s --postfit "
-        run_cmd("cd "+enterHere+' ; PostFitShapesFromWorkspace --workspace ../%s.root -d ../%s.txt -o %s_shapes.root -m 125 --sampling --print %s ; cd -' % (WS_output, card, WS_output, doPostfit)) # --skip-prefit
+        run_cmd("cd "+enterHere+' ; PostFitShapesFromWorkspace --workspace %s/../%s.root -d %s/../%s.txt -o %s_shapes.root -m 125 --sampling --print %s ; cd -' % (enterHere, WS_output, enterHere, card, WS_output, doPostfit)) # --skip-prefit
         print ("the output with the shapes is "+WS_output+"_shapes.root")
 
     if doYieldsAndPlots :
@@ -346,7 +348,7 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
             fileShapes = WS_output+"_shapes.root"
             appendHavester = " --fromHavester "
         if doPostfit == "none" :
-            run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics ../%s.root %s ; cd -' % (WS_output, redefineToTTH))
+            run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics %s/../%s.root %s ; cd -' % (enterHere, WS_output, redefineToTTH))
         else : enterHere = enterHere+"/"+doPostfit
 
         run_cmd("cd "+enterHere+' ; python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root  -p r_ttH  ; cd -')
@@ -359,7 +361,7 @@ PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
         ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', False)
         print "datacard parsed"
         import os
-        print ("taking uncertainties from: "enterHere+'/fitDiagnostics.root')
+        print ("taking uncertainties from: "+enterHere+'/fitDiagnostics.root')
         print ("the diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if you have a crash!")
         mlf = TFile(enterHere+'/fitDiagnostics.root')
         rfr = mlf.Get('fit_s')
