@@ -115,6 +115,68 @@ def load_dataGen(inputPath,channelInTree,variables,criteria,testtruth,folderName
     #print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
     return data
 
+def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
+    print variables
+    my_cols_list=variables+['key','target',"totalWeight"]
+    data = pandas.DataFrame(columns=my_cols_list)
+    if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToHadronic', 'TTToSemiLeptonic']
+    if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTWJets','TTZJets']
+    if "evtLevelSUM_TTH" in bdtType : keys=['ttHToNonbb','TTWJets','TTZJets','TTTo2L2Nu','TTToHadronic', 'TTToSemiLeptonic']
+    if bdtType=="all" : keys=['ttHToNonbb','TTWJets','TTZJets','TTTo2L2Nu','TTToHadronic', 'TTToSemiLeptonic']
+    for folderName in keys :
+        print (folderName, channelInTree)
+        if 'TTT' in folderName :
+                sampleName='TT'
+                target=0
+        if folderName=='ttHToNonbb' :
+                sampleName='signal'
+                target=1
+        if 'TTW' in folderName :
+                sampleName='TTW'
+                target=0
+        if 'TTZ' in folderName :
+                sampleName='TTZ'
+                target=0
+        inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
+        if folderName=='ttHToNonbb' :
+            procP1=glob.glob(inputPath+"/"+folderName+"_M125_powheg/"+folderName+"*.root")
+            list=procP1
+        elif ('TTT' in folderName):
+            procP1=glob.glob(inputPath+"/"+folderName+"_PSweights/"+folderName+"*.root")
+            list=procP1
+        elif ('TTW' in folderName) or ('TTZ' in folderName):
+            procP1=glob.glob(inputPath+"/"+folderName+"_LO/"+folderName+"*.root")
+            list=procP1
+        for ii in range(0, len(list)) :
+            try: tfile = ROOT.TFile(list[ii])
+            except : continue
+            try: tree = tfile.Get(inputTree)
+            except : continue
+            if tree is not None :
+                try: chunk_arr = tree2array(tree) #,  start=start, stop = stop)
+                except : continue
+                else :
+                    chunk_df = pandas.DataFrame(chunk_arr)
+                    #print (len(chunk_df))
+                    #print (chunk_df.columns.tolist())
+                    chunk_df['proces']=sampleName
+                    chunk_df['key']=folderName
+                    chunk_df['target']=target
+                    chunk_df["totalWeight"] = chunk_df["evtWeight"]
+                    data=data.append(chunk_df, ignore_index=True)
+            else : print ("file "+list[ii]+"was empty")
+            tfile.Close()
+        if len(data) == 0 : continue
+        nS = len(data.ix[(data.target.values == 1) & (data.key.values==folderName) ])
+        nB = len(data.ix[(data.target.values == 0) & (data.key.values==folderName) ])
+        print folderName,"length of sig, bkg: ", nS, nB , data.ix[ (data.key.values==folderName)]["totalWeight"].sum(), data.ix[(data.key.values==folderName)]["totalWeight"].sum()
+    print (data.columns.values.tolist())
+    n = len(data)
+    nS = len(data.ix[data.target.values == 1])
+    nB = len(data.ix[data.target.values == 0])
+    print channelInTree," length of sig, bkg: ", nS, nB
+    return data
+
 def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     print variables
     my_cols_list=variables+['key','target',"totalWeight"]
