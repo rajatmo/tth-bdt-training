@@ -115,6 +115,10 @@ def load_dataGen(inputPath,channelInTree,variables,criteria,testtruth,folderName
     #print ("weigths", data.loc[data['target']==0]["totalWeight"].sum() , data.loc[data['target']==1]["totalWeight"].sum() )
     return data
 
+
+
+
+
 def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
     print variables
     my_cols_list=variables+['key','target',"totalWeight"]
@@ -142,7 +146,12 @@ def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
             procP1=glob.glob(inputPath+"/"+folderName+"_M125_powheg/"+folderName+"*.root")
             list=procP1
         elif ('TTT' in folderName):
+
+            procP1=glob.glob(inputPath+"/"+folderName+"*/"+folderName+"*.root")
+            #procP1=glob.glob(inputPath+"/"+folderName+"_PSweights/"+folderName+"*.root")
+
             procP1=glob.glob(inputPath+"/"+folderName+"_PSweights/"+folderName+"*.root")
+
             list=procP1
         elif ('TTW' in folderName) or ('TTZ' in folderName):
             procP1=glob.glob(inputPath+"/"+folderName+"_LO/"+folderName+"*.root")
@@ -177,6 +186,10 @@ def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
     print channelInTree," length of sig, bkg: ", nS, nB
     return data
 
+
+
+
+
 def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
     print variables
     my_cols_list=variables+['key','target',"totalWeight"]
@@ -201,7 +214,7 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
         	target=0
         inputTree = channelInTree+'/sel/evtntuple/'+sampleName+'/evtTree'
         if ('TTT' in folderName) or folderName=='ttHToNonbb' :
-        	procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"*.root")
+             	procP1=glob.glob(inputPath+"/"+folderName+"_fastsim_p1/"+folderName+"*.root")
         	procP2=glob.glob(inputPath+"/"+folderName+"_fastsim_p2/"+folderName+"*.root")
         	procP3=glob.glob(inputPath+"/"+folderName+"_fastsim_p3/"+folderName+"*.root")
         	list=procP1+procP2+procP3
