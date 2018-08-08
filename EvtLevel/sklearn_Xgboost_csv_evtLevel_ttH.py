@@ -94,16 +94,18 @@ if channel=='1l_2tau':
 # 2los_1tau_2018Mar14_BDT_TLepTTau
 if channel=='2los_1tau':
 	channelInTree='2los_1tau_Loose'
-	inputPath='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_LLepMTau/histograms/2los_1tau/forBDTtraining/'
+	inputPath='/hdfs/local/mmaurya/ttHAnalysis/2017/2los_1tau_BDTtraining_Mtau_2Aug_2018/histograms/2los_1tau/forBDTtraining/'
 	FastsimWP= "LooseLep_TightTau"
 	criteria=[]
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
 	channelInTreeTight='2los_1tau_Tight'
+	inputPathTight='/hdfs/local/mmaurya/ttHAnalysis/2017/2los_1tau_BDTtraining_Mtau_2Aug_2018/histograms/2los_1tau/forBDTtraining/'
 	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepLTau/histograms/2los_1tau/forBDTtraining/'
 	FastsimTWP="TightLep_MediumTau"
-	channelInTreeFS='2los_1tau_Tight'
-	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_fullsim_TLepVTTau/histograms/2los_1tau/Tight/'
-	FullsimWP= "TightLep_VTightTau"
+	#channelInTreeFS='2los_1tau_Tight'
+	#inputPathTightFS= '/hdfs/local/mmaurya/ttHAnalysis/2017/2los_1tau_BDTtraining_Mtau_2Aug_2018/histograms/2los_1tau/forBDTtraining/'
+	#inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_fullsim_TLepVTTau/histograms/2los_1tau/Tight/'
+	#FullsimWP= "TightLep_VTightTau"
 
 if channel=='2lss_1tau':
 	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
@@ -178,7 +180,7 @@ if channel=="3l_1tau":
 
 print "reading "+inputPath
 print "reading tight "+inputPathTight
-print "reading FS "+inputPathTightFS
+#print "reading FS "+inputPathTightFS
 
 import shutil,subprocess
 proc=subprocess.Popen(['mkdir '+options.channel],shell=True,stdout=subprocess.PIPE)
@@ -196,7 +198,7 @@ def trainVars(all):
 			'lep1_pt', 'lep1_tth_mva', 'lep2_conePt', 'lep2_eta', #'lep2_fake_prob', 'lep2_genLepPt',
 			'lep2_pt', 'lep2_tth_mva', #'lumiScale',
 			'mT_lep1', 'mT_lep2', 'mTauTauVis', #'mass_lepOS_HTfitted', 'mass_lepSS_HTfitted',
-			'max_lep_eta', 'mbb', 'mbb_loose',
+			'max_lep_eta', 'mbb', 'mbb_loose',  'b1_loose_pt', 'b2_loose_pt', 'drbb_loose', 'detabb_loose',
 			'min_lep_eta', 'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
 			#'mvaDiscr_2lss', 'mvaOutput_2lss_ttV', 'mvaOutput_2lss_ttbar', 'mvaOutput_hadTopTagger',
 			'mvaOutput_hadTopTaggerWithKinFit', 'ptbb', 'ptbb_loose', 'ptmiss', 'tau_eta',
@@ -209,22 +211,22 @@ def trainVars(all):
 
         if trainvar=="noHTT" and channel=="2los_1tau" and bdtType=="evtLevelTT_TTH" and all==False :
 			return [
-			'avg_dr_jet', #'dr_lep1_tau_os',
+			'avg_dr_jet', 'dr_lep1_tau_os',
 			'dr_lep2_tau_ss',
 			'dr_leps',
-			#'lep1_conePt',
-			#'lep2_conePt',
-			#'mT_lep1',
+			'lep1_conePt',
+			'lep2_conePt',
+			'mT_lep1',
 			'mT_lep2',
 			'mTauTauVis',
 			'tau_pt', 'tau_eta',
-			#'max_lep_eta', #'min_lep_eta', #'lep2_eta','lep1_eta',
+			'max_lep_eta', 'min_lep_eta', 'lep2_eta','lep1_eta',
 			'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
-			#'mbb', 'ptbb', # (medium b)
-			'mbb_loose', #'ptbb_loose',
-			'ptmiss', #'htmiss',
-			#'nBJetLoose',
-			#'nBJetMedium',
+			'mbb', 'ptbb',  #(medium b)
+			'mbb_loose', 'ptbb_loose', 'b1_loose_pt', 'b2_loose_pt', 'drbb_loose', 'detabb_loose',
+			'ptmiss', 'htmiss',
+			'nBJetLoose',
+			'nBJetMedium',
 			'nJet',
 			]
 
@@ -260,7 +262,7 @@ def trainVars(all):
 			'mT_lep2',
 			'mTauTauVis',
 			'tau_pt', 'tau_eta',
-			#'max_lep_eta', #'min_lep_eta', #'lep2_eta','lep1_eta',
+			#'max_lep_eta', 'min_lep_eta', 'lep2_eta','lep1_eta',
 			'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
 			#'mbb', 'ptbb', # (medium b)
 			'mbb_loose', #'ptbb_loose',
@@ -271,7 +273,7 @@ def trainVars(all):
 			'mvaOutput_hadTopTaggerWithKinFit',
 			'unfittedHadTop_pt',
 			#'dr_lepOS_HTfitted', 'dr_lepOS_HTunfitted',
-			#'dr_lepSS_HTfitted', #'dr_lepSS_HTunfitted',
+			#'dr_lepSS_HTfitted', 'dr_lepSS_HTunfitted',
 			'dr_tau_HTfitted', #'dr_tau_HTunfitted',
 			'fitHTptoHTmass', #'fitHTptoHTpt',
 			#'HadTop_eta', 'HadTop_pt',
@@ -327,6 +329,25 @@ def trainVars(all):
 			'nJet',
 			'ptmiss',
 			'tau_pt',
+                        'tau_mva',
+                        'nBJetMedium',
+			'max_eta_Lep',
+			'lep1_eta', 'lep2_eta', 'tau_eta', 
+                        'lep1_pt', 'lep2_pt',
+                #'HadTop_eta', 'HadTop_pt', 'MT_met_lep1', 'avg_dr_jet',
+                #'bWj1Wj2_isGenMatched', 'bWj1Wj2_isGenMatchedWithKinFit',
+                #'evtWeight',
+                #'fitHTptoHTpt', 'fittedHadTop_eta', 'fittedHadTop_pt', #'genTopPt', 'genWeight', 'hadtruth',
+                #'htmiss', 'lep1_conePt',  #'lep1_frWeight',
+                #'lep1_genLepPt',
+                #'mT_lep1', 'mT_lep2', 'max_lep_eta',
+                #'mbb', 'ptbb', 'mbb_loose', 'ptbb_loose',
+                #'memOutput_LR', 'memOutput_errorFlag', 'memOutput_isValid', 'memOutput_ttZ_LR', 'memOutput_ttZ_Zll_LR', 'memOutput_tt_LR',
+                #'mindr_lep1_jet',
+                #'mindr_lep2_jet',
+                #'mindr_tau_jet',
+                
+
 			]
 
         if trainvar=="noHTT" and channel=="2lss_1tau" and bdtType=="evtLevelTTV_TTH" and all==False :
@@ -995,27 +1016,36 @@ def trainVars(all):
 			]
 
 ####################################################################################################
-## Load data
-data=load_data(inputPath,channelInTree,trainVars(True),[],testtruth,bdtType)
-dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(True),[],testtruth,bdtType)
-doFS=True
-if doFS : dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeFS,trainVars(True),[],testtruth,"all")
-if doFS2 : dataTightFS2=load_data_fullsim(inputPathTightFS2,channelInTreeFS2,trainVars(True),[],testtruth,"all")
-weights="totalWeight"
-target='target'
 
+## Load data
+#data=load_data_2017(inputPath,channelInTree,trainVars(True),[],testtruth,bdtType)
+data=load_data_2017(inputPath,channelInTree,trainVars(True),[],bdtType)
+#**********************
+
+ 
+dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(True),[],testtruth,bdtType)
+#doFS=True
+#if doFS : dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeFS,trainVars(True),[],testtruth,"all")
+#if doFS2 : dataTightFS2=load_data_fullsim(inputPathTightFS2,channelInTreeFS2,trainVars(True),[],testtruth,"all")
+
+#weights="totalWeight"
+weights="evtWeight"
+target='target'
+print ("X0XXXXXXX:", type(weights), weights)
 if channel=="1l_2tau" or channel=="2lss_1tau":
 	nSthuth = len(data.ix[(data.target.values == 0) & (data[testtruth].values==1)])
 	nBtruth = len(data.ix[(data.target.values == 1) & (data[testtruth].values==1)])
 	print "truth:              ", nSthuth, nBtruth
 	print ("truth", data.loc[(data[testtruth]==0) & (data[testtruth]==1)][weights].sum() , data.loc[(data[target]==1) & (data[testtruth]==1)][weights].sum() )
 #################################################################################
+print ("AAAAAAAAAAAAA:", data.loc[data['target']==0]["evtWeight"].sum())
 ## Balance datasets
 #https://stackoverflow.com/questions/34803670/pandas-conditional-multiplication
-data.loc[data['target']==0, ['totalWeight']] *= 100000/data.loc[data['target']==0]["totalWeight"].sum()
-data.loc[data['target']==1, ['totalWeight']] *= 100000/data.loc[data['target']==1]["totalWeight"].sum()
+data.loc[data['target']==0, ['evtWeight']] *= 100000/data.loc[data['target']==0]["evtWeight"].sum()
+data.loc[data['target']==1, ['evtWeight']] *= 100000/data.loc[data['target']==1]["evtWeight"].sum()
 
 print ("norm", data.loc[data[target]==0][weights].sum(),data.loc[data[target]==1][weights].sum())
+
 ### TT-sample is usually much more than fakes
 if channel=="2l_2tau" and 'evtLevelSUM_TTH' in bdtType :
 	fastsimTT=4.72
@@ -1106,7 +1136,7 @@ data.loc[(data['key']=='TTWJetsToLNu') | (data['key']=='TTZToLLNuNu'), [weights]
 dataTight.loc[(dataTight['key']=='TTTo2L2Nu') | (dataTight['key']=='TTToSemilepton'), [weights]]*=TTdatacard/fastsimTTtight
 dataTight.loc[(dataTight['key']=='TTWJetsToLNu') | (dataTight['key']=='TTZToLLNuNu'), [weights]]*=TTVdatacard/fastsimTTVtight
 if doFS :
-	dataTightFS.loc[(dataTightFS['proces']=='TT'), [weights]]*=TTdatacard/TTfullsim
+        dataTightFS.loc[(dataTightFS['proces']=='TT'), [weights]]*=TTdatacard/TTfullsim
 	dataTightFS.loc[(dataTightFS['proces']=='TTW') | (dataTightFS['proces']=='TTZ'), [weights]]*=TTVdatacard/TTVfullsim
 data.loc[data[target]==0, [weights]] *= 100000/data.loc[data[target]==0][weights].sum()
 data.loc[data[target]==1, [weights]] *= 100000/data.loc[data[target]==1][weights].sum()
@@ -1123,8 +1153,12 @@ nS = len(data.loc[data.target.values == 0])
 nB = len(data.loc[data.target.values == 1])
 print "length of sig, bkg without NaN: ", nS, nB
 
+
+
 #################################################################################
 ### Plot histograms of training variables
+
+
 nbins=8
 colorFast='g'
 colorFastT='b'
@@ -1141,6 +1175,9 @@ BDTvariables=trainVars(plotAll)
 make_plots(BDTvariables,nbins,
     data.ix[data.target.values == 0],labelBKG, colorFast,
     data.ix[data.target.values == 1],'Signal', colorFastT,
+
+    #load_data_2017.ix[data.target.values == 0],labelBKG, colorFast,
+    #load_data_2017.ix[data.target.values == 1],'Signal', colorFastT,
     channel+"/"+bdtType+"_"+trainvar+"_Variables_BDT_fastsim"+FastsimWP+".pdf",
     printmin,
 	plotResiduals
@@ -1517,3 +1554,4 @@ if options.HypOpt==False :
 			ax.clear()
 process = psutil.Process(os.getpid())
 print(process.memory_info().rss)
+
