@@ -93,19 +93,19 @@ if channel=='1l_2tau':
 
 # 2los_1tau_2018Mar14_BDT_TLepTTau
 if channel=='2los_1tau':
-	channelInTree='2los_1tau_Loose'
+	channelInTree='2los_1tau_forBDTtraining' #'2los_1tau_Loose'
 	inputPath='/hdfs/local/mmaurya/ttHAnalysis/2017/2los_1tau_BDTtraining_Mtau_2Aug_2018/histograms/2los_1tau/forBDTtraining/'
 	FastsimWP= "LooseLep_TightTau"
 	criteria=[]
 	testtruth="bWj1Wj2_isGenMatchedWithKinFit"
-	channelInTreeTight='2los_1tau_Tight'
+	channelInTreeTight='2los_1tau_forBDTtraining'#'2los_1tau_Tight'
 	inputPathTight='/hdfs/local/mmaurya/ttHAnalysis/2017/2los_1tau_BDTtraining_Mtau_2Aug_2018/histograms/2los_1tau/forBDTtraining/'
-	inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepLTau/histograms/2los_1tau/forBDTtraining/'
+	#inputPathTight='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_TLepLTau/histograms/2los_1tau/forBDTtraining/'
 	FastsimTWP="TightLep_MediumTau"
-	#channelInTreeFS='2los_1tau_Tight'
-	#inputPathTightFS= '/hdfs/local/mmaurya/ttHAnalysis/2017/2los_1tau_BDTtraining_Mtau_2Aug_2018/histograms/2los_1tau/forBDTtraining/'
-	#inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_fullsim_TLepVTTau/histograms/2los_1tau/Tight/'
-	#FullsimWP= "TightLep_VTightTau"
+	channelInTreeFS='2los_1tau_Tight'
+	inputPathTightFS= '/hdfs/local/mmaurya/ttHAnalysis/2017/2los_1tau_BDTtraining_Mtau_2Aug_2018/histograms/2los_1tau/forBDTtraining/'
+	inputPathTightFS='/hdfs/local/acaan/ttHAnalysis/2016/2los_1tau_2018Mar14_BDT_fullsim_TLepVTTau/histograms/2los_1tau/Tight/'
+	FullsimWP= "TightLep_VTightTau"
 
 if channel=='2lss_1tau':
 	#channelInTree='2lss_1tau_lepSS_sumOS_Tight'
@@ -332,7 +332,7 @@ def trainVars(all):
                         'tau_mva',
                         'nBJetMedium',
 			'max_eta_Lep',
-			'lep1_eta', 'lep2_eta', 'tau_eta', 
+			'lep1_eta', 'lep2_eta', 'tau_eta',
                         'lep1_pt', 'lep2_pt',
                 #'HadTop_eta', 'HadTop_pt', 'MT_met_lep1', 'avg_dr_jet',
                 #'bWj1Wj2_isGenMatched', 'bWj1Wj2_isGenMatchedWithKinFit',
@@ -346,7 +346,7 @@ def trainVars(all):
                 #'mindr_lep1_jet',
                 #'mindr_lep2_jet',
                 #'mindr_tau_jet',
-                
+
 
 			]
 
@@ -1022,14 +1022,14 @@ def trainVars(all):
 data=load_data_2017(inputPath,channelInTree,trainVars(True),[],bdtType)
 #**********************
 
- 
-dataTight=load_data(inputPathTight,channelInTreeTight,trainVars(True),[],testtruth,bdtType)
-#doFS=True
-#if doFS : dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeFS,trainVars(True),[],testtruth,"all")
-#if doFS2 : dataTightFS2=load_data_fullsim(inputPathTightFS2,channelInTreeFS2,trainVars(True),[],testtruth,"all")
 
-#weights="totalWeight"
-weights="evtWeight"
+dataTight=load_data_2017(inputPathTight,channelInTreeTight,trainVars(True),[],bdtType)
+doFS=False
+if doFS : dataTightFS=load_data_fullsim(inputPathTightFS,channelInTreeFS,trainVars(True),[],testtruth,"all")
+if doFS2 : dataTightFS2=load_data_fullsim(inputPathTightFS2,channelInTreeFS2,trainVars(True),[],testtruth,"all")
+
+weights="totalWeight"
+#weights="evtWeight"
 target='target'
 print ("X0XXXXXXX:", type(weights), weights)
 if channel=="1l_2tau" or channel=="2lss_1tau":
@@ -1038,11 +1038,11 @@ if channel=="1l_2tau" or channel=="2lss_1tau":
 	print "truth:              ", nSthuth, nBtruth
 	print ("truth", data.loc[(data[testtruth]==0) & (data[testtruth]==1)][weights].sum() , data.loc[(data[target]==1) & (data[testtruth]==1)][weights].sum() )
 #################################################################################
-print ("AAAAAAAAAAAAA:", data.loc[data['target']==0]["evtWeight"].sum())
+print ("AAAAAAAAAAAAA:", data.loc[data['target']==0][weights].sum())
 ## Balance datasets
 #https://stackoverflow.com/questions/34803670/pandas-conditional-multiplication
-data.loc[data['target']==0, ['evtWeight']] *= 100000/data.loc[data['target']==0]["evtWeight"].sum()
-data.loc[data['target']==1, ['evtWeight']] *= 100000/data.loc[data['target']==1]["evtWeight"].sum()
+data.loc[data['target']==0, [weights]] *= 100000/data.loc[data['target']==0][weights].sum()
+data.loc[data['target']==1, [weights]] *= 100000/data.loc[data['target']==1][weights].sum()
 
 print ("norm", data.loc[data[target]==0][weights].sum(),data.loc[data[target]==1][weights].sum())
 
@@ -1554,4 +1554,3 @@ if options.HypOpt==False :
 			ax.clear()
 process = psutil.Process(os.getpid())
 print(process.memory_info().rss)
-
