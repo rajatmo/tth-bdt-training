@@ -167,10 +167,11 @@ def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
                     chunk_df['key']=folderName
                     chunk_df['target']=target
                     chunk_df["totalWeight"] = chunk_df["evtWeight"]
-                    chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
-                    chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
-                    chunk_df["HadTop1_eta"]=abs(chunk_df["HadTop1_eta"])
-                    chunk_df["HadTop2_eta"]=abs(chunk_df["HadTop2_eta"])
+                    if channel=="0l_2tau" :
+                        chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
+                        chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
+                        chunk_df["HadTop1_eta"]=abs(chunk_df["HadTop1_eta"])
+                        chunk_df["HadTop2_eta"]=abs(chunk_df["HadTop2_eta"])
                     data=data.append(chunk_df, ignore_index=True)
             else : print ("file "+list[ii]+"was empty")
             tfile.Close()
