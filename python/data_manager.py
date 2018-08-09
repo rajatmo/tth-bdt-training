@@ -119,10 +119,10 @@ def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
     print variables
     my_cols_list=variables+['key','target',"totalWeight"]
     data = pandas.DataFrame(columns=my_cols_list)
-    if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTToHadronic', 'TTToSemiLeptonic']
+    if bdtType=="evtLevelTT_TTH" : keys=['ttHToNonbb','TTTo2L2Nu','TTTo2L2Nu_PSweights','TTToHadronic','TTToHadronic_PSweights','TTToSemiLeptonic','TTToSemiLeptonic_PSweights']
     if bdtType=="evtLevelTTV_TTH" : keys=['ttHToNonbb','TTWJets','TTZJets']
-    if "evtLevelSUM_TTH" in bdtType : keys=['ttHToNonbb','TTWJets','TTZJets','TTTo2L2Nu','TTToHadronic', 'TTToSemiLeptonic']
-    if bdtType=="all" : keys=['ttHToNonbb','TTWJets','TTZJets','TTTo2L2Nu','TTToHadronic', 'TTToSemiLeptonic']
+    if "evtLevelSUM_TTH" in bdtType : keys=['ttHToNonbb','TTWJets','TTZJets','TTTo2L2Nu','TTTo2L2Nu_PSweights','TTToHadronic','TTToHadronic_PSweights','TTToSemiLeptonic','TTToSemiLeptonic_PSweights']
+    if bdtType=="all" : keys=['ttHToNonbb','TTWJets','TTZJets','TTTo2L2Nu','TTTo2L2Nu_PSweights','TTToHadronic','TTToHadronic_PSweights','TTToSemiLeptonic','TTToSemiLeptonic_PSweights']
     for folderName in keys :
         print (folderName, channelInTree)
         if 'TTT' in folderName :
@@ -142,7 +142,7 @@ def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
             procP1=glob.glob(inputPath+"/"+folderName+"_M125_powheg/"+folderName+"*.root")
             list=procP1
         elif ('TTT' in folderName):
-            procP1=glob.glob(inputPath+"/"+folderName+"_PSweights/"+folderName+"*.root")
+            procP1=glob.glob(inputPath+"/"+folderName+"/"+folderName+"*.root")
             list=procP1
         elif ('TTW' in folderName) or ('TTZ' in folderName):
             procP1=glob.glob(inputPath+"/"+folderName+"_LO/"+folderName+"*.root")
@@ -163,6 +163,10 @@ def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
                     chunk_df['key']=folderName
                     chunk_df['target']=target
                     chunk_df["totalWeight"] = chunk_df["evtWeight"]
+                    chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
+                    chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
+                    chunk_df["HadTop1_eta"]=abs(chunk_df["HadTop1_eta"])
+                    chunk_df["HadTop2_eta"]=abs(chunk_df["HadTop2_eta"])
                     data=data.append(chunk_df, ignore_index=True)
             else : print ("file "+list[ii]+"was empty")
             tfile.Close()
@@ -170,6 +174,8 @@ def load_data_2017(inputPath,channelInTree,variables,criteria,bdtType) :
         nS = len(data.ix[(data.target.values == 1) & (data.key.values==folderName) ])
         nB = len(data.ix[(data.target.values == 0) & (data.key.values==folderName) ])
         print folderName,"length of sig, bkg: ", nS, nB , data.ix[ (data.key.values==folderName)]["totalWeight"].sum(), data.ix[(data.key.values==folderName)]["totalWeight"].sum()
+        nNW = len(data.ix[(data.evtWeight.values < 0) & (data.key.values==folderName) ]) 
+        print folderName, "events with -ve weights", nNW 
     print (data.columns.values.tolist())
     n = len(data)
     nS = len(data.ix[data.target.values == 1])
@@ -254,12 +260,18 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
                         chunk_df["hadTauPairCharge"]=abs(chunk_df["hadTauPairCharge"])
                         WtoMultiply=chunk_df["lep1_fake_prob"]*chunk_df["lep2_fake_prob"]*chunk_df["tau1_fake_prob"]*chunk_df["tau2_fake_prob"]
                         chunk_df["totalWeight"] = chunk_df["evtWeight"]*WtoMultiply
+                    if channel=="0l_2tau" :
+                        chunk_df["totalWeight"] = chunk_df["evtWeight"]
+                        chunk_df["tau1_eta"]=abs(chunk_df["tau1_eta"])
+                        chunk_df["tau2_eta"]=abs(chunk_df["tau2_eta"])
+                        chunk_df["HadTop1_eta"]=abs(chunk_df["HadTop1_eta"])
+                        chunk_df["HadTop2_eta"]=abs(chunk_df["HadTop2_eta"])
                     data=data.append(chunk_df, ignore_index=True)
             else : print ("file "+list[ii]+"was empty")
             tfile.Close()
         if len(data) == 0 : continue
-        nS = len(data.ix[(data.target.values == 0) & (data.key.values==folderName) ])
-        nB = len(data.ix[(data.target.values == 1) & (data.key.values==folderName) ])
+        nS = len(data.ix[(data.target.values == 1) & (data.key.values==folderName) ])
+        nB = len(data.ix[(data.target.values == 0) & (data.key.values==folderName) ])
         print folderName,"length of sig, bkg: ", nS, nB , data.ix[ (data.key.values==folderName)]["totalWeight"].sum(), data.ix[(data.key.values==folderName)]["totalWeight"].sum()
         if channel=="2l_2tau" :
             print "tau1 all | lep  ",sampleName , len(data.ix[(data["tau1_fake_prob"].values != 1) & (data.proces.values==sampleName)]), len(data.ix[(data["tau1_fake_test"].values != 1) & (data.proces.values==sampleName)])
@@ -279,8 +291,8 @@ def load_data(inputPath,channelInTree,variables,criteria,testtruth,bdtType) :
             print "hadtruth:           ", nShadthuth, nBhadtruth
     print (data.columns.values.tolist())
     n = len(data)
-    nS = len(data.ix[data.target.values == 0])
-    nB = len(data.ix[data.target.values == 1])
+    nS = len(data.ix[data.target.values == 1])
+    nB = len(data.ix[data.target.values == 0])
     print channelInTree," length of sig, bkg: ", nS, nB
     return data
 
