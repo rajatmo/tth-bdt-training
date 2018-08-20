@@ -16,6 +16,7 @@ import matplotlib
 matplotlib.use('agg')
 #matplotlib.use('PS')   # generate postscript output by default
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm as cm
 import numpy as np
 import psutil
@@ -223,7 +224,9 @@ def trainVars(all):
 			'max_lep_eta', 'min_lep_eta', 'lep2_eta','lep1_eta',
 			'mindr_lep1_jet', 'mindr_lep2_jet', 'mindr_tau_jet',
 			'mbb', 'ptbb',  #(medium b)
-			'mbb_loose', 'ptbb_loose', 'b1_loose_pt', 'b2_loose_pt', 'drbb_loose', 'detabb_loose',
+            'mbb_loose', 'ptbb_loose',
+            #'b1_loose_pt', 'b2_loose_pt',
+            #'drbb_loose', 'detabb_loose',
 			'ptmiss', 'htmiss',
 			'nBJetLoose',
 			'nBJetMedium',
@@ -1019,7 +1022,73 @@ def trainVars(all):
 
 ## Load data
 #data=load_data_2017(inputPath,channelInTree,trainVars(True),[],testtruth,bdtType)
+print("loading data\n")
 data=load_data_2017(inputPath,channelInTree,trainVars(True),[],bdtType)
+print("data loaded\n")
+scatterplotVars = [
+                   'avg_dr_jet', 
+				   #'dr_lep1_tau_os',
+                   #'dr_lep2_tau_ss',
+                   #'dr_leps',
+                   #'lep1_conePt',
+                   #'lep2_conePt',
+                   #'mT_lep1',
+                   #'mT_lep2',
+                   #'mTauTauVis',
+                   'tau_pt',
+				   'tau_eta',
+                   #'max_lep_eta', 
+				   #'min_lep_eta',
+                   #'lep2_eta',
+				   #'lep1_eta',
+                   'mindr_lep1_jet', 
+				   # 'mindr_lep2_jet', 
+				   'mindr_tau_jet',
+                   #'mbb',
+				   #'ptbb',  (medium b)
+                   #'mbb_loose', 
+				   #'ptbb_loose',
+                   #'b1_loose_pt', 
+				   #'b2_loose_pt',
+                   #'drbb_loose', 
+				   #'detabb_loose',
+                   #'ptmiss', 
+				   #'htmiss',
+                   #'nBJetLoose',
+                   #'nBJetMedium',
+                   #'nJet',
+                   ]
+#print ("\n\n\n\n\n\n\n", scatterplotVars.[0],"\n\n\n\n\n\n\n\n\n")
+
+
+for _var1_enum,_var1 in enumerate(scatterplotVars):
+    for _var2_enum,_var2 in enumerate(scatterplotVars):
+        if (_var1_enum <_var2_enum):
+            #plt.scatter(data[_var1], data[_var2])
+            plt.scatter(data.loc[data.target.values == 0][_var1],data.loc[data.target.values == 0][_var2],c='b',marker=".",label='Background')
+            plt.scatter(data.loc[data.target.values == 1][_var1],data.loc[data.target.values == 1][_var2],c='r',marker=".",label='Signal')
+            plt.legend(loc='upper left')
+            #plt.show()
+            plt.savefig('./scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/'+_var1+'_vs_'+_var2+'.png')
+            print("saved file: ","./scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/"+_var1+"_vs_"+_var2+".png")
+            plt.gcf().clear()
+for _var1_enum,_var1 in enumerate(scatterplotVars):
+    for _var2_enum,_var2 in enumerate(scatterplotVars):
+        for _var3_enum,_var3 in enumerate(scatterplotVars):
+			if (_var1_enum <_var2_enum<_var3_enum):
+				fig = plt.figure()
+				ax = fig.add_subplot(111, projection='3d')
+				ax.scatter(xs=data.loc[data.target.values == 0][_var1],ys=data.loc[data.target.values == 0][_var2] , zs=data.loc[data.target.values == 0][_var3], zdir='z', s=0.2, c='r', depthshade=False)
+				ax.scatter(xs=data.loc[data.target.values == 1][_var1],ys=data.loc[data.target.values == 1][_var2] , zs=data.loc[data.target.values == 1][_var3], zdir='z', s=0.2, c='b', depthshade=False)
+				#plt.scatter(data[_var1], data[_var2])
+				#plt.scatter(data.loc[data.target.values == 0][_var1],data.loc[data.target.values == 0][_var2],c='b',marker=".",label='Background')
+				#plt.scatter(data.loc[data.target.values == 1][_var1],data.loc[data.target.values == 1][_var2],c='r',marker=".",label='Signal')
+				#fig.legend(loc='upper left')
+				#plt.show()
+				fig.savefig('./3d-scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/'+_var1+'_vs_'+_var2+'_vs_'+_var3+'.png')
+				print("saved file: ","./3d-scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/"+_var1+"_vs_"+_var2+"_vs_"+_var3+".png")
+				fig.clf()
+
 #**********************
 
 
@@ -1038,7 +1107,7 @@ if channel=="1l_2tau" or channel=="2lss_1tau":
 	print "truth:              ", nSthuth, nBtruth
 	print ("truth", data.loc[(data[testtruth]==0) & (data[testtruth]==1)][weights].sum() , data.loc[(data[target]==1) & (data[testtruth]==1)][weights].sum() )
 #################################################################################
-print ("AAAAAAAAAAAAA:", data.loc[data['target']==0][weights].sum())
+print ("AAAAAAAAAAAAA:", data.loc[data['target']==1][weights].sum())
 ## Balance datasets
 #https://stackoverflow.com/questions/34803670/pandas-conditional-multiplication
 data.loc[data['target']==0, [weights]] *= 100000/data.loc[data['target']==0][weights].sum()
