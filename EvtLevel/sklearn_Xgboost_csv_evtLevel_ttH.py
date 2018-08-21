@@ -39,7 +39,7 @@ import ROOT
 from tqdm import trange
 import glob
 
-from keras.models import Sequential, model_from_json
+#from keras.models import Sequential, model_from_json
 import json
 
 from collections import OrderedDict
@@ -1026,24 +1026,24 @@ print("loading data\n")
 data=load_data_2017(inputPath,channelInTree,trainVars(True),[],bdtType)
 print("data loaded\n")
 scatterplotVars = [
-                   'avg_dr_jet', 
+                   #'avg_dr_jet', 
 				   #'dr_lep1_tau_os',
                    #'dr_lep2_tau_ss',
                    #'dr_leps',
                    #'lep1_conePt',
                    #'lep2_conePt',
-                   #'mT_lep1',
-                   #'mT_lep2',
-                   #'mTauTauVis',
+                   'mT_lep1',
+                   'mT_lep2',
+                   'mTauTauVis',
                    'tau_pt',
-				   'tau_eta',
+				   #'tau_eta',
                    #'max_lep_eta', 
 				   #'min_lep_eta',
                    #'lep2_eta',
 				   #'lep1_eta',
-                   'mindr_lep1_jet', 
+                   #'mindr_lep1_jet', 
 				   # 'mindr_lep2_jet', 
-				   'mindr_tau_jet',
+				   #'mindr_tau_jet',
                    #'mbb',
 				   #'ptbb',  (medium b)
                    #'mbb_loose', 
@@ -1065,8 +1065,8 @@ for _var1_enum,_var1 in enumerate(scatterplotVars):
     for _var2_enum,_var2 in enumerate(scatterplotVars):
         if (_var1_enum <_var2_enum):
             #plt.scatter(data[_var1], data[_var2])
-            plt.scatter(data.loc[data.target.values == 0][_var1],data.loc[data.target.values == 0][_var2],c='b',marker=".",label='Background')
-            plt.scatter(data.loc[data.target.values == 1][_var1],data.loc[data.target.values == 1][_var2],c='r',marker=".",label='Signal')
+            plt.scatter(data.loc[data.target.values == 0][_var1],data.loc[data.target.values == 0][_var2],c='b',marker="o",label='Background',alpha=0.03)
+            plt.scatter(data.loc[data.target.values == 1][_var1],data.loc[data.target.values == 1][_var2],c='r',marker="^",label='Signal',alpha=0.03)
             plt.legend(loc='upper left')
             #plt.show()
             plt.savefig('./scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/'+_var1+'_vs_'+_var2+'.png')
@@ -1076,18 +1076,20 @@ for _var1_enum,_var1 in enumerate(scatterplotVars):
     for _var2_enum,_var2 in enumerate(scatterplotVars):
         for _var3_enum,_var3 in enumerate(scatterplotVars):
 			if (_var1_enum <_var2_enum<_var3_enum):
-				fig = plt.figure()
-				ax = fig.add_subplot(111, projection='3d')
-				ax.scatter(xs=data.loc[data.target.values == 0][_var1],ys=data.loc[data.target.values == 0][_var2] , zs=data.loc[data.target.values == 0][_var3], zdir='z', s=0.2, c='r', depthshade=False)
-				ax.scatter(xs=data.loc[data.target.values == 1][_var1],ys=data.loc[data.target.values == 1][_var2] , zs=data.loc[data.target.values == 1][_var3], zdir='z', s=0.2, c='b', depthshade=False)
-				#plt.scatter(data[_var1], data[_var2])
-				#plt.scatter(data.loc[data.target.values == 0][_var1],data.loc[data.target.values == 0][_var2],c='b',marker=".",label='Background')
-				#plt.scatter(data.loc[data.target.values == 1][_var1],data.loc[data.target.values == 1][_var2],c='r',marker=".",label='Signal')
-				#fig.legend(loc='upper left')
-				#plt.show()
-				fig.savefig('./3d-scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/'+_var1+'_vs_'+_var2+'_vs_'+_var3+'.png')
-				print("saved file: ","./3d-scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/"+_var1+"_vs_"+_var2+"_vs_"+_var3+".png")
-				fig.clf()
+				for ii in xrange(0,360,60):
+					for iii in xrange(0,180,60):
+						fig = plt.figure()
+						ax = fig.add_subplot(111, projection='3d')
+						ax.scatter(xs=data.loc[data.target.values == 0][_var1],ys=data.loc[data.target.values == 0][_var2] , zs=data.loc[data.target.values == 0][_var3], zdir='z',marker="o", c='r', depthshade=False,alpha=0.03,s=70)
+						ax.scatter(xs=data.loc[data.target.values == 1][_var1],ys=data.loc[data.target.values == 1][_var2] , zs=data.loc[data.target.values == 1][_var3], zdir='z', c='g', depthshade=False,marker="^",alpha=0.03,s=70)
+					#	ii = 30
+						str_ = str(ii)+"=azimuth, elevation="+str(iii)
+						ax.view_init(elev=iii, azim=float(ii))
+						ax.set_xlabel(_var1)
+						ax.set_ylabel(_var2)
+						ax.set_zlabel(_var3)
+						print("saved file: ./3d-scatterplots-noHTT-evtLevelTT_TTH-tauWP-leptonWP/"+_var1+"_vs_"+_var2+"_vs_"+_var3+"_"+str_+".png")
+						fig.clf()
 
 #**********************
 
